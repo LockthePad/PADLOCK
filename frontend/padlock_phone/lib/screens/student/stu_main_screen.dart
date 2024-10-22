@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:padlock_phone/screens/common/notice_screen.dart';
+import 'package:padlock_phone/widgets/common/mainScreen/userinfo_widget.dart';
+import 'package:padlock_phone/widgets/student/mainScreen/stu_attendance_state_widget.dart';
 
 class StuMainScreen extends StatelessWidget {
   const StuMainScreen({super.key});
@@ -13,6 +15,8 @@ class StuMainScreen extends StatelessWidget {
       body: Column(
         children: [
           Text('학생 메인페이지입니다.'),
+          UserinfoWidget(),
+          StuAttendanceStateWidget(),
           GestureDetector(
             onTap: () {
               Navigator.push(

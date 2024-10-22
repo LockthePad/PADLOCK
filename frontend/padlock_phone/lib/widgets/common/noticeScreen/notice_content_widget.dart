@@ -9,7 +9,17 @@ class NoticeContentWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16.0),
       width: double.infinity,
-      child: const Text('단순공지사항 위젯'),
+      child: GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const NoticeDetailScreen(),
+            ),
+          );
+        },
+        child: const Text('단순 공지사항 위젯'),
+      ),
     );
   }
 }

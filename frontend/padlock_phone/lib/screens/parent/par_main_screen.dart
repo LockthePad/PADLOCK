@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:padlock_phone/screens/common/notice_screen.dart';
+import 'package:padlock_phone/screens/parent/par_counsel_screen.dart';
+import 'package:padlock_phone/screens/parent/par_gps_check_screen.dart';
+import 'package:padlock_phone/widgets/common/mainScreen/userinfo_widget.dart';
+import 'package:padlock_phone/widgets/parent/mainScreen/par_attendance_state_widget.dart';
 
 class ParMainScreen extends StatelessWidget {
   const ParMainScreen({super.key});
@@ -10,7 +15,44 @@ class ParMainScreen extends StatelessWidget {
         title: const Text('부모 메인페이지'),
       ),
       body: Column(
-        children: [Text('부모 메인페이지입니다.')],
+        children: [
+          Text('부모 메인페이지입니다.'),
+          UserinfoWidget(),
+          ParAttendanceStateWidget(),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ParGpsCheckScreen(),
+                ),
+              );
+            },
+            child: Text('GPS 확인 페이지로 이동'),
+          ),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ParCounselScreen(),
+                ),
+              );
+            },
+            child: Text('상담예약 페이지로 이동'),
+          ),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const NoticeScreen(),
+                ),
+              );
+            },
+            child: Text('공지사항 페이지로 이동'),
+          ),
+        ],
       ),
     );
   }

@@ -16,6 +16,7 @@ class LoginWidget extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text('로그인 위젯'),
+          Text('공백을 위한 text'),
           GestureDetector(
             onTap: () {
               // 로그인 화면까지 되돌리기 막기 위해서 pushReplacement로 나중에 고쳐야합니다.
