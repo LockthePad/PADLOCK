@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: padlock
+  jpa:
+    properties:
+      hibernate:
+        show_sql: true
+        format_sql: true
+        jdbc:
+          time_zone: Asia/Seoul
+  sql:
+    init:
+      mode: always
