@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:padlock_phone/screens/common/declare_screen.dart';
 import 'package:padlock_phone/screens/common/notice_screen.dart';
 import 'package:padlock_phone/screens/parent/par_counsel_screen.dart';
 import 'package:padlock_phone/screens/parent/par_gps_check_screen.dart';
@@ -51,6 +52,17 @@ class ParMainScreen extends StatelessWidget {
               );
             },
             child: Text('공지사항 페이지로 이동'),
+          ),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const DeclareScreen(),
+                ),
+              );
+            },
+            child: Text('건의하기 페이지로 이동'),
           ),
         ],
       ),
