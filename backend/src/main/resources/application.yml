@@ -11,3 +11,7 @@ spring:
   sql:
     init:
       mode: always
+
+jwt:
+  secret-key: ${SECRET_KEY}
+  refresh-key: ${REFRESH_KEY}
