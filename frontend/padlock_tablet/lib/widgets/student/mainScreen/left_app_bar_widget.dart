@@ -1,23 +1,24 @@
 import 'package:flutter/material.dart';
-
-enum MenuItem { home, notification, boardToText, timetable, food }
+import 'package:padlock_tablet/widgets/student/homeWidget/menu_item.dart';
+import 'package:padlock_tablet/widgets/student/mainScreen/left_app_bar_widget.dart';
 
 class LeftAppBarWidget extends StatelessWidget {
-  final MenuItem selectedItem;
-  final Function(MenuItem) onItemSelected;
+  final MenuItemStu selectedItem;
+  final Function(MenuItemStu) onItemSelected;
 
-  const LeftAppBarWidget({
+  LeftAppBarWidget({
     super.key,
     required this.selectedItem,
     required this.onItemSelected,
   });
 
-  final List<MenuItemData> _menuItems = const [
-    MenuItemData('홈', Icons.home, MenuItem.home),
-    MenuItemData('공지사항', Icons.notifications, MenuItem.notification),
-    MenuItemData('필기 변환하기', Icons.edit_note, MenuItem.boardToText),
-    MenuItemData('우리반 시간표', Icons.calendar_today, MenuItem.timetable),
-    MenuItemData('오늘의 급식', Icons.restaurant_menu, MenuItem.food),
+  final List<MenuItemData> _menuItems = [
+    MenuItemData('홈', Icons.home_rounded, MenuItemStu.home),
+    MenuItemData('공지사항', Icons.campaign_rounded, MenuItemStu.notification),
+    MenuItemData('필기 변환하기', Icons.edit_note_rounded, MenuItemStu.boardToText),
+    MenuItemData(
+        '우리반 시간표', Icons.calendar_today_rounded, MenuItemStu.timetable),
+    MenuItemData('오늘의 급식', Icons.restaurant_menu_rounded, MenuItemStu.mealInfo),
   ];
 
   @override
@@ -30,12 +31,16 @@ class LeftAppBarWidget extends StatelessWidget {
           // 로고 영역
           Container(
             padding: const EdgeInsets.all(16),
-            child: const Row(
+            child: Row(
               children: [
-                SizedBox(width: 8),
-                // 이곳에 피그마 이미지가 들어가야 합니다.
-                Text(
-                  'PADLOCKIMAGE',
+                // Image.asset(
+                //   'assets/padlock_icon.png',
+                //   width: 32,
+                //   height: 32,
+                // ),
+                const SizedBox(width: 8),
+                const Text(
+                  'PADLOCK',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -73,6 +78,18 @@ class LeftAppBarWidget extends StatelessWidget {
               },
             ),
           ),
+          // 로그아웃 버튼
+          const Divider(),
+          ListTile(
+            leading: const Icon(
+              Icons.logout_rounded,
+              color: Colors.grey,
+            ),
+            title: const Text('로그아웃'),
+            onTap: () {
+              // 로그아웃 처리
+            },
+          ),
         ],
       ),
     );
@@ -82,7 +99,7 @@ class LeftAppBarWidget extends StatelessWidget {
 class MenuItemData {
   final String title;
   final IconData icon;
-  final MenuItem item;
+  final MenuItemStu item;
 
   const MenuItemData(this.title, this.icon, this.item);
 }
