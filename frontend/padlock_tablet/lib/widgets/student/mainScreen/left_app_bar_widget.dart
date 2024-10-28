@@ -32,10 +32,10 @@ class LeftAppBarWidget extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             child: const Row(
               children: [
-                // 이곳에 피그마 이미지가 들어가야 합니다.
                 SizedBox(width: 8),
+                // 이곳에 피그마 이미지가 들어가야 합니다.
                 Text(
-                  'PADLOCK',
+                  'PADLOCKIMAGE',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:padlock_tablet/widgets/common/mainScreen/header_widget.dart';
 import 'package:padlock_tablet/widgets/student/mainScreen/left_app_bar_widget.dart';
 
 class StuMainScreen extends StatefulWidget {
@@ -44,7 +45,15 @@ class _StuMainScreenState extends State<StuMainScreen> {
           const VerticalDivider(width: 1),
           // 컨텐츠 영역
           Expanded(
-            child: _buildContent(),
+            child: Column(
+              children: [
+                const HeaderWidget(
+                    userName: "정석영", userClass: "대전초 2학년 2반", isStudent: true),
+                Expanded(
+                  child: _buildContent(),
+                ),
+              ],
+            ),
           ),
         ],
       ),
