@@ -1,5 +1,6 @@
 package com.ssafy.padlock.member.domain;
 
+import com.ssafy.padlock.classroom.domain.Classroom;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

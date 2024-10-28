@@ -1,4 +1,4 @@
-package com.ssafy.padlock.member.domain;
+package com.ssafy.padlock.classroom.domain;
 
 import jakarta.persistence.*;
 import lombok.Getter;
