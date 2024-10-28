@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:padlock_tablet/widgets/common/mainScreen/header_widget.dart';
 import 'package:padlock_tablet/widgets/teacher/mainScreen/left_app_bar_widget.dart';
 
 class TeaMainScreen extends StatefulWidget {
@@ -48,7 +49,15 @@ class _TeaMainScreenState extends State<TeaMainScreen> {
           const VerticalDivider(width: 1),
           // 컨텐츠 영역
           Expanded(
-            child: _buildContent(),
+            child: Column(
+              children: [
+                const HeaderWidget(
+                    userName: "채송화", userClass: "대전초 2학년 2반", isStudent: false),
+                Expanded(
+                  child: _buildContent(),
+                ),
+              ],
+            ),
           ),
         ],
       ),
