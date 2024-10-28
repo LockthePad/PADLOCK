@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:padlock_tablet/theme/colors.dart';
 
 class HeaderWidget extends StatelessWidget {
   const HeaderWidget({
@@ -16,42 +17,28 @@ class HeaderWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color primaryColor =
-        isStudent ? const Color(0xFFFFA726) : const Color(0xFF353B66);
+    final String logoAsset =
+        isStudent ? 'assets/yellowLogo.png' : 'assets/navyLogo.png';
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(
-          bottom: BorderSide(
-            color: Color(0xFFE8ECF4),
-            width: 1,
-          ),
-        ),
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // 왼쪽 Padlock 로고
-          Text(
-            'PADLOCK',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: primaryColor,
-            ),
+          Image.asset(
+            logoAsset,
+            height: 40,
           ),
           Row(
-            mainAxisSize: MainAxisSize.min, // Row가 필요한 만큼만 차지하도록
+            mainAxisSize: MainAxisSize.min,
             children: [
               // 프로필 이미지
               Container(
-                width: 48,
-                height: 48,
+                width: 40,
+                height: 40,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.grey[200],
+                  color: AppColors.grey,
                   image: userImage != null
                       ? DecorationImage(
                           image: NetworkImage(userImage!),
@@ -62,7 +49,7 @@ class HeaderWidget extends StatelessWidget {
                 child: userImage == null
                     ? Icon(
                         Icons.person,
-                        color: Colors.grey[600],
+                        color: AppColors.white,
                         size: 30,
                       )
                     : null,
@@ -80,13 +67,13 @@ class HeaderWidget extends StatelessWidget {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF4CAF50),
+                        color: AppColors.successGreen,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Text(
                         '출석완료',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: AppColors.white,
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
                         ),
@@ -95,7 +82,7 @@ class HeaderWidget extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     isStudent
-                        ? '$userClass $userName'
+                        ? '$userClass $userName 학생'
                         : '$userClass $userName 선생님',
                     style: const TextStyle(
                       fontSize: 14,

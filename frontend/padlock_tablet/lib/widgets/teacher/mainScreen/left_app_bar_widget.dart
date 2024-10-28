@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:padlock_tablet/theme/colors.dart';
 
 enum MenuItem {
   home,
@@ -35,29 +36,32 @@ class LeftAppBarWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 250,
-      color: Colors.white,
+      margin: EdgeInsets.all(30),
+      width: 225,
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(
+          color: AppColors.grey,
+        ),
+      ),
       child: Column(
         children: [
-          // 로고 영역
           Container(
-            padding: const EdgeInsets.all(16),
-            child: const Row(
+            padding: const EdgeInsets.all(10),
+            child: Column(
               children: [
-                // 이곳에 피그마 이미지가 들어가야 합니다.
-                SizedBox(width: 8),
-                Text(
-                  'PADLOCKIMAGE',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF353B66),
-                  ),
+                Image.asset(
+                  'assets/backpack.png',
+                  height: 150,
                 ),
+                SizedBox(
+                  height: 10,
+                ),
+                const Divider(),
               ],
             ),
           ),
-          const Divider(),
           // 메뉴 리스트
           Expanded(
             child: ListView.builder(
@@ -69,19 +73,19 @@ class LeftAppBarWidget extends StatelessWidget {
                 return ListTile(
                   leading: Icon(
                     item.icon,
-                    color: isSelected ? const Color(0xFF353B66) : Colors.grey,
+                    color: isSelected ? AppColors.navy : AppColors.grey,
                   ),
                   title: Text(
                     item.title,
                     style: TextStyle(
-                      color:
-                          isSelected ? const Color(0xFF353B66) : Colors.black,
+                      color: isSelected ? AppColors.navy : AppColors.black,
+                      fontSize: 15,
                       fontWeight:
                           isSelected ? FontWeight.bold : FontWeight.normal,
                     ),
                   ),
                   selected: isSelected,
-                  selectedTileColor: const Color(0xFF353B66).withOpacity(0.1),
+                  selectedTileColor: AppColors.navy,
                   onTap: () => onItemSelected(item.item),
                 );
               },
