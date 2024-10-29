@@ -2,14 +2,17 @@ package com.ssafy.padlock.member.service;
 
 import com.ssafy.padlock.classroom.domain.Classroom;
 import com.ssafy.padlock.classroom.repository.ClassroomRepository;
+import com.ssafy.padlock.member.controller.response.ChildResponse;
 import com.ssafy.padlock.member.domain.Member;
 import com.ssafy.padlock.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -18,6 +21,7 @@ public class MemberService {
     private final ClassroomRepository classroomRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @Transactional
     public void saveMembers(String memberData) {
         List<Member> members = new ArrayList<>();
 
@@ -29,6 +33,17 @@ public class MemberService {
         }
 
         memberRepository.saveAll(members);
+    }
+
+    public List<ChildResponse> getChildrenInfo(Long parentsId) {
+        return memberRepository.findAllByParentsId(parentsId).stream()
+                .map(member -> ChildResponse.from(
+                        member.getId(),
+                        member.getName(),
+                        member.getClassRoom().getSchool().getSchoolName() + " "
+                                + member.getClassRoom().getGrade() + "학년 "
+                                + member.getClassRoom().getClassNumber() + "반"))
+                .collect(Collectors.toList());
     }
 
     private Member parseMember(String[] parts) {
