@@ -34,22 +34,22 @@ public class Member {
     private String name;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parent_id")
-    private Member parent;
+    @JoinColumn(name = "parents_id")
+    private Member parents;
 
-    @OneToMany(mappedBy = "parent")
+    @OneToMany(mappedBy = "parents")
     private List<Member> children = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "classroom_id")
     private Classroom classRoom;
 
-    private Member(Role role, String memberCode, String password, String name, Member parent, Classroom classRoom) {
+    private Member(Role role, String memberCode, String password, String name, Member parents, Classroom classRoom) {
         this.role = role;
         this.memberCode = memberCode;
         this.password = password;
         this.name = name;
-        this.parent = parent;
+        this.parents = parents;
         this.classRoom = classRoom;
     }
 
