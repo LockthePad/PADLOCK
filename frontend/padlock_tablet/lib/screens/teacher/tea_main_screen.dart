@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:padlock_tablet/models/teacher/app_info.dart';
+import 'package:padlock_tablet/models/teacher/class_info.dart';
 import 'package:padlock_tablet/widgets/common/mainScreen/header_widget.dart';
 import 'package:padlock_tablet/widgets/teacher/mainScreen/left_app_bar_widget.dart';
+import 'package:padlock_tablet/widgets/teacher/tea_home_widget.dart';
 
 class TeaMainScreen extends StatefulWidget {
   const TeaMainScreen({super.key});
@@ -12,10 +15,38 @@ class TeaMainScreen extends StatefulWidget {
 class _TeaMainScreenState extends State<TeaMainScreen> {
   MenuItem _selectedItem = MenuItem.home;
 
+  // 테스트 데이터
+  final ClassInfo currentClass = ClassInfo(
+    date: '2024년 10월 22일 화요일',
+    period: '1교시',
+    subject: '국어',
+  );
+
+  final List<AppInfo> availableApps = [
+    AppInfo(
+      name: 'Flipnote',
+      iconData: Icons.edit_note,
+      backgroundColor: Colors.red,
+    ),
+    AppInfo(
+      name: 'Wear',
+      iconData: Icons.watch,
+      backgroundColor: Colors.blue,
+    ),
+    AppInfo(
+      name: 'Galaxy Shop',
+      iconData: Icons.shopping_bag,
+      backgroundColor: Colors.blue,
+    ),
+  ];
+
   Widget _buildContent() {
     switch (_selectedItem) {
       case MenuItem.home:
-        return const Center(child: Text('홈'));
+        return TeaHomeWidget(
+          currentClass: currentClass,
+          availableApps: availableApps,
+        );
       case MenuItem.notification:
         return const Center(child: Text('공지사항'));
       case MenuItem.attendanceCheck:
@@ -34,7 +65,9 @@ class _TeaMainScreenState extends State<TeaMainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Row(
+        body: Padding(
+      padding: const EdgeInsets.all(12.0),
+      child: Row(
         children: [
           // LeftAppBarWidget
           LeftAppBarWidget(
@@ -46,7 +79,7 @@ class _TeaMainScreenState extends State<TeaMainScreen> {
             },
           ),
           // 구분선
-          const VerticalDivider(width: 1),
+          // const VerticalDivider(width: 1),
           // 컨텐츠 영역
           Expanded(
             child: Column(
@@ -61,6 +94,6 @@ class _TeaMainScreenState extends State<TeaMainScreen> {
           ),
         ],
       ),
-    );
+    ));
   }
 }

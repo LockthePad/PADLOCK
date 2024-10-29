@@ -65,6 +65,7 @@ flutter:
     - assets/notification.png
     - assets/camera.png
     - assets/stuMainIcon.png
+    - assets/calendar.png
     # - images/a_dot_burr.jpeg
     # - images/a_dot_ham.jpeg
 
