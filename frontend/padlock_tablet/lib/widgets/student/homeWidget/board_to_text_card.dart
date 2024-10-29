@@ -14,21 +14,18 @@ class BoardToTextCard extends StatelessWidget {
     return CardContainer(
       onTap: onTap,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Row(
-            children: [
-              // Image.asset('assets/camera_icon.png', width: 24, height: 24),
-              const SizedBox(width: 8),
-              const Text(
-                '필기 변환하기',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
+          // const SizedBox(height: 8),
+          Image.asset('assets/camera.png', width: 125, height: 125),
+          const Text(
+            '필기 변환하기',
+            style: TextStyle(
+              fontSize: 22,
+              // fontWeight: FontWeight.bold,
+            ),
           ),
+          // const SizedBox(height: 40),
         ],
       ),
     );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:padlock_tablet/theme/colors.dart';
 
 class CardContainer extends StatelessWidget {
   final Widget child;
@@ -21,9 +22,9 @@ class CardContainer extends StatelessWidget {
       padding: padding ?? const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: backgroundColor ?? Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(30),
         border: Border.all(
-          color: const Color(0xFFE8ECF4),
+          color: AppColors.yellow,
           width: 1,
         ),
       ),

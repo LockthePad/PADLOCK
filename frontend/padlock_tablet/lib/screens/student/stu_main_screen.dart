@@ -39,7 +39,7 @@ class _StuMainScreenState extends State<StuMainScreen> {
       '백미밥',
       '돼지국밥',
       '돈육고추장볶음',
-      '떡볶스',
+      '돈까스',
       '상추겉절이',
       '요구르트',
     ],
@@ -85,32 +85,35 @@ class _StuMainScreenState extends State<StuMainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Row(
-        children: [
-          LeftAppBarWidget(
-            selectedItem: _selectedItem,
-            onItemSelected: (MenuItemStu newItem) {
-              setState(() {
-                _selectedItem = newItem;
-              });
-            },
-          ),
-          const VerticalDivider(width: 1),
-          Expanded(
-            child: Column(
-              children: [
-                const HeaderWidget(
-                  userName: "정석영",
-                  userClass: "대전초 2학년 2반",
-                  isStudent: true,
-                ),
-                Expanded(
-                  child: _buildContent(),
-                ),
-              ],
+      body: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Row(
+          children: [
+            LeftAppBarWidget(
+              selectedItem: _selectedItem,
+              onItemSelected: (MenuItemStu newItem) {
+                setState(() {
+                  _selectedItem = newItem;
+                });
+              },
             ),
-          ),
-        ],
+            // const VerticalDivider(width: 1),
+            Expanded(
+              child: Column(
+                children: [
+                  const HeaderWidget(
+                    userName: "정석영",
+                    userClass: "대전초 2학년 2반",
+                    isStudent: true,
+                  ),
+                  Expanded(
+                    child: _buildContent(),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

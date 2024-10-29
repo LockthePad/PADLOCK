@@ -27,10 +27,13 @@ class StuHomeWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(24.0),
+      padding: const EdgeInsets.only(left: 24, right: 24, bottom: 24),
       child: Column(
         children: [
-          CurrentClassBanner(classInfo: currentClass),
+          SizedBox(
+            height: 230,
+            child: CurrentClassBanner(classInfo: currentClass),
+          ),
           const SizedBox(height: 24),
           Expanded(
             child: Row(

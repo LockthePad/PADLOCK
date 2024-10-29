@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:padlock_tablet/models/students/app_info.dart';
+import 'package:padlock_tablet/theme/colors.dart';
 import 'package:padlock_tablet/widgets/common/card_container.dart';
 
 class AvailableAppsCard extends StatelessWidget {
@@ -12,7 +13,13 @@ class AvailableAppsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CardContainer(
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.only(top: 20, bottom: 20, left: 30, right: 20),
+      decoration: BoxDecoration(
+        color: AppColors.paleYellow,
+        borderRadius: BorderRadius.circular(30),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -20,7 +27,7 @@ class AvailableAppsCard extends StatelessWidget {
             '사용 가능한 앱',
             style: TextStyle(
               fontSize: 18,
-              fontWeight: FontWeight.bold,
+              // fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 16),
