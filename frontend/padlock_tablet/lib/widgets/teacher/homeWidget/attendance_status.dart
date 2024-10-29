@@ -98,7 +98,6 @@ class AttendanceStatus extends StatelessWidget {
   Widget _buildAttendanceGraph(int total) {
     double presentPercentage = total > 0 ? (presentCount / total) * 100 : 0;
     double latePercentage = total > 0 ? (lateCount / total) * 100 : 0;
-    double absentPercentage = total > 0 ? (absentCount / total) * 100 : 0;
 
     return Stack(
       alignment: Alignment.center,

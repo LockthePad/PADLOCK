@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:padlock_tablet/models/teacher/app_info.dart';
 import 'package:padlock_tablet/models/teacher/class_info.dart';
-import 'package:padlock_tablet/widgets/common/mainScreen/header_widget.dart';
+import 'package:padlock_tablet/widgets/teacher/mainScreen/header_widget.dart';
 import 'package:padlock_tablet/widgets/teacher/mainScreen/left_app_bar_widget.dart';
 import 'package:padlock_tablet/widgets/teacher/tea_home_widget.dart';
+import 'package:padlock_tablet/widgets/teacher/tea_suggestion_widget.dart';
 
 class TeaMainScreen extends StatefulWidget {
   const TeaMainScreen({super.key});
@@ -40,6 +41,64 @@ class _TeaMainScreenState extends State<TeaMainScreen> {
     ),
   ];
 
+  // 테스트용 건의함 데이터
+  final List<Map<String, dynamic>> suggestions = [
+    {
+      'content': '자리 바꾸고 싶어요.',
+      'timestamp': '2024.10.23 10:59',
+      'author': '정석영',
+      'isRead': false,
+    },
+    {
+      'content': '책상이 삐걱거려요.',
+      'timestamp': '2024.10.22 14:30',
+      'author': '홍수인',
+      'isRead': true,
+    },
+    {
+      'content': '창문 고쳐주세요.',
+      'timestamp': '2024.10.21 09:20',
+      'author': '김철수',
+      'isRead': false,
+    },
+    {
+      'content': '자리 바꾸고 싶어요.',
+      'timestamp': '2024.10.23 10:59',
+      'author': '정석영',
+      'isRead': false,
+    },
+    {
+      'content': '책상이 삐걱거려요.',
+      'timestamp': '2024.10.22 14:30',
+      'author': '홍수인',
+      'isRead': true,
+    },
+    {
+      'content': '창문 고쳐주세요.',
+      'timestamp': '2024.10.21 09:20',
+      'author': '김철수',
+      'isRead': false,
+    },
+    {
+      'content': '자리 바꾸고 싶어요.',
+      'timestamp': '2024.10.23 10:59',
+      'author': '정석영',
+      'isRead': false,
+    },
+    {
+      'content': '책상이 삐걱거려요.',
+      'timestamp': '2024.10.22 14:30',
+      'author': '홍수인',
+      'isRead': true,
+    },
+    {
+      'content': '창문 고쳐주세요.',
+      'timestamp': '2024.10.21 09:20',
+      'author': '김철수',
+      'isRead': false,
+    },
+  ];
+
   Widget _buildContent() {
     switch (_selectedItem) {
       case MenuItem.home:
@@ -56,7 +115,8 @@ class _TeaMainScreenState extends State<TeaMainScreen> {
       case MenuItem.mealInfo:
         return const Center(child: Text('이번달 급식'));
       case MenuItem.rightInfo:
-        return const Center(child: Text('건의함 보기'));
+        // 건의함 보기 메뉴를 선택하면 TeaSuggestionWidget이 표시됩니다.
+        return TeaSuggestionWidget(suggestions: suggestions);
       case MenuItem.counseling:
         return const Center(child: Text('학부모상담 신청현황'));
     }
@@ -65,35 +125,36 @@ class _TeaMainScreenState extends State<TeaMainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: Padding(
-      padding: const EdgeInsets.all(12.0),
-      child: Row(
-        children: [
-          // LeftAppBarWidget
-          LeftAppBarWidget(
-            selectedItem: _selectedItem,
-            onItemSelected: (MenuItem newItem) {
-              setState(() {
-                _selectedItem = newItem;
-              });
-            },
-          ),
-          // 구분선
-          // const VerticalDivider(width: 1),
-          // 컨텐츠 영역
-          Expanded(
-            child: Column(
-              children: [
-                const HeaderWidget(
-                    userName: "채송화", userClass: "대전초 2학년 2반", isStudent: false),
-                Expanded(
-                  child: _buildContent(),
-                ),
-              ],
+      body: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Row(
+          children: [
+            // LeftAppBarWidget
+            LeftAppBarWidget(
+              selectedItem: _selectedItem,
+              onItemSelected: (MenuItem newItem) {
+                setState(() {
+                  _selectedItem = newItem;
+                });
+              },
             ),
-          ),
-        ],
+            // 컨텐츠 영역
+            Expanded(
+              child: Column(
+                children: [
+                  const HeaderWidget(
+                    userName: "채송화",
+                    userClass: "대전초 2학년 2반",
+                  ),
+                  Expanded(
+                    child: _buildContent(),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
-    ));
+    );
   }
 }

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:padlock_tablet/models/teacher/app_info.dart';
 import 'package:padlock_tablet/models/teacher/class_info.dart';
 import 'package:padlock_tablet/models/teacher/consultation_info.dart';
-import 'package:padlock_tablet/widgets/student/homeWidget/board_to_text_card.dart';
 import 'package:padlock_tablet/widgets/teacher/homeWidget/attendance_status.dart';
 import 'package:padlock_tablet/widgets/teacher/homeWidget/available_apps_card.dart';
 import 'package:padlock_tablet/widgets/teacher/homeWidget/consultation_status.dart';
