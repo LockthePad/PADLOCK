@@ -21,7 +21,7 @@ class HeaderWidget extends StatelessWidget {
         isStudent ? 'assets/yellowLogo.png' : 'assets/navyLogo.png';
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+      padding: const EdgeInsets.only(right: 30, top: 30, bottom: 10),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -82,7 +82,7 @@ class HeaderWidget extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     isStudent
-                        ? '$userClass $userName 학생'
+                        ? '$userClass $userName'
                         : '$userClass $userName 선생님',
                     style: const TextStyle(
                       fontSize: 14,
