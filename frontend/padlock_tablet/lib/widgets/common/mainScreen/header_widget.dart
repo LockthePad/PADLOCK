@@ -21,7 +21,7 @@ class HeaderWidget extends StatelessWidget {
         isStudent ? 'assets/yellowLogo.png' : 'assets/navyLogo.png';
 
     return Container(
-      padding: const EdgeInsets.only(right: 30, top: 30, bottom: 10),
+      padding: const EdgeInsets.only(right: 50, top: 30, bottom: 10),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [

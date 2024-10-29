@@ -51,12 +51,15 @@ class LeftAppBarWidget extends StatelessWidget {
             padding: const EdgeInsets.all(10),
             child: Column(
               children: [
+                SizedBox(
+                  height: 20,
+                ),
                 Image.asset(
                   'assets/backpack.png',
                   height: 150,
                 ),
                 SizedBox(
-                  height: 10,
+                  height: 20,
                 ),
                 const Divider(),
               ],
@@ -71,6 +74,7 @@ class LeftAppBarWidget extends StatelessWidget {
                 final isSelected = selectedItem == item.item;
 
                 return ListTile(
+                  visualDensity: VisualDensity(vertical: -4), // 내부 밀도 조정
                   leading: Icon(
                     item.icon,
                     color: isSelected ? AppColors.navy : AppColors.grey,
@@ -85,11 +89,27 @@ class LeftAppBarWidget extends StatelessWidget {
                     ),
                   ),
                   selected: isSelected,
-                  selectedTileColor: AppColors.navy,
+                  selectedTileColor: AppColors.navy.withOpacity(0.1),
                   onTap: () => onItemSelected(item.item),
                 );
               },
             ),
+          ),
+          ListTile(
+            leading: const Icon(
+              Icons.logout_rounded,
+              color: AppColors.grey,
+            ),
+            title: const Text('로그아웃',
+                style: TextStyle(
+                  fontSize: 15,
+                )),
+            onTap: () {
+              // 로그아웃 처리
+            },
+          ),
+          SizedBox(
+            height: 25,
           ),
         ],
       ),
