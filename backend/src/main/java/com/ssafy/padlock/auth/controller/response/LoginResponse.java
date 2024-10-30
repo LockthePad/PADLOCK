@@ -8,11 +8,13 @@ import lombok.Getter;
 @AllArgsConstructor
 public class LoginResponse {
     private Long memberId;
+    private Long classroomId;
     private String role;
     private String accessToken;
     private String refreshToken;
 
     public static LoginResponse from(Member member, String accessToken, String refreshToken) {
-        return new LoginResponse(member.getId(), member.getRole().name(), accessToken, refreshToken);
+        Long classroomId = (member.getClassRoom() != null) ? member.getClassRoom().getId() : null;
+        return new LoginResponse(member.getId(), classroomId, member.getRole().name(), accessToken, refreshToken);
     }
 }
