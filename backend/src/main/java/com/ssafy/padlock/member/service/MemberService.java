@@ -5,6 +5,7 @@ import com.ssafy.padlock.classroom.repository.ClassroomRepository;
 import com.ssafy.padlock.member.controller.response.ChildResponse;
 import com.ssafy.padlock.member.domain.Member;
 import com.ssafy.padlock.member.repository.MemberRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -12,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,10 +37,35 @@ public class MemberService {
         memberRepository.saveAll(members);
     }
 
+    @Transactional
+    public void addStudent(Long classroomId, int studentNumber, String studentName, String parentCode) {
+        Classroom classroom = findClassroomById(classroomId);
+        String memberCode = String.format("STD-%d-%d-%02d", classroom.getGrade(), classroom.getClassNumber(), studentNumber);
+        String password = generateRandomString(6);
+        memberRepository.save(
+                Member.student(memberCode, passwordEncoder.encode(password), studentName, createParents(parentCode), classroom)
+        );
+        classroom.addStudent();
+    }
+
+    private Member createParents(String parentCode) {
+        if (parentCode == null) {
+            String code = "PAR-" + generateRandomString(3);
+            String password = generateRandomString(6);
+            return memberRepository.save(Member.parent(code, passwordEncoder.encode(password)));
+        }
+        return memberRepository.findByMemberCode(parentCode)
+                .orElseThrow(() -> new EntityNotFoundException("부모 코드가 존재하지 않습니다: " + parentCode));
+    }
+
     public List<ChildResponse> getChildrenInfo(Long parentsId) {
         return memberRepository.findAllByParentsId(parentsId).stream()
                 .map(ChildResponse::from)
                 .collect(Collectors.toList());
+    }
+
+    public String generateRandomString(int length) {
+        return UUID.randomUUID().toString().replaceAll("-", "").substring(0, length);
     }
 
     private Member parseMember(String[] parts) {
@@ -63,5 +90,12 @@ public class MemberService {
             case "TEACHER" -> Member.teacher(memberCode, encodedPassword, name);
             default -> throw new IllegalArgumentException("유효하지 않은 ROLE: " + role);
         };
+    }
+
+    private Classroom findClassroomById(Long classroomId) {
+        return classroomRepository.findById(classroomId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        String.format("학급(classroomId: %d)이 존재하지 않습니다.", classroomId)
+                ));
     }
 }

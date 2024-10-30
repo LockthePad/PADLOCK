@@ -27,4 +27,8 @@ public class Classroom {
 
     @Column(name = "student_count")
     private int studentCount;
+
+    public void addStudent() {
+        this.studentCount++;
+    }
 }
