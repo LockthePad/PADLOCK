@@ -1,6 +1,5 @@
 package com.ssafy.padlock.classroom.domain;
 
-import com.ssafy.padlock.member.domain.Member;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,10 +18,6 @@ public class Classroom {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "school_id", nullable = false)
     private School school;
-
-    @OneToOne
-    @JoinColumn(name = "teacher_id")
-    private Member teacher;
 
     @Column(name = "grade", nullable = false)
     private int grade;

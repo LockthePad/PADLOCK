@@ -37,12 +37,7 @@ public class MemberService {
 
     public List<ChildResponse> getChildrenInfo(Long parentsId) {
         return memberRepository.findAllByParentsId(parentsId).stream()
-                .map(member -> ChildResponse.from(
-                        member.getId(),
-                        member.getName(),
-                        member.getClassRoom().getSchool().getSchoolName() + " "
-                                + member.getClassRoom().getGrade() + "학년 "
-                                + member.getClassRoom().getClassNumber() + "반"))
+                .map(ChildResponse::from)
                 .collect(Collectors.toList());
     }
 

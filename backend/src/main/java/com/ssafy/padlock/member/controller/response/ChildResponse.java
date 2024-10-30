@@ -1,5 +1,6 @@
 package com.ssafy.padlock.member.controller.response;
 
+import com.ssafy.padlock.member.domain.Member;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,9 +12,18 @@ public class ChildResponse {
     private Long studentId;
     private String studentName;
     private String schoolInfo;
-//    private String attendanceStatus;
+    private Long classroomId;
 
-    public static ChildResponse from(Long studentId, String studentName, String schoolInfo) {
-        return new ChildResponse(studentId, studentName, schoolInfo);
+    public static ChildResponse from(Member member) {
+        String schoolInfo = member.getClassRoom().getSchool().getSchoolName() + " "
+                + member.getClassRoom().getGrade() + "학년 "
+                + member.getClassRoom().getClassNumber() + "반";
+
+        return new ChildResponse(
+                member.getId(),
+                member.getName(),
+                schoolInfo,
+                member.getClassRoom().getId()
+        );
     }
 }
