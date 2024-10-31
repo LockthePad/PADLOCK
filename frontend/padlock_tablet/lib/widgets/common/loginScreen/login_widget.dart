@@ -4,6 +4,7 @@
 import 'package:flutter/material.dart';
 import 'package:padlock_tablet/screens/student/stu_main_screen.dart';
 import 'package:padlock_tablet/screens/teacher/tea_main_screen.dart';
+import 'package:padlock_tablet/widgets/kotilin/sample.dart';
 
 class LoginWidget extends StatelessWidget {
   const LoginWidget({super.key});
@@ -41,6 +42,7 @@ class LoginWidget extends StatelessWidget {
             },
             child: Text('교사 메인페이지로 이동'),
           ),
+          ChromeLockWidget(),
         ],
       ),
     );
