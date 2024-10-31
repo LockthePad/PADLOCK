@@ -17,9 +17,9 @@ class ParMainScreen extends StatelessWidget {
       ),
       body: Column(
         children: [
-          Text('부모 메인페이지입니다.'),
-          UserinfoWidget(),
-          ParAttendanceStateWidget(),
+          const Text('부모 메인페이지입니다.'),
+          // UserinfoWidget(),
+          const ParAttendanceStateWidget(),
           GestureDetector(
             onTap: () {
               Navigator.push(
@@ -29,7 +29,7 @@ class ParMainScreen extends StatelessWidget {
                 ),
               );
             },
-            child: Text('GPS 확인 페이지로 이동'),
+            child: const Text('GPS 확인 페이지로 이동'),
           ),
           GestureDetector(
             onTap: () {
@@ -40,7 +40,7 @@ class ParMainScreen extends StatelessWidget {
                 ),
               );
             },
-            child: Text('상담예약 페이지로 이동'),
+            child: const Text('상담예약 페이지로 이동'),
           ),
           GestureDetector(
             onTap: () {
@@ -51,7 +51,7 @@ class ParMainScreen extends StatelessWidget {
                 ),
               );
             },
-            child: Text('공지사항 페이지로 이동'),
+            child: const Text('공지사항 페이지로 이동'),
           ),
           GestureDetector(
             onTap: () {
@@ -62,7 +62,7 @@ class ParMainScreen extends StatelessWidget {
                 ),
               );
             },
-            child: Text('건의하기 페이지로 이동'),
+            child: const Text('건의하기 페이지로 이동'),
           ),
         ],
       ),

@@ -12,7 +12,7 @@ class _ParAttendanceStateWidgetState extends State<ParAttendanceStateWidget> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      child: Text('부모님용 학생 출결현황 위젯'),
+      child: const Text('부모님용 학생 출결현황 위젯'),
     );
   }
 }

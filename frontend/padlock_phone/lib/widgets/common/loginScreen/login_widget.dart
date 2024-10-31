@@ -15,10 +15,12 @@ class LoginWidget extends StatelessWidget {
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 40),
-            child: Image.asset('assets/images/LOGIN.png'),
-          ),
+          // Padding(
+          //   // padding: const EdgeInsets.symmetric(vertical: 70),
+          //   child: Image.asset('assets/images/LOGIN.png'),
+          // ),
+          Image.asset('assets/images/LOGIN.png'),
+          const SizedBox(height: 70),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 40.0, vertical: 5),
             child: TextField(
@@ -40,7 +42,7 @@ class LoginWidget extends StatelessWidget {
                   labelStyle:
                       const TextStyle(color: Color.fromRGBO(132, 132, 132, 1)),
                   contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 18)),
+                      const EdgeInsets.symmetric(horizontal: 25, vertical: 18)),
             ),
           ),
           Padding(
@@ -64,7 +66,7 @@ class LoginWidget extends StatelessWidget {
                 labelStyle:
                     const TextStyle(color: Color.fromRGBO(132, 132, 132, 1)),
                 contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+                    const EdgeInsets.symmetric(horizontal: 25, vertical: 18),
               ),
             ),
           ),
