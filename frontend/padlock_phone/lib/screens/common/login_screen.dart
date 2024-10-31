@@ -10,7 +10,7 @@ class LoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // column 대신에 scaffold를 쓰는게 나을 수도 있습니다.
-    return Column(
+    return const Column(
       children: [
         Expanded(child: LoginWidget()),
       ],
