@@ -6,6 +6,7 @@ import 'package:padlock_tablet/widgets/teacher/mainScreen/left_app_bar_widget.da
 import 'package:padlock_tablet/widgets/teacher/tea_counseling_widget.dart';
 import 'package:padlock_tablet/widgets/teacher/tea_home_widget.dart';
 import 'package:padlock_tablet/widgets/teacher/tea_suggestion_widget.dart';
+import 'package:padlock_tablet/widgets/teacher/tea_timetable_widget.dart';
 
 class TeaMainScreen extends StatefulWidget {
   const TeaMainScreen({super.key});
@@ -131,7 +132,7 @@ class _TeaMainScreenState extends State<TeaMainScreen> {
       case MenuItem.attendanceCheck:
         return const Center(child: Text('우리반 출석현황'));
       case MenuItem.timetable:
-        return const Center(child: Text('우리반 시간표'));
+        return TeaTimetableWidget();
       case MenuItem.mealInfo:
         return const Center(child: Text('이번달 급식'));
       case MenuItem.rightInfo:
