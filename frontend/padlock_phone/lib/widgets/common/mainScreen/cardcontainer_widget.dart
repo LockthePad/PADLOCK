@@ -16,17 +16,24 @@ class CardContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 7),
-      margin: const EdgeInsets.symmetric(horizontal: 25, vertical: 10),
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      margin: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
       decoration: BoxDecoration(
         border: Border.all(color: AppColors.yellow, width: 2),
         borderRadius: BorderRadius.circular(50),
       ),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         // mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          if (myicon != null) Image.asset('assets/images/$myicon.png'),
+          if (myicon != null)
+            Image.asset(
+              'assets/images/$myicon.png',
+              width: 130,
+              height: 120,
+            ),
           Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 subtitle,
@@ -39,6 +46,7 @@ class CardContainer extends StatelessWidget {
               ),
             ],
           ),
+          const SizedBox(width: 40)
         ],
       ),
     );

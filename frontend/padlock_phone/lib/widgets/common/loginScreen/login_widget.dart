@@ -15,10 +15,6 @@ class LoginWidget extends StatelessWidget {
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Padding(
-          //   // padding: const EdgeInsets.symmetric(vertical: 70),
-          //   child: Image.asset('assets/images/LOGIN.png'),
-          // ),
           Image.asset('assets/images/LOGIN.png'),
           const SizedBox(height: 70),
           Padding(
@@ -109,40 +105,3 @@ class LoginWidget extends StatelessWidget {
     );
   }
 }
-
-
-  // @override
-  // Widget build(BuildContext context) {
-  //   return Scaffold(
-  //     backgroundColor: Colors.white,
-  //     body: Column(
-  //       mainAxisSize: MainAxisSize.min,
-  //       children: [
-  //         GestureDetector(
-  //           onTap: () {
-  //             // 로그인 화면까지 되돌리기 막기 위해서 pushReplacement로 나중에 고쳐야합니다.
-  //             Navigator.push(
-  //               context,
-  //               MaterialPageRoute(
-  //                 builder: (context) => const StuMainScreen(),
-  //               ),
-  //             );
-  //           },
-  //           child: const Text('로그인(학생 메인)'),
-  //         ),
-  //         GestureDetector(
-  //           onTap: () {
-  //             // 로그인 화면까지 되돌리기 막기 위해서 pushReplacement로 나중에 고쳐야합니다.
-  //             Navigator.push(
-  //               context,
-  //               MaterialPageRoute(
-  //                 builder: (context) => const ParMainScreen(),
-  //               ),
-  //             );
-  //           },
-  //           child: const Text('로그인 (부모 메인)'),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }

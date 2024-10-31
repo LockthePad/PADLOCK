@@ -15,8 +15,8 @@ class UserinfoWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-        child: Column(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           userClass,
@@ -25,14 +25,28 @@ class UserinfoWidget extends StatelessWidget {
             fontWeight: FontWeight.w500,
           ),
         ),
-        Text(
-          '$userName학생',
-          style: const TextStyle(
-            fontSize: 30,
-            fontWeight: FontWeight.w800,
-          ),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              '$userName학생',
+              style: const TextStyle(
+                fontSize: 30,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Padding(
+              padding: const EdgeInsets.only(top: 5),
+              child: Image.asset(
+                'assets/images/Logout.png',
+                width: 30,
+                height: 30,
+              ),
+            ),
+          ],
         ),
       ],
-    ));
+    );
   }
 }

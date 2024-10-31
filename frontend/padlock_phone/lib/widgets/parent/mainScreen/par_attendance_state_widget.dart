@@ -11,8 +11,14 @@ class ParAttendanceStateWidget extends StatefulWidget {
 class _ParAttendanceStateWidgetState extends State<ParAttendanceStateWidget> {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: const Text('부모님용 학생 출결현황 위젯'),
+    return Column(
+      children: [
+        Image.asset('assets/images/par_att_complete.png'),
+        const Text(
+          '출석완료',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+        ),
+      ],
     );
   }
 }

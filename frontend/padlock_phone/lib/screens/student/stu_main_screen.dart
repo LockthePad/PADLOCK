@@ -13,7 +13,17 @@ class StuMainScreen extends StatelessWidget {
     return const Scaffold(
       body: Column(
         children: [
-          SizedBox(height: 120),
+          SizedBox(height: 63),
+          Align(
+            alignment: Alignment.centerRight,
+            child: Padding(
+              padding: EdgeInsets.only(right: 19),
+              child: Icon(
+                Icons.notifications_none_rounded,
+                size: 33,
+              ),
+            ),
+          ),
           Padding(
             padding: EdgeInsets.only(left: 50),
             child: Align(
