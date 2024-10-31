@@ -1,0 +1,17 @@
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: jdbc:mariadb://padlock.chs6oo82883l.ap-northeast-2.rds.amazonaws.com:3306/padlock
+    username: ${DEV_NAME}
+    password: ${DEV_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MariaDBDialect
+  flyway:
+    enabled: false
