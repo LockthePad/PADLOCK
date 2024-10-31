@@ -38,11 +38,13 @@ class _TeaTimetableWidgetState extends State<TeaTimetableWidget> {
         children: [
           // 타이틀 위젯
           const TitleWidget(title: '우리반 시간표'),
-          const SizedBox(height: 20),
+          const SizedBox(height: 10),
           Expanded(
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                const SizedBox(width: 20),
+
                 // 왼쪽 과목 카드 리스트
                 Expanded(
                   flex: 1,
@@ -60,16 +62,23 @@ class _TeaTimetableWidgetState extends State<TeaTimetableWidget> {
                     },
                   ),
                 ),
-                const SizedBox(width: 10),
+
+                const SizedBox(width: 20),
                 const VerticalDivider(
+                  width: 20,
+                ),
+                SizedBox(
                   width: 20,
                 ),
                 // 오른쪽 시간표 표
                 Expanded(
                   flex: 6,
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
+                      SizedBox(
+                        height: 20,
+                      ),
                       // 요일 헤더
                       Row(
                         children: [
@@ -125,7 +134,7 @@ class _TeaTimetableWidgetState extends State<TeaTimetableWidget> {
                                               borderRadius:
                                                   BorderRadius.circular(50),
                                               color: candidateData.isNotEmpty
-                                                  ? AppColors.navy
+                                                  ? AppColors.lilac
                                                   : AppColors.white,
                                             ),
                                             child: Center(
@@ -133,7 +142,7 @@ class _TeaTimetableWidgetState extends State<TeaTimetableWidget> {
                                                 subject ?? '',
                                                 style: TextStyle(
                                                   fontSize: 20,
-                                                  color: Colors.black,
+                                                  color: AppColors.black,
                                                 ),
                                               ),
                                             ),
@@ -148,8 +157,14 @@ class _TeaTimetableWidgetState extends State<TeaTimetableWidget> {
                           }),
                         ),
                       ),
+                      SizedBox(
+                        height: 20,
+                      ),
                     ],
                   ),
+                ),
+                SizedBox(
+                  width: 20,
                 ),
               ],
             ),
