@@ -4,7 +4,6 @@ import com.ssafy.padlock.auth.supports.LoginMember;
 import com.ssafy.padlock.counsel.controller.request.CounselParentRequest;
 import com.ssafy.padlock.counsel.controller.request.CounselTeacherRequest;
 import com.ssafy.padlock.counsel.controller.response.CounselAvailableTimeResponse;
-import com.ssafy.padlock.counsel.domain.Counsel;
 import com.ssafy.padlock.counsel.domain.CounselAvailableTime;
 import com.ssafy.padlock.counsel.service.CounselService;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
+        import java.time.LocalDate;
 import java.util.List;
 
 @RestController
