@@ -9,5 +9,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class CounselParentRequest {
     private Long teacherId;
+    private Long studentId;
     private Long counselAvailableTimeId;
+
+    public CounselParentRequest(Long teacherId, Long counselAvailableTimeId) {
+        this.teacherId = teacherId;
+        this.counselAvailableTimeId = counselAvailableTimeId;
+    }
 }

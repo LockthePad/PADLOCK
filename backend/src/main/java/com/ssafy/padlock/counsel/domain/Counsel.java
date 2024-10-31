@@ -20,6 +20,9 @@ public class Counsel {
     @Column(name = "teacher_id", nullable = false)
     private Long teacherId;
 
+    @Column(name = "student_id", nullable = false)
+    private Long studentId;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "available_time_id", referencedColumnName = "counsel_available_time_id")
     private CounselAvailableTime counselAvailableTime;
@@ -27,6 +30,13 @@ public class Counsel {
     public Counsel(Long parentId, Long teacherId, CounselAvailableTime counselAvailableTime) {
         this.parentId = parentId;
         this.teacherId = teacherId;
+        this.counselAvailableTime = counselAvailableTime;
+    }
+
+    public Counsel(Long parentId, Long teacherId, Long studentId, CounselAvailableTime counselAvailableTime) {
+        this.parentId = parentId;
+        this.teacherId = teacherId;
+        this.studentId = studentId;
         this.counselAvailableTime = counselAvailableTime;
     }
 }

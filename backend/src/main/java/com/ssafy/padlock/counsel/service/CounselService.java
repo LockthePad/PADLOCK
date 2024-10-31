@@ -19,6 +19,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.YearMonth;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -63,8 +64,6 @@ public class CounselService {
         Member parent = memberRepository.findById(parentId)
                 .orElseThrow(() -> new IllegalArgumentException("학부모가 존재하지 않습니다."));
 
-        System.out.println(parent.getRole().toString());
-
         if(!parent.getRole().equals(Role.PARENTS)){
             throw new IllegalArgumentException("학부모만 취소가 가능합니다.");
         }
@@ -93,7 +92,29 @@ public class CounselService {
             throw new IllegalArgumentException("예약이 불가능한 시간입니다.");
         }
 
-        Counsel counsel = new Counsel(parentId, counselParentRequest.getTeacherId(), counselAvailableTime);
+        Member teacher = memberRepository.findById(counselParentRequest.getTeacherId())
+                .orElseThrow(() -> new IllegalArgumentException("해당 교사가 존재하지 않습니다."));
+
+        Member student = memberRepository.findById(counselParentRequest.getStudentId())
+                .orElseThrow(() -> new IllegalArgumentException("해당 학생이 존재하지 않습니다."));
+
+        if(!Objects.equals(teacher.getId(), counselAvailableTime.getTeacherId())){
+            throw new IllegalArgumentException("상담 신청이 불가능합니다.(교사에 해당하지 않는 상담 시간)");
+        }
+
+        if(!student.getRole().equals(Role.STUDENT) && teacher.getRole().equals(Role.TEACHER)){
+            throw new IllegalArgumentException("신청 불가능");
+        }
+
+        if(student.getClassRoom().getClassNumber() != teacher.getClassRoom().getClassNumber()){
+            throw new IllegalArgumentException("신청 불가능(해당 담임선생님이 아닙니다)");
+        }
+
+        if (counselAvailableTime.getCounselAvailableDate().isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("지난 날짜로 상담을 신청할 수 없습니다.");
+        }
+
+        Counsel counsel = new Counsel(parentId, counselParentRequest.getTeacherId(), counselParentRequest.getStudentId(), counselAvailableTime);
 
         counselAvailableTime.changeClosed(3);
         counselRepository.save(counsel);
@@ -115,6 +136,10 @@ public class CounselService {
 
         CounselAvailableTime counselAvailableTime = counselAvailableTimeRepository.findById(counselId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 상담시간이 존재하지 않습니다."));
+
+        if(!Objects.equals(counselAvailableTime.getTeacherId(), teacherId)){
+            throw new IllegalArgumentException("해당하는 선생님의 상담 시간이 아닙니다.");
+        }
 
         if(counselAvailableTime.getClosed() == 1){
             counselAvailableTime.changeClosed(2);
@@ -149,16 +174,27 @@ public class CounselService {
                                     (availableTime.getCounselAvailableDate().isEqual(currentDate) &&
                                             availableTime.getCounselAvailableTime().isAfter(currentTime)));
                 })
-                .map(counsel -> new CounselAvailableTimeResponse(
-                        counsel.getId(),
-                        counsel.getParentId(),
-                        counsel.getTeacherId(),
-                        counsel.getCounselAvailableTime().getId(),
-                        counsel.getCounselAvailableTime().getCounselAvailableDate(),
-                        counsel.getCounselAvailableTime().getCounselAvailableTime()
-                ))
+                .map(counsel -> {
+                    String studentName = null;
+                    if (counsel.getStudentId() != null) {
+                        Member student = memberRepository.findById(counsel.getStudentId())
+                                .orElseThrow(() -> new IllegalArgumentException("해당 학생이 존재하지 않습니다."));
+                        studentName = student.getName();
+                    }
+
+                    return new CounselAvailableTimeResponse(
+                            counsel.getId(),
+                            counsel.getParentId(),
+                            counsel.getTeacherId(),
+                            studentName,  // 조회한 이름 전달
+                            counsel.getCounselAvailableTime().getId(),
+                            counsel.getCounselAvailableTime().getCounselAvailableDate(),
+                            counsel.getCounselAvailableTime().getCounselAvailableTime()
+                    );
+                })
                 .collect(Collectors.toList());
     }
+
 
     //예약 가능 시간 데이터베이스에 추가
     @Transactional
