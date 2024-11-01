@@ -11,7 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-        import java.time.LocalDate;
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -23,6 +23,12 @@ public class CounselController {
     @GetMapping("/counsel-available-time")
     public ResponseEntity<List<CounselAvailableTime>> getCounselAvailableTimeTeacher(@LoginMember Long teacherId, @RequestParam LocalDate date) {
         List<CounselAvailableTime> availableTimes = counselService.getAvailableTimes(teacherId, date);
+        return ResponseEntity.ok(availableTimes);
+    }
+
+    @GetMapping("/counsel-available-time/parent")
+    public ResponseEntity<List<CounselAvailableTime>> getCounselAvailableTimeParent(@LoginMember Long id, @RequestParam LocalDate date, @RequestParam Long teacherId) {
+        List<CounselAvailableTime> availableTimes = counselService.getAvailableTimesParent(id, teacherId, date);
         return ResponseEntity.ok(availableTimes);
     }
 
