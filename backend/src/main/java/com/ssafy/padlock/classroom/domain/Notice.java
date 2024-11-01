@@ -35,4 +35,9 @@ public class Notice {
         this.classroom = classroom;
         this.createdAt = LocalDateTime.now();
     }
+
+    public void updateContent(String title, String content) {
+        this.title = title;
+        this.content = content;
+    }
 }
