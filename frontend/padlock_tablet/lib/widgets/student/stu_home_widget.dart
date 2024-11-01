@@ -9,12 +9,14 @@ import 'package:padlock_tablet/widgets/student/homeWidget/current_class_banner.d
 import 'package:padlock_tablet/widgets/student/homeWidget/meal_card.dart';
 import 'package:padlock_tablet/widgets/student/homeWidget/notice_card.dart';
 import 'package:padlock_tablet/widgets/student/homeWidget/timetable_card.dart';
+import 'package:camera/camera.dart';
 
 class StuHomeWidget extends StatelessWidget {
   final ClassInfo currentClass;
   final List<TimeTableItem> timeTable;
   final MealInfo meal;
   final List<AppInfo> availableApps;
+  final Function(XFile) onPictureTaken;
 
   const StuHomeWidget({
     super.key,
@@ -22,6 +24,7 @@ class StuHomeWidget extends StatelessWidget {
     required this.timeTable,
     required this.meal,
     required this.availableApps,
+    required this.onPictureTaken,
   });
 
   @override
@@ -57,7 +60,7 @@ class StuHomeWidget extends StatelessWidget {
                             // BoardToTextCard를 오른쪽 절반 공간에 배치
                             Expanded(
                               child: BoardToTextCard(
-                                onTap: () {/* 처리 */},
+                                onPictureTaken: onPictureTaken,
                               ),
                             ),
                           ],
