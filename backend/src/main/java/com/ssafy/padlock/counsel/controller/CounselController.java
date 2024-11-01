@@ -56,6 +56,12 @@ public class CounselController {
         return ResponseEntity.ok(parentCounsel);
     }
 
+    @GetMapping("/today-counsel")
+    public ResponseEntity<?> getTodayCounsel(@LoginMember Long id) {
+        List<CounselAvailableTimeResponse> counselForToday = counselService.getCounselForToday(id);
+        return ResponseEntity.ok(counselForToday);
+    }
+
     @PreAuthorize("hasRole('TEACHER')")
     @PutMapping("/change-counsel/{counselAvailableTimeId}")
     public ResponseEntity<?> changeCounsel(@LoginMember Long id, @PathVariable Long counselAvailableTimeId){
