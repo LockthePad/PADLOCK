@@ -35,7 +35,7 @@ class CounselingListCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '$date',
+                    date,
                     style: const TextStyle(fontSize: 18),
                   ),
                   Text(

@@ -66,8 +66,9 @@ class _TeaTimetableWidgetState extends State<TeaTimetableWidget> {
                 const SizedBox(width: 20),
                 const VerticalDivider(
                   width: 20,
+                  color: AppColors.grey,
                 ),
-                SizedBox(
+                const SizedBox(
                   width: 20,
                 ),
                 // 오른쪽 시간표 표
@@ -88,6 +89,7 @@ class _TeaTimetableWidgetState extends State<TeaTimetableWidget> {
                                     child: Center(
                                       child: Text(day,
                                           style: const TextStyle(
+                                            color: AppColors.black,
                                             fontSize: 20,
                                           )),
                                     ),
@@ -109,7 +111,10 @@ class _TeaTimetableWidgetState extends State<TeaTimetableWidget> {
                                     alignment: Alignment.center,
                                     child: Text(
                                       "${periodIndex + 1}교시",
-                                      style: const TextStyle(fontSize: 20),
+                                      style: const TextStyle(
+                                        color: AppColors.black,
+                                        fontSize: 18,
+                                      ),
                                     ),
                                   ),
                                   // 과목 배치 가능한 셀
@@ -140,7 +145,7 @@ class _TeaTimetableWidgetState extends State<TeaTimetableWidget> {
                                             child: Center(
                                               child: Text(
                                                 subject ?? '',
-                                                style: TextStyle(
+                                                style: const TextStyle(
                                                   fontSize: 20,
                                                   color: AppColors.black,
                                                 ),
