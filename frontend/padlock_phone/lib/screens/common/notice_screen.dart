@@ -11,7 +11,7 @@ class NoticeScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('공지사항'),
       ),
-      body: SafeArea(
+      body: const SafeArea(
         child: Column(
           children: [
             NoticeContentLatestWidget(),
