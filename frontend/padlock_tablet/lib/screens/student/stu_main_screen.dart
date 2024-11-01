@@ -7,7 +7,7 @@ import 'package:padlock_tablet/widgets/common/mainScreen/header_widget.dart';
 import 'package:padlock_tablet/widgets/student/homeWidget/menu_item.dart';
 import 'package:padlock_tablet/widgets/student/mainScreen/left_app_bar_widget.dart';
 import 'package:padlock_tablet/widgets/student/stu_home_widget.dart';
-import 'package:padlock_tablet/widgets/student/mainScreen/left_app_bar_widget.dart';
+import 'package:padlock_tablet/widgets/student/stu_mealInfo_widget.dart';
 
 class StuMainScreen extends StatefulWidget {
   const StuMainScreen({super.key});
@@ -78,7 +78,9 @@ class _StuMainScreenState extends State<StuMainScreen> {
       case MenuItemStu.timetable:
         return const Center(child: Text('우리반 시간표'));
       case MenuItemStu.mealInfo:
-        return const Center(child: Text('오늘의 급식'));
+        return const Center(
+          child: StuMealinfoWidget(),
+        );
     }
   }
 
