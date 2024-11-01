@@ -4,6 +4,7 @@ class AppColors {
   static const Color white = Color(0xFFFFFFFF); // 흰색
   static const Color black = Color(0xFF222222); // 검은색
   static const Color grey = Color(0xFFD9D9D9); // 회색
+  static const Color darkGrey = Color(0xff888888); // 짙은 회색
 
   // 기능성 색상
   static const Color successGreen = Color(0xFF089D00); // 성공 초록색

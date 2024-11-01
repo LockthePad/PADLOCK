@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:padlock_tablet/theme/colors.dart';
 import 'package:padlock_tablet/widgets/student/homeWidget/menu_item.dart';
-import 'package:padlock_tablet/widgets/student/mainScreen/left_app_bar_widget.dart';
 
 class LeftAppBarWidget extends StatelessWidget {
   final MenuItemStu selectedItem;
