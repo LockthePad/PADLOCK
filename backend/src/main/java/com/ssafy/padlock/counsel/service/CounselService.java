@@ -128,6 +128,17 @@ public class CounselService {
         return counselAvailableTimeRepository.findByTeacherIdAndCounselAvailableDate(teacherId, date);
     }
 
+    //날짜별 학부모 상담 목록 조회
+    public List<CounselAvailableTime> getAvailableTimesParent(Long parentId, Long teacherId, LocalDate date) {
+        memberRepository.findById(parentId)
+                        .orElseThrow(() -> new IllegalArgumentException("학부모의 정보가 존재하지 않습니다."));
+
+        memberRepository.findById(teacherId)
+                .orElseThrow(() -> new IllegalArgumentException("선생님의 정보가 존재하지 않습니다."));
+
+        return counselAvailableTimeRepository.findByTeacherIdAndCounselAvailableDate(teacherId, date);
+    }
+
     //선생님 상담 열고닫기
     @Transactional
     public void openCounsel(Long teacherId, Long counselId) {
