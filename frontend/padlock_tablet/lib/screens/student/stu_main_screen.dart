@@ -8,7 +8,9 @@ import 'package:padlock_tablet/widgets/student/homeWidget/menu_item.dart';
 import 'package:padlock_tablet/widgets/student/mainScreen/left_app_bar_widget.dart';
 import 'package:padlock_tablet/widgets/student/stu_home_widget.dart';
 import 'package:padlock_tablet/widgets/student/stu_mealInfo_widget.dart';
+import 'package:padlock_tablet/widgets/student/stu_note_convert.dart';
 import 'package:padlock_tablet/widgets/student/stu_notification_widget.dart';
+import 'package:camera/camera.dart';
 
 class StuMainScreen extends StatefulWidget {
   const StuMainScreen({super.key});
@@ -19,6 +21,7 @@ class StuMainScreen extends StatefulWidget {
 
 class _StuMainScreenState extends State<StuMainScreen> {
   MenuItemStu _selectedItem = MenuItemStu.home;
+  XFile? _capturedPicture;
 
   // 테스트 데이터
   final ClassInfo currentClass = ClassInfo(
@@ -63,6 +66,14 @@ class _StuMainScreenState extends State<StuMainScreen> {
       backgroundColor: Colors.blue,
     ),
   ];
+
+  void _handlePictureTaken(XFile picture) {
+    setState(() {
+      _selectedItem = MenuItemStu.boardToText;
+      _capturedPicture = picture;
+    });
+  }
+
   Widget _buildContent() {
     switch (_selectedItem) {
       case MenuItemStu.home:
@@ -71,11 +82,17 @@ class _StuMainScreenState extends State<StuMainScreen> {
           timeTable: timeTable,
           meal: meal,
           availableApps: availableApps,
+          onPictureTaken: _handlePictureTaken, // 콜백 전달
         );
       case MenuItemStu.notification:
         return const Center(child: StuNotificationWidget());
       case MenuItemStu.boardToText:
-        return const Center(child: Text('필기 변환'));
+        return Center(
+          child: StuNoteConvertWidget(
+            picture: _capturedPicture,
+            onPictureTaken: _handlePictureTaken, // 동일한 콜백 전달
+          ),
+        );
       case MenuItemStu.mealInfo:
         return const Center(
           child: StuMealinfoWidget(),
