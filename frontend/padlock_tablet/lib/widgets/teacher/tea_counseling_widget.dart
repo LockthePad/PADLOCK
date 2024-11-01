@@ -98,7 +98,7 @@ class TeaCounselingWidget extends StatelessWidget {
                     ],
                   ),
                 ),
-                SizedBox(
+                const SizedBox(
                   width: 30,
                 )
               ],
