@@ -101,12 +101,12 @@ class _MealCalendarState extends State<MealCalendar> {
   void _showFullMonthMeal(BuildContext context) {
     // 해당 월의 첫 날과 마지막 날 구하기
     final firstDay = DateTime(_focusedDay.year, _focusedDay.month, 1);
-    final lastDay = DateTime(_focusedDay.year, _focusedDay.month + 1, 0);
+    // final lastDay = DateTime(_focusedDay.year, _focusedDay.month + 1, 0);
 
     // TableCalendar와 동일한 방식으로 첫 주의 시작일 계산
-    final startWeekday = firstDay.weekday;
-    final prevMonthDays = startWeekday == 7 ? 0 : startWeekday;
-    final startDate = firstDay.subtract(Duration(days: prevMonthDays));
+    // final startWeekday = firstDay.weekday;
+    // final prevMonthDays = startWeekday == 7 ? 0 : startWeekday;
+    // final startDate = firstDay.subtract(Duration(days: prevMonthDays));
 
     showDialog(
       context: context,
