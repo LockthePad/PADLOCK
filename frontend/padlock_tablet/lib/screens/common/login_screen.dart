@@ -19,41 +19,37 @@ class _LoginScreenState extends State<LoginScreen> {
   final storage = const FlutterSecureStorage();
 
   Future<void> _login() async {
+    print("로그인 시작"); // 시작 부분
     final memberCode = _memberCodeController.text;
     final password = _passwordController.text;
+
     try {
       final response = await MemberApiService().login(memberCode, password);
+      print("응답 수신"); // 응답이 성공적으로 도착했는지 확인
 
       if (response.statusCode == 200) {
+        // 성공적인 응답 처리
+        print("로그인 성공");
         Map<String, dynamic> data = jsonDecode(response.body);
-        print(jsonDecode(utf8.decode(response.bodyBytes)));
-
         String accessToken = data['accessToken'];
         String refreshToken = data['refreshToken'];
-        String memberId = data['memberId'];
-        String classroomId = data['classroomId'];
         String role = data['role'];
 
         await storage.write(key: 'accessToken', value: accessToken);
         await storage.write(key: 'refreshToken', value: refreshToken);
-        await storage.write(key: 'memberId', value: memberId);
-        await storage.write(key: 'classroomId', value: classroomId);
-        await storage.write(key: 'role', value: role);
 
-        // role에 따라 다른 화면으로 이동
         if (role == "TEACHER") {
           Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (_) => const TeaMainScreen()));
         } else if (role == "STUDENT") {
           Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (_) => const StuMainScreen()));
-        } else {
-          print("알 수 없는 사용자 역할: $role");
         }
       } else {
-        print("로그인 실패");
+        print("로그인 실패 - 상태 코드: ${response.statusCode}");
       }
     } catch (e, stackTrace) {
+      print("오류 발생: $e");
       print(stackTrace);
     }
   }
