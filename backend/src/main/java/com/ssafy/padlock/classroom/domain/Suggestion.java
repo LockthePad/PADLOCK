@@ -1,5 +1,6 @@
 package com.ssafy.padlock.classroom.domain;
 
+import com.ssafy.padlock.member.domain.Member;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -9,35 +10,39 @@ import java.time.LocalDateTime;
 
 @Entity
 @Getter
-@Table(name = "notice")
+@Table(name = "suggestion")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Notice {
+public class Suggestion {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(name = "title", nullable = false)
-    private String title;
 
     @Column(name = "content", nullable = false)
     private String content;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "student_id", nullable = false)
+    private Member student;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "classroom_id", nullable = false)
     private Classroom classroom;
 
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
+    @Column(name = "time", nullable = false)
+    private LocalDateTime time;
 
-    public Notice(String title, String content, Classroom classroom) {
-        this.title = title;
+    @Column(name = "is_read", nullable = false)
+    private boolean isRead;
+
+    public Suggestion(String content, Classroom classroom, Member student) {
         this.content = content;
         this.classroom = classroom;
-        this.createdAt = LocalDateTime.now();
+        this.student = student;
+        this.time = LocalDateTime.now();
+        this.isRead = false;
     }
 
-    public void updateContent(String title, String content) {
-        this.title = title;
-        this.content = content;
+    public void changeStatus() {
+        this.isRead = true;
     }
 }

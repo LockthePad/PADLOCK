@@ -1,19 +1,136 @@
-// 로그인 페이지입니다.
-// 로그인 컴포넌트가 별도로 있으니 로그인 위젯에서 생성한 후 import해와서 쓰면 됩니다.
-
 import 'package:flutter/material.dart';
-import 'package:padlock_tablet/widgets/common/loginScreen/login_widget.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:padlock_tablet/screens/teacher/tea_main_screen.dart';
+import 'package:padlock_tablet/screens/student/stu_main_screen.dart';
+import 'package:padlock_tablet/theme/colors.dart';
+import 'package:padlock_tablet/api/member_api_service.dart';
+import 'dart:convert';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
   @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final _memberCodeController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final storage = const FlutterSecureStorage();
+
+  Future<void> _login() async {
+    print("로그인 시작"); // 시작 부분
+    final memberCode = _memberCodeController.text;
+    final password = _passwordController.text;
+
+    try {
+      final response = await MemberApiService().login(memberCode, password);
+      print("응답 수신"); // 응답이 성공적으로 도착했는지 확인
+
+      if (response.statusCode == 200) {
+        // 성공적인 응답 처리
+        print("로그인 성공");
+        Map<String, dynamic> data = jsonDecode(response.body);
+        String accessToken = data['accessToken'];
+        String refreshToken = data['refreshToken'];
+        String role = data['role'];
+
+        await storage.write(key: 'accessToken', value: accessToken);
+        await storage.write(key: 'refreshToken', value: refreshToken);
+
+        if (role == "TEACHER") {
+          Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (_) => const TeaMainScreen()));
+        } else if (role == "STUDENT") {
+          Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (_) => const StuMainScreen()));
+        }
+      } else {
+        print("로그인 실패 - 상태 코드: ${response.statusCode}");
+      }
+    } catch (e, stackTrace) {
+      print("오류 발생: $e");
+      print(stackTrace);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // column 대신에 scaffold를 쓰는게 나을 수도 있습니다.
-    return Column(
-      children: [
-        Expanded(child: LoginWidget()),
-      ],
+    return Scaffold(
+      backgroundColor: AppColors.white,
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 400),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Image.asset(
+                'assets/loginLogo.png',
+                width: 250,
+                height: 250,
+              ),
+              SizedBox(
+                height: 20,
+              ),
+              TextField(
+                controller: _memberCodeController,
+                decoration: InputDecoration(
+                  labelText: '  아이디',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                    borderSide: const BorderSide(color: AppColors.yellow),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                    borderSide: const BorderSide(color: AppColors.grey),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                    borderSide: const BorderSide(color: AppColors.yellow),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 15),
+              TextField(
+                controller: _passwordController,
+                obscureText: true,
+                decoration: InputDecoration(
+                  labelText: '  비밀번호',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                    borderSide: const BorderSide(color: AppColors.yellow),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                    borderSide: const BorderSide(color: AppColors.grey),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                    borderSide: const BorderSide(color: AppColors.yellow),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: _login,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.yellow,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  minimumSize: const Size(double.infinity, 60),
+                ),
+                child: const Text(
+                  '로그인하기',
+                  style: TextStyle(fontSize: 20, color: AppColors.white),
+                ),
+              ),
+              const SizedBox(height: 100),
+              Image.asset('assets/yellowLogo.png'),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
