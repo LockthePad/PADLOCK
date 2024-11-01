@@ -195,6 +195,14 @@ public class CounselService {
                 .collect(Collectors.toList());
     }
 
+    public List<CounselAvailableTimeResponse> getCounselForToday(Long id){
+        List<CounselAvailableTimeResponse> userCounsel = getUserCounsel(id);
+        LocalDate currentDate = LocalDate.now();
+        return userCounsel.stream()
+                .filter(counsel -> counsel.getCounselAvailableDate().isEqual(currentDate))
+                .collect(Collectors.toList());
+    }
+
 
     //예약 가능 시간 데이터베이스에 추가
     @Transactional
