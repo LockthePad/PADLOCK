@@ -12,22 +12,32 @@ class ParMainScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
       body: Column(
         children: [
-          SizedBox(height: 63),
-          Align(
-            alignment: Alignment.centerRight,
-            child: Padding(
-              padding: EdgeInsets.only(right: 19),
-              child: Icon(
-                Icons.notifications_none_rounded,
-                size: 33,
+          const SizedBox(height: 63),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ParGpsCheckScreen(),
+                ),
+              );
+            },
+            child: const Align(
+              alignment: Alignment.centerRight,
+              child: Padding(
+                padding: EdgeInsets.only(right: 19),
+                child: Icon(
+                  Icons.notifications_none_rounded,
+                  size: 33,
+                ),
               ),
             ),
           ),
-          SizedBox(height: 30),
-          Row(
+          const SizedBox(height: 30),
+          const Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -48,79 +58,72 @@ class ParMainScreen extends StatelessWidget {
               )
             ],
           ),
-          SizedBox(height: 28),
-          CardContainer(
-            subtitle: "안전한 등하교",
-            title: "우리아이 위치보기",
-            myicon: "backpack",
+          const SizedBox(height: 28),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ParGpsCheckScreen(),
+                ),
+              );
+            },
+            child: const CardContainer(
+              subtitle: "안전한 등하교",
+              title: "우리아이 위치보기",
+              myicon: "backpack",
+            ),
           ),
-          SizedBox(height: 7),
-          CardContainer(
-            subtitle: "당임선생님",
-            title: "상담예약 신청하기",
-            myicon: "calender",
+          const SizedBox(height: 7),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ParCounselScreen(),
+                ),
+              );
+            },
+            child: const CardContainer(
+              subtitle: "당임선생님",
+              title: "상담예약 신청하기",
+              myicon: "calender",
+            ),
           ),
-          SizedBox(height: 7),
-          CardContainer(
-            subtitle: "즐거운 학교생활",
-            title: "공지사항 바로가기",
-            myicon: "notification",
+          const SizedBox(height: 7),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const NoticeScreen(),
+                ),
+              );
+            },
+            child: const CardContainer(
+              subtitle: "즐거운 학교생활",
+              title: "공지사항 바로가기",
+              myicon: "notification",
+            ),
           ),
-          SizedBox(height: 7),
-          CardContainer(
-            subtitle: "즐거운 학교생활",
-            title: "건의하기 바로가기",
-            myicon: "notification",
+          const SizedBox(height: 7),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const NoticeScreen(),
+                ),
+              );
+            },
+            child: const CardContainer(
+              subtitle: "즐거운 학교생활",
+              title: "건의하기 바로가기",
+              myicon: "notification",
+            ),
           ),
         ],
       ),
     );
   }
 }
-
-
-
-          // GestureDetector(
-          //   onTap: () {
-          //     Navigator.push(
-          //       context,
-          //       MaterialPageRoute(
-          //         builder: (context) => const ParGpsCheckScreen(),
-          //       ),
-          //     );
-          //   },
-          //   child: const Text('GPS 확인 페이지로 이동'),
-          // ),
-          // GestureDetector(
-          //   onTap: () {
-          //     Navigator.push(
-          //       context,
-          //       MaterialPageRoute(
-          //         builder: (context) => const ParCounselScreen(),
-          //       ),
-          //     );
-          //   },
-          //   child: const Text('상담예약 페이지로 이동'),
-          // ),
-          // GestureDetector(
-          //   onTap: () {
-          //     Navigator.push(
-          //       context,
-          //       MaterialPageRoute(
-          //         builder: (context) => const NoticeScreen(),
-          //       ),
-          //     );
-          //   },
-          //   child: const Text('공지사항 페이지로 이동'),
-          // ),
-          // GestureDetector(
-          //   onTap: () {
-          //     Navigator.push(
-          //       context,
-          //       MaterialPageRoute(
-          //         builder: (context) => const DeclareScreen(),
-          //       ),
-          //     );
-          //   },
-          //   child: const Text('건의하기 페이지로 이동'),
-          // ),

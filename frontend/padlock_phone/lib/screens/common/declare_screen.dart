@@ -7,10 +7,7 @@ class DeclareScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('선생님께 건의하기'),
-      ),
+    return const Scaffold(
       body: SafeArea(
         child: Column(
           children: [

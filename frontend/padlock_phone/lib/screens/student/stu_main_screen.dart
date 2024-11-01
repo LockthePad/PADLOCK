@@ -4,27 +4,38 @@ import 'package:padlock_phone/screens/common/notice_screen.dart';
 import 'package:padlock_phone/widgets/common/mainScreen/userinfo_widget.dart';
 import 'package:padlock_phone/widgets/student/mainScreen/stu_attendance_state_widget.dart';
 import 'package:padlock_phone/widgets/common/mainScreen/cardcontainer_widget.dart';
+import 'package:padlock_phone/screens/common/bell_screen.dart';
 
 class StuMainScreen extends StatelessWidget {
   const StuMainScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
       body: Column(
         children: [
-          SizedBox(height: 63),
-          Align(
-            alignment: Alignment.centerRight,
-            child: Padding(
-              padding: EdgeInsets.only(right: 19),
-              child: Icon(
-                Icons.notifications_none_rounded,
-                size: 33,
+          const SizedBox(height: 63),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const BellScreen(),
+                ),
+              );
+            },
+            child: const Align(
+              alignment: Alignment.centerRight,
+              child: Padding(
+                padding: EdgeInsets.only(right: 19),
+                child: Icon(
+                  Icons.notifications_none_rounded,
+                  size: 33,
+                ),
               ),
             ),
           ),
-          Padding(
+          const Padding(
             padding: EdgeInsets.only(left: 50),
             child: Align(
               alignment: Alignment.centerLeft,
@@ -34,42 +45,39 @@ class StuMainScreen extends StatelessWidget {
               ),
             ),
           ),
-          StuAttendanceStateWidget(),
-          CardContainer(
-            subtitle: "즐거운 학교생활",
-            title: "공지사항 바로가기",
-            myicon: "notification",
+          const StuAttendanceStateWidget(),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const NoticeScreen(),
+                ),
+              );
+            },
+            child: const CardContainer(
+              subtitle: "즐거운 학교생활",
+              title: "공지사항 바로가기",
+              myicon: "notification",
+            ),
           ),
-          CardContainer(
-            subtitle: "즐거운 학교생활",
-            title: "건의하기 바로가기",
-            myicon: "notification",
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const DeclareScreen(),
+                ),
+              );
+            },
+            child: const CardContainer(
+              subtitle: "즐거운 학교생활",
+              title: "건의하기 바로가기",
+              myicon: "notification",
+            ),
           ),
         ],
       ),
     );
   }
 }
-
-          // GestureDetector(
-          //   onTap: () {
-          //     Navigator.push(
-          //       context,
-          //       MaterialPageRoute(
-          //         builder: (context) => const NoticeScreen(),
-          //       ),
-          //     );
-          //   },
-          //   child: const Text('공지사항 페이지로 이동'),
-          // ),
-          // GestureDetector(
-          //   onTap: () {
-          //     Navigator.push(
-          //       context,
-          //       MaterialPageRoute(
-          //         builder: (context) => const DeclareScreen(),
-          //       ),
-          //     );
-          //   },
-          //   child: const Text('건의하기 페이지로 이동'),
-          // ),
