@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface MealRepository extends JpaRepository<Meal, Long> {
     List<Meal> findBySchool_IdAndMaelDateContaining(Long schoolId, String yearMonth);
+    Meal findFirstBySchool_IdAndMaelDate(Long schoolId, String mealDate);
 }
