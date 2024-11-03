@@ -15,3 +15,7 @@ spring:
 jwt:
   secret-key: ${SECRET_KEY}
   refresh-key: ${REFRESH_KEY}
+
+app:
+  fastapi:
+    url: http://70.12.130.101:8001
