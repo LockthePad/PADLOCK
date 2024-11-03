@@ -5,6 +5,7 @@ import 'package:padlock_phone/widgets/common/mainScreen/userinfo_widget.dart';
 import 'package:padlock_phone/widgets/student/mainScreen/stu_attendance_state_widget.dart';
 import 'package:padlock_phone/widgets/common/mainScreen/cardcontainer_widget.dart';
 import 'package:padlock_phone/screens/common/bell_screen.dart';
+import 'package:padlock_phone/screens/student/ble_test.dart';
 
 class StuMainScreen extends StatelessWidget {
   const StuMainScreen({super.key});
@@ -34,6 +35,17 @@ class StuMainScreen extends StatelessWidget {
                 ),
               ),
             ),
+          ),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const MyApp(),
+                ),
+              );
+            },
+            child: const Text("bletest"),
           ),
           const Padding(
             padding: EdgeInsets.only(left: 50),
