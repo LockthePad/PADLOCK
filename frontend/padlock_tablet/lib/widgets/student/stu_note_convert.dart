@@ -192,7 +192,8 @@ class _StuNoteConvertWidgetState extends State<StuNoteConvertWidget> {
                                   style: OutlinedButton.styleFrom(
                                     padding: const EdgeInsets.symmetric(
                                         vertical: 15),
-                                    side: const BorderSide(color: Colors.black),
+                                    side: const BorderSide(
+                                        color: AppColors.yellow),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(30),
                                     ),
@@ -203,34 +204,41 @@ class _StuNoteConvertWidgetState extends State<StuNoteConvertWidget> {
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 10),
+                              const SizedBox(height: 10),
                               Expanded(
                                 child: ElevatedButton(
                                   onPressed: _saveData,
                                   style: ElevatedButton.styleFrom(
                                     padding: const EdgeInsets.symmetric(
                                         vertical: 15),
-                                    backgroundColor: AppColors.paleYellow,
+                                    backgroundColor: AppColors.yellow,
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(30),
                                     ),
                                   ),
-                                  child: const Text('저장하기'),
+                                  child: const Text(
+                                    '저장하기',
+                                    style: TextStyle(color: AppColors.black),
+                                  ),
                                 ),
                               ),
                             ] else
                               Expanded(
-                                child: ElevatedButton(
-                                  onPressed: _handleCameraAction,
-                                  style: ElevatedButton.styleFrom(
+                                child: OutlinedButton(
+                                  onPressed: () => _openCamera(context),
+                                  style: OutlinedButton.styleFrom(
                                     padding: const EdgeInsets.symmetric(
                                         vertical: 15),
-                                    backgroundColor: AppColors.paleYellow,
+                                    backgroundColor: AppColors.yellow,
+                                    side: BorderSide.none,
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(30),
                                     ),
                                   ),
-                                  child: const Text('사진찍기'),
+                                  child: const Text(
+                                    '사진찍기',
+                                    style: TextStyle(color: AppColors.black),
+                                  ),
                                 ),
                               ),
                           ],
