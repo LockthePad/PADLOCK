@@ -20,20 +20,20 @@ class _CameraPageState extends State<CameraPage> {
   @override
   void initState() {
     super.initState();
-    // 가로 방향으로 고정
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.landscapeLeft, // 이 방향으로 통일
-    ]);
+    // 화면 방향 고정 제거
+    // SystemChrome.setPreferredOrientations([
+    //   DeviceOrientation.landscapeLeft,
+    // ]);
     initCamera(widget.cameras![0]);
   }
 
   @override
   void dispose() {
     // 방향 고정 해제
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
-    ]);
+    // SystemChrome.setPreferredOrientations([
+    //   DeviceOrientation.landscapeLeft,
+    //   DeviceOrientation.landscapeRight,
+    // ]);
     _cameraController.dispose();
     super.dispose();
   }
@@ -81,56 +81,72 @@ class _CameraPageState extends State<CameraPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: SafeArea(
-      child: Stack(children: [
-        (_cameraController.value.isInitialized)
-            ? Transform.rotate(
-                angle: -pi / 2,
-                child: Transform(
-                  transform: Matrix4.rotationX(pi), // 위아래 뒤집기
-                  alignment: Alignment.center,
-                  child: CameraPreview(_cameraController),
-                ),
-              )
-            : Container(
-                color: Colors.black,
-                child: const Center(child: CircularProgressIndicator())),
-        Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              height: MediaQuery.of(context).size.height * 0.20,
-              decoration: const BoxDecoration(
+      body: SafeArea(
+        child: Stack(
+          children: [
+            // 카메라 프리뷰 영역
+            Positioned.fill(
+              child: (_cameraController.value.isInitialized)
+                  ? Transform.rotate(
+                      angle: pi / 2,
+                      child: Transform(
+                        transform: Matrix4.rotationX(pi),
+                        alignment: Alignment.center,
+                        child: CameraPreview(_cameraController),
+                      ),
+                    )
+                  : Container(
+                      color: Colors.black,
+                      child: const Center(child: CircularProgressIndicator()),
+                    ),
+            ),
+            // 하단 컨트롤 버튼 영역
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Container(
+                height: MediaQuery.of(context).size.height * 0.20,
+                decoration: const BoxDecoration(
                   borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-                  color: Colors.black),
-              child:
-                  Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
-                Expanded(
-                    child: IconButton(
-                  padding: EdgeInsets.zero,
-                  iconSize: 30,
-                  icon: Icon(
-                      _isRearCameraSelected
-                          ? CupertinoIcons.switch_camera
-                          : CupertinoIcons.switch_camera_solid,
-                      color: Colors.white),
-                  onPressed: () {
-                    setState(
-                        () => _isRearCameraSelected = !_isRearCameraSelected);
-                    initCamera(widget.cameras![_isRearCameraSelected ? 0 : 1]);
-                  },
-                )),
-                Expanded(
-                    child: IconButton(
-                  onPressed: takePicture,
-                  iconSize: 50,
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  icon: const Icon(Icons.circle, color: Colors.white),
-                )),
-                const Spacer(),
-              ]),
-            )),
-      ]),
-    ));
+                  color: Colors.black,
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: IconButton(
+                        padding: EdgeInsets.zero,
+                        iconSize: 30,
+                        icon: Icon(
+                          _isRearCameraSelected
+                              ? CupertinoIcons.switch_camera
+                              : CupertinoIcons.switch_camera_solid,
+                          color: Colors.white,
+                        ),
+                        onPressed: () {
+                          setState(() =>
+                              _isRearCameraSelected = !_isRearCameraSelected);
+                          initCamera(
+                              widget.cameras![_isRearCameraSelected ? 0 : 1]);
+                        },
+                      ),
+                    ),
+                    Expanded(
+                      child: IconButton(
+                        onPressed: takePicture,
+                        iconSize: 50,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        icon: const Icon(Icons.circle, color: Colors.white),
+                      ),
+                    ),
+                    const Spacer(),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
