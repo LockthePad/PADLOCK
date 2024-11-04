@@ -41,7 +41,7 @@ public class CounselService {
         Member teacher = memberRepository.findById(teacherId)
                 .orElseThrow(() -> new IllegalArgumentException("선생님이 존재하지 않습니다."));
 
-        if(teacher.getRole().equals(Role.TEACHER)){
+        if(!teacher.getRole().equals(Role.TEACHER)){
             throw new IllegalArgumentException("선생님만 취소가 가능합니다.");
         }
 
