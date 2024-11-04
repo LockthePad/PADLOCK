@@ -12,6 +12,11 @@ spring:
     init:
       mode: always
 
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+
 jwt:
   secret-key: ${SECRET_KEY}
   refresh-key: ${REFRESH_KEY}
