@@ -32,4 +32,8 @@ public class ClassSchedule {
         this.period = period;
         this.subject = subject;
     }
+
+    public void updateSubject(String subject) {
+        this.subject = subject;
+    }
 }
