@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: ThemeData(
-        scaffoldBackgroundColor: AppColors.white, // 모든 페이지의 배경을 흰색으로 설정
+        scaffoldBackgroundColor: AppColors.white,
       ),
       home: const LoadingScreen(),
     );

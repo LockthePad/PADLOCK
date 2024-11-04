@@ -23,9 +23,6 @@ class MemberApiService {
       },
       body: body,
     );
-
-    print("서버 응답 코드: ${response.statusCode}");
-    print("서버 응답 내용: ${response.body}"); // 응답 내용 확인용
     return response;
   }
 }

@@ -5,12 +5,14 @@ class CounselingListCard extends StatelessWidget {
   final String date;
   final String time;
   final String parentName;
+  final VoidCallback onCancel; // 취소 버튼 콜백 추가
 
   const CounselingListCard({
     super.key,
     required this.date,
     required this.time,
     required this.parentName,
+    required this.onCancel,
   });
 
   @override
@@ -20,17 +22,14 @@ class CounselingListCard extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // 불릿과 텍스트를 나란히 배치
           Row(
             children: [
-              // 검은색 동그라미 불릿
               const Icon(
                 Icons.circle,
                 size: 10,
                 color: AppColors.black,
               ),
               const SizedBox(width: 15),
-              // 날짜, 시간, 학부모님 텍스트
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -46,11 +45,8 @@ class CounselingListCard extends StatelessWidget {
               ),
             ],
           ),
-          // 취소 버튼
           ElevatedButton(
-            onPressed: () {
-              // TODO: 취소 버튼 로직 추가
-            },
+            onPressed: onCancel,
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.navy,
               shape: RoundedRectangleBorder(
