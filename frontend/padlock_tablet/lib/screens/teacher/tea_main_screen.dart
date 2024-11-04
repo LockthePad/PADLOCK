@@ -5,6 +5,7 @@ import 'package:padlock_tablet/widgets/teacher/mainScreen/header_widget.dart';
 import 'package:padlock_tablet/widgets/teacher/mainScreen/left_app_bar_widget.dart';
 import 'package:padlock_tablet/widgets/teacher/tea_counseling_widget.dart';
 import 'package:padlock_tablet/widgets/teacher/tea_home_widget.dart';
+import 'package:padlock_tablet/widgets/teacher/tea_notification_widget.dart';
 import 'package:padlock_tablet/widgets/teacher/tea_suggestion_widget.dart';
 import 'package:padlock_tablet/widgets/teacher/tea_timetable_widget.dart';
 
@@ -109,7 +110,7 @@ class _TeaMainScreenState extends State<TeaMainScreen> {
           availableApps: availableApps,
         );
       case MenuItem.notification:
-        return const Center(child: Text('공지사항'));
+        return const TeaNotificationWidget();
       case MenuItem.attendanceCheck:
         return const Center(child: Text('우리반 출석현황'));
       case MenuItem.timetable:
