@@ -101,25 +101,6 @@ class _TeaMainScreenState extends State<TeaMainScreen> {
     },
   ];
 
-  // 상담 예약 데이터
-  final List<Map<String, dynamic>> counselingRequests = [
-    {'date': '2024년 10월 21일', 'time': '16시 00분', 'parentName': '홍길동'},
-    {'date': '2024년 10월 22일', 'time': '16시 30분', 'parentName': '김철수'},
-    {'date': '2024년 10월 23일', 'time': '17시 00분', 'parentName': '이영희'},
-    {'date': '2024년 10월 21일', 'time': '16시 00분', 'parentName': '홍길동'},
-    {'date': '2024년 10월 22일', 'time': '16시 30분', 'parentName': '김철수'},
-    {'date': '2024년 10월 23일', 'time': '17시 00분', 'parentName': '이영희'},
-    {'date': '2024년 10월 21일', 'time': '16시 00분', 'parentName': '홍길동'},
-    {'date': '2024년 10월 22일', 'time': '16시 30분', 'parentName': '김철수'},
-    {'date': '2024년 10월 23일', 'time': '17시 00분', 'parentName': '이영희'},
-    {'date': '2024년 10월 21일', 'time': '16시 00분', 'parentName': '홍길동'},
-    {'date': '2024년 10월 22일', 'time': '16시 30분', 'parentName': '김철수'},
-    {'date': '2024년 10월 23일', 'time': '17시 00분', 'parentName': '이영희'},
-    {'date': '2024년 10월 21일', 'time': '16시 00분', 'parentName': '홍길동'},
-    {'date': '2024년 10월 22일', 'time': '16시 30분', 'parentName': '김철수'},
-    {'date': '2024년 10월 23일', 'time': '17시 00분', 'parentName': '이영희'},
-  ];
-
   Widget _buildContent() {
     switch (_selectedItem) {
       case MenuItem.home:
@@ -132,14 +113,14 @@ class _TeaMainScreenState extends State<TeaMainScreen> {
       case MenuItem.attendanceCheck:
         return const Center(child: Text('우리반 출석현황'));
       case MenuItem.timetable:
-        return TeaTimetableWidget();
+        return const TeaTimetableWidget();
       case MenuItem.mealInfo:
         return const Center(child: Text('이번달 급식'));
       case MenuItem.rightInfo:
         return TeaSuggestionWidget(suggestions: suggestions);
       case MenuItem.counseling:
         // Counseling 데이터 전달
-        return TeaCounselingWidget(counselingRequests: counselingRequests);
+        return const TeaCounselingWidget();
     }
   }
 

@@ -3,7 +3,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:padlock_tablet/screens/teacher/tea_main_screen.dart';
 import 'package:padlock_tablet/screens/student/stu_main_screen.dart';
 import 'package:padlock_tablet/theme/colors.dart';
-import 'package:padlock_tablet/api/member_api_service.dart';
+import 'package:padlock_tablet/api/member/member_api_service.dart';
 import 'dart:convert';
 
 class LoginScreen extends StatefulWidget {
@@ -19,17 +19,13 @@ class _LoginScreenState extends State<LoginScreen> {
   final storage = const FlutterSecureStorage();
 
   Future<void> _login() async {
-    print("로그인 시작"); // 시작 부분
     final memberCode = _memberCodeController.text;
     final password = _passwordController.text;
 
     try {
       final response = await MemberApiService().login(memberCode, password);
-      print("응답 수신"); // 응답이 성공적으로 도착했는지 확인
 
       if (response.statusCode == 200) {
-        // 성공적인 응답 처리
-        print("로그인 성공");
         Map<String, dynamic> data = jsonDecode(response.body);
         String accessToken = data['accessToken'];
         String refreshToken = data['refreshToken'];
