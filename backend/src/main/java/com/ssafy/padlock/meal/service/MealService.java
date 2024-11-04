@@ -37,7 +37,7 @@ public class MealService {
                 .orElseThrow(() -> new IllegalArgumentException("Invalid classroom ID: " + classroomId))
                 .getSchool().getId();
 
-        Meal meal = mealRepository.findFirstBySchool_IdAndMaelDate(classroomId, date);
+        Meal meal = mealRepository.findFirstBySchool_IdAndMaelDate(schoolId, date);
 
         // 알러지 코드 파싱
         List<Integer> allergyIds = Arrays.stream(meal.getAllergyCode().split(","))
