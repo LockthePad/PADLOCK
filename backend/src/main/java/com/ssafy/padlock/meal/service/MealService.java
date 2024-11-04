@@ -1,5 +1,6 @@
 package com.ssafy.padlock.meal.service;
 
+import com.ssafy.padlock.classroom.repository.ClassroomRepository;
 import com.ssafy.padlock.meal.controller.response.MonthMeal;
 import com.ssafy.padlock.meal.controller.response.TodayMeal;
 import com.ssafy.padlock.meal.domain.Allergy;
@@ -18,16 +19,25 @@ import java.util.stream.Collectors;
 public class MealService {
     private final MealRepository mealRepository;
     private final AllergyRepository allergyRepository;
+    private final ClassroomRepository classroomRepository;
 
-    public List<MonthMeal> getMonthMeals(String yearMonth, Long schoolId) {
+    public List<MonthMeal> getMonthMeals(String yearMonth, Long classroomId) {
+        Long schoolId = classroomRepository.findById(classroomId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid classroom ID: " + classroomId))
+                .getSchool().getId();
+
         List<Meal> meals = mealRepository.findBySchool_IdAndMaelDateContaining(schoolId, yearMonth);
         return meals.stream()
                 .map(meal -> new MonthMeal(meal.getMaelDate(), meal.getMenu()))
                 .collect(Collectors.toList());
     }
 
-    public TodayMeal getTodayMeal(String date, Long schoolId) {
-        Meal meal = mealRepository.findFirstBySchool_IdAndMaelDate(schoolId, date);
+    public TodayMeal getTodayMeal(String date, Long classroomId) {
+        Long schoolId = classroomRepository.findById(classroomId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid classroom ID: " + classroomId))
+                .getSchool().getId();
+
+        Meal meal = mealRepository.findFirstBySchool_IdAndMaelDate(classroomId, date);
 
         // 알러지 코드 파싱
         List<Integer> allergyIds = Arrays.stream(meal.getAllergyCode().split(","))
