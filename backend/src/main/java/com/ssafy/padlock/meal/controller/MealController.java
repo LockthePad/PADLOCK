@@ -16,12 +16,12 @@ public class MealController {
     private final MealService mealService;
 
     @GetMapping("/meal/month")
-    public List<MonthMeal> getMonthMeals(@RequestParam String yearMonth, @RequestParam Long schoolId) {
-        return mealService.getMonthMeals(yearMonth, schoolId);
+    public List<MonthMeal> getMonthMeals(@RequestParam String yearMonth, @RequestParam Long classroomId) {
+        return mealService.getMonthMeals(yearMonth, classroomId);
     }
 
     @GetMapping("/meal/today")
-    public TodayMeal getTodayMeal(@RequestParam String date, @RequestParam Long schoolId) {
-        return mealService.getTodayMeal(date, schoolId);
+    public TodayMeal getTodayMeal(@RequestParam String date, @RequestParam Long classroomId) {
+        return mealService.getTodayMeal(date, classroomId);
     }
 }
