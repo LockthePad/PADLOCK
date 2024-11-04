@@ -27,7 +27,7 @@ class HeaderWidget extends StatelessWidget {
         children: [
           Image.asset(
             logoAsset,
-            height: 40,
+            height: 30,
           ),
           Row(
             mainAxisSize: MainAxisSize.min,
