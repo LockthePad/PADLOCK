@@ -48,7 +48,7 @@ public class CounselService {
         Counsel counsel = counselRepository.findByCounselAvailableTime(counselAvailableTime)
                         .orElseThrow(() -> new IllegalArgumentException("해당 시간에 예약이 없습니다."));
 
-        counselAvailableTime.changeClosed(2);
+        counselAvailableTime.changeClosed(1);
         counselRepository.deleteById(counsel.getId());
     }
 
