@@ -14,7 +14,7 @@ class CounselingApi {
 
     String? token = await _storage.read(key: 'accessToken');
     if (token == null) {
-      throw Exception('토큰이 없습니다. 로그인 필요');
+      throw Exception('액세스 토큰 없음');
     }
 
     final response = await http.get(
@@ -28,7 +28,7 @@ class CounselingApi {
       final data = json.decode(response.body);
       return List<Map<String, dynamic>>.from(data);
     } else {
-      throw Exception('상담데이터 불러오기 실패');
+      throw Exception('상담 데이터 불러오기 실패');
     }
   }
 
@@ -37,7 +37,7 @@ class CounselingApi {
     String? token = await _storage.read(key: 'accessToken');
     print("Access Token: $token");
     if (token == null) {
-      throw Exception('토큰이 없습니다. 로그인 필요');
+      throw Exception('액세스 토큰 없음');
     }
 
     final url = '$apiServerUrl/change-counsel/$availableCounselTimeId';
@@ -53,10 +53,9 @@ class CounselingApi {
 
   // 상담 신청 목록 불러오기
   static Future<List<Map<String, dynamic>>> fetchCounselingRequests() async {
-    // 토큰 가져오기
     String? token = await _storage.read(key: 'accessToken');
     if (token == null) {
-      throw Exception('토큰이 없습니다. 로그인 필요');
+      throw Exception('액세스 토큰 없음');
     }
 
     final url = '$apiServerUrl/user-counsel';
@@ -68,7 +67,6 @@ class CounselingApi {
     );
 
     if (response.statusCode == 200) {
-      // UTF-8로 디코딩하여 데이터 파싱
       final data = json.decode(utf8.decode(response.bodyBytes));
       return List<Map<String, dynamic>>.from(data);
     } else {
@@ -81,7 +79,7 @@ class CounselingApi {
       int parentId, int counselAvailableTimeId) async {
     String? token = await _storage.read(key: 'accessToken');
     if (token == null) {
-      throw Exception('토큰이 없습니다. 로그인 필요');
+      throw Exception('액세스 토큰 없음');
     }
 
     final url = '$apiServerUrl/cancel-counsel/teacher';
@@ -97,10 +95,30 @@ class CounselingApi {
       }),
     );
 
-    // 응답 상태 코드와 본문을 출력하여 확인
-    print("Response status: ${response.statusCode}");
-    print("Response body: ${response.body}");
-
     return response.statusCode == 200;
+  }
+
+  // 오늘의 상담 예약 현황 불러오기
+  static Future<List<Map<String, dynamic>>> fetchTodayCounseling() async {
+    String? token = await _storage.read(key: 'accessToken');
+    if (token == null) {
+      throw Exception('액세스 토큰 없음');
+    }
+
+    final url = '$apiServerUrl/today-counsel';
+    final response = await http.get(
+      Uri.parse(url),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(utf8.decode(response.bodyBytes));
+      return List<Map<String, dynamic>>.from(data);
+    } else {
+      throw Exception('오늘의 상담 예약 현황 불러오기 실패');
+    }
   }
 }

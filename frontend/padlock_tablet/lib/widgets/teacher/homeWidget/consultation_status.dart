@@ -1,14 +1,40 @@
 import 'package:flutter/material.dart';
+import 'package:padlock_tablet/api/teacher/counseling_api.dart';
 import 'package:padlock_tablet/theme/colors.dart';
-import 'package:padlock_tablet/models/teacher/consultation_info.dart'; // 모델 임포트
+import 'package:padlock_tablet/models/teacher/consultation_info.dart';
 
-class ConsultationStatus extends StatelessWidget {
-  final List<Consultation> consultations;
+class ConsultationStatus extends StatefulWidget {
+  const ConsultationStatus({super.key});
 
-  const ConsultationStatus({
-    super.key,
-    required this.consultations,
-  });
+  @override
+  State<ConsultationStatus> createState() => _ConsultationStatusState();
+}
+
+class _ConsultationStatusState extends State<ConsultationStatus> {
+  List<Consultation> consultations = [];
+
+  // API 호출 함수
+  Future<void> fetchTodayConsultations() async {
+    try {
+      final data = await CounselingApi.fetchTodayCounseling();
+      setState(() {
+        consultations = data
+            .map((json) => Consultation(
+                  time: json['counselAvailableTime'].substring(0, 5),
+                  parentName: json['studentName'],
+                ))
+            .toList();
+      });
+    } catch (e) {
+      print('Failed to load today\'s counseling data: $e');
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchTodayConsultations(); // 화면 초기화 시 API 호출
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +60,7 @@ class ConsultationStatus extends StatelessWidget {
             flex: 3,
             child: SingleChildScrollView(
               child: Column(
-                mainAxisSize: MainAxisSize.min, // 최소 크기로 설정
+                mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(

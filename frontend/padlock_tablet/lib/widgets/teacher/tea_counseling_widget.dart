@@ -79,8 +79,8 @@ class _TeaCounselingWidgetState extends State<TeaCounselingWidget> {
                   ),
                 ),
                 const VerticalDivider(
-                  width: 100,
-                  thickness: 1,
+                  width: 90,
+                  thickness: 1.5,
                   color: AppColors.grey,
                 ),
                 Expanded(
@@ -104,12 +104,10 @@ class _TeaCounselingWidgetState extends State<TeaCounselingWidget> {
                               itemBuilder: (context, index) {
                                 final request = counselingRequests[index];
                                 return CounselingListCard(
-                                  date: request['counselAvailableDate'] ??
-                                      '날짜 없음',
+                                  date: request['counselAvailableDate'],
                                   time: request['counselAvailableTime']
-                                          ?.substring(0, 5) ??
-                                      '시간 없음',
-                                  parentName: request['studentName'] ?? '이름 없음',
+                                      ?.substring(0, 5),
+                                  parentName: request['studentName'],
                                   onCancel: () => _cancelRequest(
                                     request['parentId'],
                                     request['counselAvailableTimeId'],
@@ -124,7 +122,7 @@ class _TeaCounselingWidgetState extends State<TeaCounselingWidget> {
                                   '예약된 상담이 없습니다.',
                                   style: TextStyle(
                                     fontSize: 16,
-                                    color: Colors.grey,
+                                    color: AppColors.darkGrey,
                                   ),
                                 ),
                               ),
