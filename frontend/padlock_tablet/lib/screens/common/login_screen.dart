@@ -1,3 +1,4 @@
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:padlock_tablet/screens/teacher/tea_main_screen.dart';
@@ -30,9 +31,14 @@ class _LoginScreenState extends State<LoginScreen> {
         String accessToken = data['accessToken'];
         String refreshToken = data['refreshToken'];
         String role = data['role'];
+        String memberId = data['memberId'].toString();
+        String classroomId = data['classroomId'].toString();
 
         await storage.write(key: 'accessToken', value: accessToken);
         await storage.write(key: 'refreshToken', value: refreshToken);
+        await storage.write(key: 'role', value: role);
+        await storage.write(key: 'memberId', value: memberId);
+        await storage.write(key: 'classroomId', value: classroomId);
 
         if (role == "TEACHER") {
           Navigator.of(context).pushReplacement(
@@ -114,7 +120,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
-                  minimumSize: const Size(double.infinity, 60),
+                  minimumSize: const ui.Size(double.infinity, 60),
                 ),
                 child: const Text(
                   '로그인하기',

@@ -17,6 +17,7 @@ class StuHomeWidget extends StatelessWidget {
   final MealInfo meal;
   final List<AppInfo> availableApps;
   final Function(XFile) onPictureTaken;
+  final VoidCallback onViewMealDetail;
 
   const StuHomeWidget({
     super.key,
@@ -25,6 +26,7 @@ class StuHomeWidget extends StatelessWidget {
     required this.meal,
     required this.availableApps,
     required this.onPictureTaken,
+    required this.onViewMealDetail,
   });
 
   @override
@@ -89,7 +91,8 @@ class StuHomeWidget extends StatelessWidget {
                       Expanded(
                         child: MealCard(
                           meal: meal,
-                          onViewDetail: () {/* 처리 */},
+                          onViewDetail:
+                              onViewMealDetail, // Pass the callback here
                         ),
                       ),
                     ],

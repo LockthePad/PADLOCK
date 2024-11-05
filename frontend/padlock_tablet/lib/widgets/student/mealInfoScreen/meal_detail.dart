@@ -33,16 +33,15 @@ class MealDetailWidget extends StatelessWidget {
               fontSize: 18,
             ),
           ),
-          SizedBox(
-            height: 20,
-          ),
+          const SizedBox(height: 20),
           Container(
             decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(30),
-                border: Border.all(
-                  color: AppColors.yellow,
-                  width: 1,
-                )),
+              borderRadius: BorderRadius.circular(30),
+              border: Border.all(
+                color: AppColors.yellow,
+                width: 1,
+              ),
+            ),
             child: Padding(
               padding: const EdgeInsets.all(12),
               child: Row(
@@ -52,15 +51,22 @@ class MealDetailWidget extends StatelessWidget {
                     width: 180,
                     height: 180,
                   ),
-                  const SizedBox(width: 40),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: mealData!.menu
-                        .map((item) => Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 2),
-                              child: Text(item),
-                            ))
-                        .toList(),
+                  const SizedBox(width: 30),
+                  Expanded(
+                    // 메뉴 아이템이 길 경우를 대비해 Expanded 추가
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: mealData!.menu
+                          .map((item) => Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 2),
+                                child: Text(
+                                  item,
+                                  style: const TextStyle(height: 1.5),
+                                ),
+                              ))
+                          .toList(),
+                    ),
                   ),
                 ],
               ),
@@ -83,7 +89,13 @@ class MealDetailWidget extends StatelessWidget {
                     '알러지 주의사항',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  Text(mealData!.allergy.join(', ')),
+                  const SizedBox(height: 4),
+                  Text(
+                    mealData!.allergyFood.isEmpty
+                        ? '알러지 유발 식품이 없습니다.'
+                        : mealData!.allergyFood.join(', '),
+                  ),
+                  const SizedBox(height: 8),
                   Text(
                     mealData!.calories,
                     style: TextStyle(
