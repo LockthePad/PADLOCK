@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:padlock_tablet/api/common/mealInfo_api.dart';
 import 'package:padlock_tablet/models/students/app_info.dart';
 import 'package:padlock_tablet/models/students/class_info.dart';
 import 'package:padlock_tablet/models/students/meal_info.dart';
+import 'package:padlock_tablet/models/students/meal_model.dart';
 import 'package:padlock_tablet/models/students/titmetable_item.dart';
 import 'package:padlock_tablet/widgets/common/mainScreen/header_widget.dart';
 import 'package:padlock_tablet/widgets/student/homeWidget/menu_item.dart';
@@ -11,6 +13,8 @@ import 'package:padlock_tablet/widgets/student/stu_mealInfo_widget.dart';
 import 'package:padlock_tablet/widgets/student/stu_note_convert.dart';
 import 'package:padlock_tablet/widgets/student/stu_notification_widget.dart';
 import 'package:camera/camera.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:intl/intl.dart';
 
 class StuMainScreen extends StatefulWidget {
   const StuMainScreen({super.key});
@@ -22,6 +26,50 @@ class StuMainScreen extends StatefulWidget {
 class _StuMainScreenState extends State<StuMainScreen> {
   MenuItemStu _selectedItem = MenuItemStu.home;
   XFile? _capturedPicture;
+  late MealInfo meal;
+  final storage = const FlutterSecureStorage();
+
+  @override
+  void initState() {
+    super.initState();
+    meal = MealInfo(dishes: ['급식 정보가 없습니다.']);
+    _initializeData();
+  }
+
+  Future<void> _initializeData() async {
+    await _fetchSelectedMealDetail(DateTime.now());
+  }
+
+  Future<void> _fetchSelectedMealDetail(DateTime selectedDate) async {
+    try {
+      String? accessToken = await storage.read(key: 'accessToken');
+      String? classroomId = await storage.read(key: 'classroomId');
+
+      if (accessToken != null && accessToken.isNotEmpty) {
+        final formattedDate = DateFormat('yyyyMMdd').format(selectedDate);
+
+        final mealDetail = await MealinfoApi.fetchDailyMeal(
+          token: accessToken,
+          today: formattedDate,
+          classroomId: classroomId!,
+        );
+
+        setState(() {
+          meal = MealInfo(
+            dishes: mealDetail['menu'].split(','),
+          );
+        });
+      }
+    } catch (e) {
+      print('Error loading meal detail: $e');
+      final formattedDate = DateFormat('yyyyMMdd').format(selectedDate);
+      setState(() {
+        meal = MealInfo(
+          dishes: ['급식 정보가 없습니다.'],
+        );
+      });
+    }
+  }
 
   // 테스트 데이터
   final ClassInfo currentClass = ClassInfo(
@@ -37,17 +85,6 @@ class _StuMainScreenState extends State<StuMainScreen> {
     TimeTableItem(period: '4교시', subject: '음악'),
     TimeTableItem(period: '5교시', subject: '사회'),
   ];
-
-  final MealInfo meal = MealInfo(
-    dishes: [
-      '백미밥',
-      '돼지국밥',
-      '돈육고추장볶음',
-      '돈까스',
-      '상추겉절이',
-      '요구르트',
-    ],
-  );
 
   final List<AppInfo> availableApps = [
     AppInfo(
@@ -74,6 +111,12 @@ class _StuMainScreenState extends State<StuMainScreen> {
     });
   }
 
+  void _navigateToMealInfo() {
+    setState(() {
+      _selectedItem = MenuItemStu.mealInfo;
+    });
+  }
+
   Widget _buildContent() {
     switch (_selectedItem) {
       case MenuItemStu.home:
@@ -83,6 +126,7 @@ class _StuMainScreenState extends State<StuMainScreen> {
           meal: meal,
           availableApps: availableApps,
           onPictureTaken: _handlePictureTaken, // 콜백 전달
+          onViewMealDetail: _navigateToMealInfo,
         );
       case MenuItemStu.notification:
         return const Center(child: StuNotificationWidget());
