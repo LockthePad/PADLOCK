@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ssafy.padlock.ocr.controller.response.OcrResponse;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -12,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OcrService {
@@ -43,6 +45,7 @@ public class OcrService {
                     .bodyToMono(String.class)
                     .block();
 
+            log.info("OCR 반환 데이터"+ responseBody);
             return objectMapper.readValue(responseBody, OcrResponse.class);
 
         } catch (Exception e) {
