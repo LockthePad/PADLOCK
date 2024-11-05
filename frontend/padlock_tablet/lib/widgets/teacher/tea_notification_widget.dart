@@ -1,20 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:padlock_tablet/models/teacher/notice_item.dart';
 import 'package:padlock_tablet/theme/colors.dart';
 import 'package:padlock_tablet/widgets/teacher/mainScreen/title_widget.dart';
 import 'package:padlock_tablet/widgets/teacher/notificationWidget/notification_detail.dart';
+import 'package:padlock_tablet/widgets/teacher/notificationWidget/notification_editing.dart';
 import 'package:padlock_tablet/widgets/teacher/notificationWidget/notification_writing.dart';
-
-class Notice {
-  final String title;
-  final String content;
-  final DateTime date;
-
-  Notice({
-    required this.title,
-    required this.content,
-    required this.date,
-  });
-}
+import 'package:padlock_tablet/api/teacher/notification_api.dart';
 
 class TeaNotificationWidget extends StatefulWidget {
   const TeaNotificationWidget({super.key});
@@ -24,37 +15,93 @@ class TeaNotificationWidget extends StatefulWidget {
 }
 
 class _TeaNotificationWidgetState extends State<TeaNotificationWidget> {
-  final List<Notice> notices = [
-    Notice(
-      title: "2025년 3,4학년 검..",
-      content: "2025학년도 3,4학년 검정고시 관련 안내사항입니다...",
-      date: DateTime(2024, 12, 27),
-    ),
-    Notice(
-      title: "2025년 3,4학년 검..",
-      content: "2025학년도 3,4학년 검정고시 관련 안내사항입니다...",
-      date: DateTime(2024, 12, 27),
-    ),
-    Notice(
-      title: "2025년 3,4학년 검..",
-      content: "2025학년도 3,4학년 검정고시 관련 안내사항입니다...",
-      date: DateTime(2024, 12, 27),
-    ),
-    Notice(
-      title: "2025년 3,4학년 검..",
-      content: "2025학년도 3,4학년 검정고시 관련 안내사항입니다...",
-      date: DateTime(2024, 12, 27),
-    ),
-    Notice(
-      title: "2025년 3,4학년 검..",
-      content: "2025학년도 3,4학년 검정고시 관련 안내사항입니다...",
-      date: DateTime(2024, 12, 27),
-    ),
-    // 추가 데이터...
-  ];
-
-  int selectedIndex = 0;
+  List<NoticeItem> notices = [];
+  int selectedIndex = -1;
   bool isWritingMode = true;
+  bool isEditingMode = false;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchNotifications();
+  }
+
+  Future<void> fetchNotifications() async {
+    try {
+      final fetchedNotices =
+          await NotificationApi.fetchNotifications(9); // classroomId 수정 가능
+      setState(() {
+        notices = fetchedNotices;
+        if (notices.isNotEmpty) {
+          selectedIndex = 0;
+          isWritingMode = false;
+          isEditingMode = false;
+        } else {
+          isWritingMode = true;
+        }
+      });
+    } catch (e) {
+      print('Failed to load notifications: $e');
+    }
+  }
+
+  Future<void> deleteNotification(int noticeId) async {
+    final success = await NotificationApi.deleteNotification(noticeId);
+    if (success) {
+      setState(() {
+        notices.removeWhere((notice) => notice.noticeId == noticeId);
+        if (notices.isEmpty) {
+          isWritingMode = true;
+        } else {
+          selectedIndex = 0;
+          isWritingMode = false;
+          isEditingMode = false;
+        }
+      });
+    } else {
+      print('Failed to delete notification');
+    }
+  }
+
+  void showDeleteConfirmationDialog(int noticeId) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: AppColors.white, // 배경색 설정
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30), // 모서리 둥글게 설정
+          ),
+          title: const Text(
+            " 삭제하시겠습니까?",
+            style: TextStyle(
+              fontSize: 18,
+            ),
+          ),
+          // content: const Text("삭제하시겠습니까?"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(), // 모달 닫기
+              child: const Text(
+                "취소",
+                style: TextStyle(color: AppColors.navy),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // 모달 닫기
+                deleteNotification(noticeId); // 삭제 요청
+              },
+              child: const Text(
+                "확인",
+                style: TextStyle(color: AppColors.navy),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -74,21 +121,30 @@ class _TeaNotificationWidgetState extends State<TeaNotificationWidget> {
                   child: Column(
                     children: [
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
+                          const Text(
+                            '   공지사항 목록',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                           GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  isWritingMode = true;
-                                });
-                              },
-                              child: const Text(
-                                '작성하기   ',
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  color: AppColors.black,
-                                ),
-                              )),
+                            onTap: () {
+                              setState(() {
+                                isWritingMode = true;
+                                isEditingMode = false;
+                                selectedIndex = -1;
+                              });
+                            },
+                            child: const Text(
+                              '작성하기   ',
+                              style: TextStyle(
+                                fontSize: 15,
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 5),
@@ -107,6 +163,7 @@ class _TeaNotificationWidgetState extends State<TeaNotificationWidget> {
                                       setState(() {
                                         selectedIndex = index;
                                         isWritingMode = false;
+                                        isEditingMode = false;
                                       });
                                     },
                                     child: Container(
@@ -135,10 +192,10 @@ class _TeaNotificationWidgetState extends State<TeaNotificationWidget> {
                                           const SizedBox(height: 10),
                                           Text(
                                             notices[index]
-                                                .date
+                                                .createdAt
                                                 .toString()
                                                 .substring(0, 10),
-                                            style: TextStyle(
+                                            style: const TextStyle(
                                               fontSize: 15,
                                               color: AppColors.darkGrey,
                                             ),
@@ -163,31 +220,52 @@ class _TeaNotificationWidgetState extends State<TeaNotificationWidget> {
                   color: AppColors.grey,
                 ),
                 const SizedBox(width: 8),
-                // 우측 상세 내용 또는 작성 페이지
+                // 우측 상세 내용, 작성 페이지, 또는 수정 페이지
                 Expanded(
                   flex: 3,
                   child: isWritingMode
                       ? NotificationWriting(onSubmit: () {
                           setState(() {
                             isWritingMode = false;
+                            fetchNotifications();
                           });
                         })
-                      : NotificationDetail(
-                          title: notices[selectedIndex].title,
-                          content: notices[selectedIndex].content,
-                          date: notices[selectedIndex]
-                              .date
-                              .toString()
-                              .substring(0, 10),
-                          onEdit: () {
-                            setState(() {
-                              isWritingMode = true;
-                            });
-                          },
-                          onDelete: () {
-                            // 삭제 기능 로직 추가
-                          },
-                        ),
+                      : isEditingMode
+                          ? NotificationEdit(
+                              initialTitle: notices[selectedIndex].title,
+                              initialContent: notices[selectedIndex].content,
+                              noticeId: notices[selectedIndex].noticeId,
+                              onSubmit: () {
+                                setState(() {
+                                  isEditingMode = false;
+                                  fetchNotifications();
+                                });
+                              },
+                            )
+                          : selectedIndex != -1
+                              ? NotificationDetail(
+                                  title: notices[selectedIndex].title,
+                                  content: notices[selectedIndex].content,
+                                  date: notices[selectedIndex]
+                                      .createdAt
+                                      .toString()
+                                      .substring(0, 10),
+                                  onEdit: () {
+                                    setState(() {
+                                      isEditingMode = true;
+                                    });
+                                  },
+                                  onDelete: () {
+                                    showDeleteConfirmationDialog(
+                                        notices[selectedIndex].noticeId);
+                                  },
+                                )
+                              : const Center(
+                                  child: Text(
+                                    '공지사항이 없습니다.',
+                                    style: TextStyle(fontSize: 18),
+                                  ),
+                                ),
                 ),
               ],
             ),

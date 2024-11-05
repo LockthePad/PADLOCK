@@ -1,4 +1,3 @@
-// notification_detail.dart
 import 'package:flutter/material.dart';
 import 'package:padlock_tablet/theme/colors.dart';
 
