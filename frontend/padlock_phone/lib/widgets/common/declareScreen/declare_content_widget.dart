@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:padlock_phone/apis/common/declare_api.dart';
 import 'package:padlock_phone/theme/colors.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class DeclareContentWidget extends StatefulWidget {
   const DeclareContentWidget({super.key});
@@ -10,11 +12,54 @@ class DeclareContentWidget extends StatefulWidget {
 
 class _DeclareContentWidgetState extends State<DeclareContentWidget> {
   final TextEditingController _controller = TextEditingController();
+  final storage = const FlutterSecureStorage();
+  bool _isLoading = false; // 로딩 상태 추가
 
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  // API 호출 메소드 추가
+  Future<void> _submitSuggestion() async {
+    if (_controller.text.trim().isEmpty) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final token = await storage.read(key: 'accessToken');
+
+      if (token == null) {
+        throw Exception('로그인이 필요합니다.');
+      }
+
+      await DeclareApi.createSuggestion(
+        token: token,
+        content: _controller.text.trim(),
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('건의사항이 성공적으로 제출되었습니다.')),
+        );
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('건의사항 제출에 실패했습니다: ${e.toString()}')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -61,27 +106,25 @@ class _DeclareContentWidgetState extends State<DeclareContentWidget> {
             width: double.infinity,
             height: 65,
             child: ElevatedButton(
-              onPressed: () {
-                // 제출 로직 구현
-                if (_controller.text.trim().isNotEmpty) {
-                  // API 호출 등의 제출 로직
-                  print('제출된 내용: ${_controller.text}');
-                  Navigator.pop(context);
-                }
-              },
+              onPressed:
+                  _isLoading ? null : _submitSuggestion, // 로딩 중일 때는 버튼 비활성화
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.yellow,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30),
                 ),
               ),
-              child: const Text(
-                '제출하기',
-                style: TextStyle(
-                  color: AppColors.white,
-                  fontSize: 24,
-                ),
-              ),
+              child: _isLoading
+                  ? const CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    )
+                  : const Text(
+                      '제출하기',
+                      style: TextStyle(
+                        color: AppColors.white,
+                        fontSize: 24,
+                      ),
+                    ),
             ),
           ),
         ],
