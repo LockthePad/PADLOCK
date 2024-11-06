@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:padlock_tablet/models/teacher/app_info.dart';
 import 'package:padlock_tablet/models/teacher/class_info.dart';
-import 'package:padlock_tablet/models/teacher/consultation_info.dart';
 import 'package:padlock_tablet/widgets/teacher/homeWidget/attendance_status.dart';
 import 'package:padlock_tablet/widgets/teacher/homeWidget/available_apps_card.dart';
 import 'package:padlock_tablet/widgets/teacher/homeWidget/consultation_status.dart';
@@ -28,7 +27,7 @@ class TeaHomeWidget extends StatelessWidget {
             child: CurrentClassBanner(classInfo: currentClass),
           ),
           const SizedBox(height: 10),
-          Expanded(
+          const Expanded(
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -40,21 +39,15 @@ class TeaHomeWidget extends StatelessWidget {
                   ),
                 ),
                 // 카드 사이 간격
-                const SizedBox(width: 10),
+                SizedBox(width: 10),
                 // BoardToTextCard를 오른쪽 절반 공간에 배치
                 Expanded(
-                  child: ConsultationStatus(
-                    consultations: [
-                      Consultation(time: '16시 00분', parentName: '정석영'),
-                      Consultation(time: '16시 30분', parentName: '홍수인'),
-                      Consultation(time: '16시 00분', parentName: '정석영'),
-                    ],
-                  ),
+                  child: ConsultationStatus(),
                 ),
               ],
             ),
           ),
-          SizedBox(
+          const SizedBox(
             height: 10,
           ),
           SizedBox(

@@ -9,12 +9,15 @@ import 'package:padlock_tablet/widgets/student/homeWidget/current_class_banner.d
 import 'package:padlock_tablet/widgets/student/homeWidget/meal_card.dart';
 import 'package:padlock_tablet/widgets/student/homeWidget/notice_card.dart';
 import 'package:padlock_tablet/widgets/student/homeWidget/timetable_card.dart';
+import 'package:camera/camera.dart';
 
 class StuHomeWidget extends StatelessWidget {
   final ClassInfo currentClass;
   final List<TimeTableItem> timeTable;
   final MealInfo meal;
   final List<AppInfo> availableApps;
+  final Function(XFile) onPictureTaken;
+  final VoidCallback onViewMealDetail;
 
   const StuHomeWidget({
     super.key,
@@ -22,12 +25,14 @@ class StuHomeWidget extends StatelessWidget {
     required this.timeTable,
     required this.meal,
     required this.availableApps,
+    required this.onPictureTaken,
+    required this.onViewMealDetail,
   });
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(left: 24, right: 24, bottom: 24),
+      padding: const EdgeInsets.only(left: 5, right: 24, bottom: 24),
       child: Column(
         children: [
           SizedBox(
@@ -57,7 +62,7 @@ class StuHomeWidget extends StatelessWidget {
                             // BoardToTextCard를 오른쪽 절반 공간에 배치
                             Expanded(
                               child: BoardToTextCard(
-                                onTap: () {/* 처리 */},
+                                onPictureTaken: onPictureTaken,
                               ),
                             ),
                           ],
@@ -86,7 +91,8 @@ class StuHomeWidget extends StatelessWidget {
                       Expanded(
                         child: MealCard(
                           meal: meal,
-                          onViewDetail: () {/* 처리 */},
+                          onViewDetail:
+                              onViewMealDetail, // Pass the callback here
                         ),
                       ),
                     ],

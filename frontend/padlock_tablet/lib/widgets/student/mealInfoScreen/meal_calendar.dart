@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:padlock_tablet/models/students/meal_model.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:padlock_tablet/theme/colors.dart';
-import 'package:padlock_tablet/widgets/student/mealInfoScreen/meal_data.dart';
 
 class MealCalendar extends StatefulWidget {
-  final Function(MealModel?) onDateSelected;
+  final Function(DateTime) onDateSelected;
+  final List<MealModel> mealData;
 
   const MealCalendar({
     super.key,
     required this.onDateSelected,
+    required this.mealData,
   });
 
   @override
@@ -22,12 +23,12 @@ class _MealCalendarState extends State<MealCalendar> {
 
   MealModel? _getMealForDay(DateTime date) {
     String dateString = date.toString().split(' ')[0].replaceAll('-', '');
-    return testMealData.firstWhere(
+    return widget.mealData.firstWhere(
       (meal) => meal.date == dateString,
       orElse: () => MealModel(
         date: dateString,
         menu: ['급식 정보가 없습니다.'],
-        allergy: [],
+        allergyFood: [],
         calories: '0kcal',
       ),
     );
@@ -41,9 +42,7 @@ class _MealCalendarState extends State<MealCalendar> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Padding(
-              padding: const EdgeInsets.only(
-                left: 25,
-              ),
+              padding: const EdgeInsets.only(left: 25),
               child: Text(
                 '${_focusedDay.year}년 ${_focusedDay.month}월',
                 style: const TextStyle(
@@ -74,7 +73,7 @@ class _MealCalendarState extends State<MealCalendar> {
               _selectedDay = selectedDay;
               _focusedDay = focusedDay;
             });
-            widget.onDateSelected(_getMealForDay(selectedDay));
+            widget.onDateSelected(selectedDay);
           },
           calendarStyle: const CalendarStyle(
             todayDecoration: BoxDecoration(
@@ -99,14 +98,7 @@ class _MealCalendarState extends State<MealCalendar> {
   }
 
   void _showFullMonthMeal(BuildContext context) {
-    // 해당 월의 첫 날과 마지막 날 구하기
     final firstDay = DateTime(_focusedDay.year, _focusedDay.month, 1);
-    final lastDay = DateTime(_focusedDay.year, _focusedDay.month + 1, 0);
-
-    // TableCalendar와 동일한 방식으로 첫 주의 시작일 계산
-    final startWeekday = firstDay.weekday;
-    final prevMonthDays = startWeekday == 7 ? 0 : startWeekday;
-    final startDate = firstDay.subtract(Duration(days: prevMonthDays));
 
     showDialog(
       context: context,
@@ -121,12 +113,11 @@ class _MealCalendarState extends State<MealCalendar> {
           ),
           child: Column(
             children: [
-              // 상단 타이틀 영역 부분을 다음과 같이 수정
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(width: 40), // 왼쪽 여백
+                  const SizedBox(width: 40),
                   Expanded(
                     child: Stack(
                       clipBehavior: Clip.none,
@@ -177,16 +168,8 @@ class _MealCalendarState extends State<MealCalendar> {
                 ],
               ),
               const SizedBox(height: 16),
-              // Container(
-              //   width: double.infinity,
-              //   height: 2,
-              //   color: AppColors.yellow,
-              // ),
-              const SizedBox(height: 16),
-
-              // 요일 헤더
               Row(
-                children: ['월', '화', '수', '목', '금'] // 주말 제외
+                children: ['월', '화', '수', '목', '금']
                     .map((day) => Expanded(
                           child: Container(
                             padding: const EdgeInsets.symmetric(vertical: 8),
@@ -202,23 +185,19 @@ class _MealCalendarState extends State<MealCalendar> {
                         ))
                     .toList(),
               ),
-
-              // 급식 달력 그리드
               Expanded(
                 child: GridView.builder(
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 5, // 5일만 표시
+                    crossAxisCount: 5,
                     childAspectRatio: 0.8,
                     crossAxisSpacing: 1,
                     mainAxisSpacing: 1,
                   ),
-                  itemCount: 30, // 5일 x 7주
+                  itemCount: 30,
                   itemBuilder: (context, index) {
-                    // 주의 시작일(월요일)을 찾기
-                    final weekNumber = index ~/ 5; // 현재 주 번호
-                    final weekday = index % 5; // 현재 요일 (0: 월 ~ 4: 금)
+                    final weekNumber = index ~/ 5;
+                    final weekday = index % 5;
 
-                    // 해당 주의 월요일 찾기
                     final weekStart =
                         firstDay.subtract(Duration(days: firstDay.weekday - 1));
                     final currentDate =
@@ -227,7 +206,6 @@ class _MealCalendarState extends State<MealCalendar> {
                     final isCurrentMonth =
                         currentDate.month == _focusedDay.month;
 
-                    // 이번 달의 날짜가 아닌 경우 빈 컨테이너 반환
                     if (!isCurrentMonth) {
                       return Container(
                         decoration: BoxDecoration(
@@ -237,17 +215,7 @@ class _MealCalendarState extends State<MealCalendar> {
                       );
                     }
 
-                    final dateStr =
-                        '${currentDate.year}${currentDate.month.toString().padLeft(2, '0')}${currentDate.day.toString().padLeft(2, '0')}';
-                    final meal = testMealData.firstWhere(
-                      (m) => m.date == dateStr,
-                      orElse: () => MealModel(
-                        date: dateStr,
-                        menu: [],
-                        allergy: [],
-                        calories: '0kcal',
-                      ),
-                    );
+                    final meal = _getMealForDay(currentDate);
 
                     return Container(
                       decoration: BoxDecoration(
@@ -267,7 +235,7 @@ class _MealCalendarState extends State<MealCalendar> {
                           const Divider(height: 8),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            children: meal.menu
+                            children: meal!.menu
                                 .map((item) => Text(
                                       item,
                                       style: const TextStyle(

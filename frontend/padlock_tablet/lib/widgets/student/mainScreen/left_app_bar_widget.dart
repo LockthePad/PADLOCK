@@ -16,8 +16,6 @@ class LeftAppBarWidget extends StatelessWidget {
     MenuItemData('홈', Icons.home_rounded, MenuItemStu.home),
     MenuItemData('공지사항', Icons.campaign_rounded, MenuItemStu.notification),
     MenuItemData('필기 변환하기', Icons.edit_note_rounded, MenuItemStu.boardToText),
-    MenuItemData(
-        '우리반 시간표', Icons.calendar_today_rounded, MenuItemStu.timetable),
     MenuItemData('이달의 급식', Icons.restaurant_menu_rounded, MenuItemStu.mealInfo),
   ];
 

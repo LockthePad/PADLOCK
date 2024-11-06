@@ -3,8 +3,11 @@ import 'package:padlock_tablet/models/teacher/app_info.dart';
 import 'package:padlock_tablet/models/teacher/class_info.dart';
 import 'package:padlock_tablet/widgets/teacher/mainScreen/header_widget.dart';
 import 'package:padlock_tablet/widgets/teacher/mainScreen/left_app_bar_widget.dart';
+import 'package:padlock_tablet/widgets/teacher/tea_attendance_check_widget.dart';
 import 'package:padlock_tablet/widgets/teacher/tea_counseling_widget.dart';
 import 'package:padlock_tablet/widgets/teacher/tea_home_widget.dart';
+import 'package:padlock_tablet/widgets/teacher/tea_mealInfo_widget.dart';
+import 'package:padlock_tablet/widgets/teacher/tea_notification_widget.dart';
 import 'package:padlock_tablet/widgets/teacher/tea_suggestion_widget.dart';
 import 'package:padlock_tablet/widgets/teacher/tea_timetable_widget.dart';
 
@@ -101,25 +104,6 @@ class _TeaMainScreenState extends State<TeaMainScreen> {
     },
   ];
 
-  // 상담 예약 데이터
-  final List<Map<String, dynamic>> counselingRequests = [
-    {'date': '2024년 10월 21일', 'time': '16시 00분', 'parentName': '홍길동'},
-    {'date': '2024년 10월 22일', 'time': '16시 30분', 'parentName': '김철수'},
-    {'date': '2024년 10월 23일', 'time': '17시 00분', 'parentName': '이영희'},
-    {'date': '2024년 10월 21일', 'time': '16시 00분', 'parentName': '홍길동'},
-    {'date': '2024년 10월 22일', 'time': '16시 30분', 'parentName': '김철수'},
-    {'date': '2024년 10월 23일', 'time': '17시 00분', 'parentName': '이영희'},
-    {'date': '2024년 10월 21일', 'time': '16시 00분', 'parentName': '홍길동'},
-    {'date': '2024년 10월 22일', 'time': '16시 30분', 'parentName': '김철수'},
-    {'date': '2024년 10월 23일', 'time': '17시 00분', 'parentName': '이영희'},
-    {'date': '2024년 10월 21일', 'time': '16시 00분', 'parentName': '홍길동'},
-    {'date': '2024년 10월 22일', 'time': '16시 30분', 'parentName': '김철수'},
-    {'date': '2024년 10월 23일', 'time': '17시 00분', 'parentName': '이영희'},
-    {'date': '2024년 10월 21일', 'time': '16시 00분', 'parentName': '홍길동'},
-    {'date': '2024년 10월 22일', 'time': '16시 30분', 'parentName': '김철수'},
-    {'date': '2024년 10월 23일', 'time': '17시 00분', 'parentName': '이영희'},
-  ];
-
   Widget _buildContent() {
     switch (_selectedItem) {
       case MenuItem.home:
@@ -128,18 +112,18 @@ class _TeaMainScreenState extends State<TeaMainScreen> {
           availableApps: availableApps,
         );
       case MenuItem.notification:
-        return const Center(child: Text('공지사항'));
+        return const TeaNotificationWidget();
       case MenuItem.attendanceCheck:
-        return const Center(child: Text('우리반 출석현황'));
+        return const TeaAttendanceCheckWidget();
       case MenuItem.timetable:
-        return TeaTimetableWidget();
+        return const TeaTimetableWidget();
       case MenuItem.mealInfo:
-        return const Center(child: Text('이번달 급식'));
+        return const TeaMealinfoWidget();
       case MenuItem.rightInfo:
         return TeaSuggestionWidget(suggestions: suggestions);
       case MenuItem.counseling:
         // Counseling 데이터 전달
-        return TeaCounselingWidget(counselingRequests: counselingRequests);
+        return const TeaCounselingWidget();
     }
   }
 

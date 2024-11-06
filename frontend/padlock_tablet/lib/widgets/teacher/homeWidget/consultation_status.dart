@@ -1,14 +1,40 @@
 import 'package:flutter/material.dart';
+import 'package:padlock_tablet/api/teacher/counseling_api.dart';
 import 'package:padlock_tablet/theme/colors.dart';
-import 'package:padlock_tablet/models/teacher/consultation_info.dart'; // 모델 임포트
+import 'package:padlock_tablet/models/teacher/consultation_info.dart';
 
-class ConsultationStatus extends StatelessWidget {
-  final List<Consultation> consultations;
+class ConsultationStatus extends StatefulWidget {
+  const ConsultationStatus({super.key});
 
-  const ConsultationStatus({
-    super.key,
-    required this.consultations,
-  });
+  @override
+  State<ConsultationStatus> createState() => _ConsultationStatusState();
+}
+
+class _ConsultationStatusState extends State<ConsultationStatus> {
+  List<Consultation> consultations = [];
+
+  // API 호출 함수
+  Future<void> fetchTodayConsultations() async {
+    try {
+      final data = await CounselingApi.fetchTodayCounseling();
+      setState(() {
+        consultations = data
+            .map((json) => Consultation(
+                  time: json['counselAvailableTime'].substring(0, 5),
+                  parentName: json['studentName'],
+                ))
+            .toList();
+      });
+    } catch (e) {
+      print('Failed to load today\'s counseling data: $e');
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchTodayConsultations(); // 화면 초기화 시 API 호출
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,36 +58,39 @@ class ConsultationStatus extends StatelessWidget {
           // 왼쪽: 상담 목록
           Expanded(
             flex: 3,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  '오늘의 상담 예약현황',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                ...consultations.map((consultation) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 5.0),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.circle,
-                            size: 8, color: AppColors.black),
-                        const SizedBox(width: 10),
-                        Text(
-                          '${consultation.time} ${consultation.parentName} 학부모님',
-                          style: const TextStyle(
-                            fontSize: 15,
-                          ),
-                        ),
-                      ],
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    '오늘의 상담 예약현황',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
                     ),
-                  );
-                }).toList(),
-              ],
+                  ),
+                  const SizedBox(height: 10),
+                  ...consultations.map((consultation) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 5.0),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.circle,
+                              size: 8, color: AppColors.black),
+                          const SizedBox(width: 10),
+                          Text(
+                            '${consultation.time} ${consultation.parentName} 학부모님',
+                            style: const TextStyle(
+                              fontSize: 15,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                ],
+              ),
             ),
           ),
           const SizedBox(width: 30),

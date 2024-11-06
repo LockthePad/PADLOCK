@@ -1,38 +1,71 @@
 import 'package:flutter/material.dart';
+import 'package:padlock_tablet/api/teacher/counseling_api.dart';
 import 'package:padlock_tablet/theme/colors.dart';
 import 'package:padlock_tablet/widgets/teacher/mainScreen/title_widget.dart';
 import 'package:padlock_tablet/widgets/teacher/counselingWidget/counseling_calendar.dart';
 import 'package:padlock_tablet/widgets/teacher/counselingWidget/counseling_list_card.dart';
 
-class TeaCounselingWidget extends StatelessWidget {
-  final List<Map<String, dynamic>> counselingRequests;
+class TeaCounselingWidget extends StatefulWidget {
+  const TeaCounselingWidget({super.key});
 
-  const TeaCounselingWidget({
-    super.key,
-    required this.counselingRequests,
-  });
+  @override
+  State<TeaCounselingWidget> createState() => _TeaCounselingWidgetState();
+}
+
+class _TeaCounselingWidgetState extends State<TeaCounselingWidget> {
+  List<Map<String, dynamic>> counselingRequests = [];
+
+  Future<void> fetchCounselingRequests() async {
+    try {
+      final data = await CounselingApi.fetchCounselingRequests();
+      setState(() {
+        counselingRequests = data;
+      });
+    } catch (e) {
+      print('Failed to load counseling requests: $e');
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchCounselingRequests();
+  }
+
+  Future<void> _cancelRequest(int parentId, int counselAvailableTimeId) async {
+    final success = await CounselingApi.cancelCounselingRequest(
+        parentId, counselAvailableTimeId);
+    if (success) {
+      setState(() {
+        counselingRequests.removeWhere((request) =>
+            request['parentId'] == parentId &&
+            request['counselAvailableTimeId'] == counselAvailableTimeId);
+      });
+    } else {
+      print('Failed to cancel the counseling request');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(right: 30, bottom: 30),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const TitleWidget(title: '학부모상담 예약현황'),
-          const SizedBox(height: 30),
-          Expanded(
-            child: Row(
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.only(right: 30, bottom: 30),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const TitleWidget(title: '학부모상담 예약현황'),
+            const SizedBox(height: 30),
+            Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // 왼쪽: 캘린더와 텍스트
                 Expanded(
                   flex: 1,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        '  2024년 10월',
+                        '  2024년 11월',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -40,19 +73,16 @@ class TeaCounselingWidget extends StatelessWidget {
                       ),
                       const SizedBox(height: 15),
                       CounselingCalendar(
-                        onDateSelected: (selectedDate) {
-                          print('선택된 날짜: $selectedDate');
-                        },
+                        onDateSelected: (selectedDate) {},
                       ),
                     ],
                   ),
                 ),
                 const VerticalDivider(
-                  width: 100,
-                  thickness: 1,
+                  width: 90,
+                  thickness: 1.5,
                   color: AppColors.grey,
                 ),
-                // 오른쪽: 상담 신청 목록 (스크롤 가능)
                 Expanded(
                   flex: 1,
                   child: Column(
@@ -65,46 +95,46 @@ class TeaCounselingWidget extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(height: 0),
-                      Expanded(
-                        child: counselingRequests.isNotEmpty
-                            ? Scrollbar(
-                                thumbVisibility: true,
-                                child: ListView.builder(
-                                  itemCount: counselingRequests.length,
-                                  itemBuilder: (context, index) {
-                                    final request = counselingRequests[index];
-                                    return CounselingListCard(
-                                      date:
-                                          request['date'] ?? '날짜 없음', // 기본 값 설정
-                                      time:
-                                          request['time'] ?? '시간 없음', // 기본 값 설정
-                                      parentName: request['parentName'] ??
-                                          '이름 없음', // 기본 값 설정
-                                    );
-                                  },
-                                ),
-                              )
-                            : const Center(
+                      const SizedBox(height: 10),
+                      counselingRequests.isNotEmpty
+                          ? ListView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: counselingRequests.length,
+                              itemBuilder: (context, index) {
+                                final request = counselingRequests[index];
+                                return CounselingListCard(
+                                  date: request['counselAvailableDate'],
+                                  time: request['counselAvailableTime']
+                                      ?.substring(0, 5),
+                                  parentName: request['studentName'],
+                                  onCancel: () => _cancelRequest(
+                                    request['parentId'],
+                                    request['counselAvailableTimeId'],
+                                  ),
+                                );
+                              },
+                            )
+                          : const Center(
+                              child: Padding(
+                                padding: EdgeInsets.only(top: 20),
                                 child: Text(
                                   '예약된 상담이 없습니다.',
                                   style: TextStyle(
                                     fontSize: 16,
-                                    color: Colors.grey,
+                                    color: AppColors.darkGrey,
                                   ),
                                 ),
                               ),
-                      ),
+                            ),
                     ],
                   ),
                 ),
-                SizedBox(
-                  width: 30,
-                )
+                const SizedBox(width: 30),
               ],
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
