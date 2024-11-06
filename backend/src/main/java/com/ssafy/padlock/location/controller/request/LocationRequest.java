@@ -10,6 +10,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LocationRequest {
+    private Long classroomId;
     private Long memberId;
     private double latitude;
     private double longitude;
