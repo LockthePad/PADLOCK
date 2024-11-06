@@ -1,32 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:padlock_phone/apis/common/notice_api.dart';
 import 'package:padlock_phone/screens/common/notice_detail_screen.dart';
 import 'package:padlock_phone/theme/colors.dart';
 
-class NoticeItem {
-  final int noticeId;
-  final String title;
-  final String content;
-  final String createdAt;
-
-  NoticeItem({
-    required this.noticeId,
-    required this.title,
-    required this.content,
-    required this.createdAt,
-  });
-
-  factory NoticeItem.fromJson(Map<String, dynamic> json) {
-    return NoticeItem(
-      noticeId: json['noticeId'] as int,
-      title: json['title'] as String,
-      content: json['content'] as String,
-      createdAt: json['createdAt'] as String,
-    );
-  }
-}
-
 class NoticeContentWidget extends StatelessWidget {
-  final List<NoticeItem> notices;
+  final List<Notice> notices; // NoticeItem 대신 Notice 모델 사용
 
   const NoticeContentWidget({
     super.key,
@@ -72,7 +50,7 @@ class NoticeContentWidget extends StatelessWidget {
 }
 
 class NoticeItemWidget extends StatelessWidget {
-  final NoticeItem notice;
+  final Notice notice; // NoticeItem 대신 Notice 모델 사용
 
   const NoticeItemWidget({
     super.key,
@@ -131,7 +109,6 @@ class NoticeItemWidget extends StatelessWidget {
                         style:
                             Theme.of(context).textTheme.titleMedium?.copyWith(
                                   fontWeight: FontWeight.bold,
-                                  // fontSize: 18,
                                 ),
                       ),
                     ),
