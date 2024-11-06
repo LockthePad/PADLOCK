@@ -3,7 +3,6 @@ import 'package:padlock_tablet/api/common/mealInfo_api.dart';
 import 'package:padlock_tablet/models/students/app_info.dart';
 import 'package:padlock_tablet/models/students/class_info.dart';
 import 'package:padlock_tablet/models/students/meal_info.dart';
-import 'package:padlock_tablet/models/students/meal_model.dart';
 import 'package:padlock_tablet/models/students/titmetable_item.dart';
 import 'package:padlock_tablet/widgets/common/mainScreen/header_widget.dart';
 import 'package:padlock_tablet/widgets/student/homeWidget/menu_item.dart';
@@ -62,7 +61,6 @@ class _StuMainScreenState extends State<StuMainScreen> {
       }
     } catch (e) {
       print('Error loading meal detail: $e');
-      final formattedDate = DateFormat('yyyyMMdd').format(selectedDate);
       setState(() {
         meal = MealInfo(
           dishes: ['급식 정보가 없습니다.'],
