@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
-import 'package:padlock_tablet/screens/student/cameraScreen/camera_screen.dart';
+import 'package:padlock_tablet/screens/student/cameraScreen/camera_for_ocr.dart';
 import 'package:padlock_tablet/widgets/common/card_container.dart';
 
 class BoardToTextCard extends StatelessWidget {
@@ -18,7 +18,7 @@ class BoardToTextCard extends StatelessWidget {
         final XFile? picture = await Navigator.push<XFile>(
           context,
           MaterialPageRoute(
-            builder: (_) => CameraPage(cameras: cameras),
+            builder: (_) => CameraForOcr(cameras: cameras),
           ),
         );
 
