@@ -1,17 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:padlock_phone/apis/common/notice_api.dart';
 import 'package:padlock_phone/screens/common/notice_detail_screen.dart';
 import 'package:padlock_phone/theme/colors.dart';
 
 class NoticeContentLatestWidget extends StatelessWidget {
-  final String title;
-  final String content;
-  final String createdAt;
+  final Notice notice; // 개별 필드 대신 Notice 모델 사용
 
   const NoticeContentLatestWidget({
     super.key,
-    required this.title,
-    required this.content,
-    required this.createdAt,
+    required this.notice,
   });
 
   @override
@@ -39,9 +36,9 @@ class NoticeContentLatestWidget extends StatelessWidget {
                 context,
                 MaterialPageRoute(
                   builder: (context) => NoticeDetailScreen(
-                    title: this.title,
-                    content: this.content,
-                    createdAt: this.createdAt,
+                    title: notice.title,
+                    content: notice.content,
+                    createdAt: notice.createdAt,
                   ),
                 ),
               );
@@ -59,7 +56,7 @@ class NoticeContentLatestWidget extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      title,
+                      notice.title,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.bold,
                             fontSize: 20,
@@ -67,7 +64,7 @@ class NoticeContentLatestWidget extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      _formatDate(createdAt),
+                      _formatDate(notice.createdAt),
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                     const SizedBox(height: 8),
@@ -78,7 +75,7 @@ class NoticeContentLatestWidget extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      content,
+                      notice.content,
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                   ],
@@ -92,7 +89,6 @@ class NoticeContentLatestWidget extends StatelessWidget {
   }
 
   String _formatDate(String dateString) {
-    // "2024.10.29 17:35" 형식의 문자열을 파싱
     final parts = dateString.split(' ');
     final dateParts = parts[0].split('.');
 
