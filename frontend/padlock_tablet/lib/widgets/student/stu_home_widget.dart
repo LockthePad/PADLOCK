@@ -18,6 +18,7 @@ class StuHomeWidget extends StatelessWidget {
   final List<AppInfo> availableApps;
   final Function(XFile) onPictureTaken;
   final VoidCallback onViewMealDetail;
+  final VoidCallback onViewNotice;
 
   const StuHomeWidget({
     super.key,
@@ -27,6 +28,7 @@ class StuHomeWidget extends StatelessWidget {
     required this.availableApps,
     required this.onPictureTaken,
     required this.onViewMealDetail,
+    required this.onViewNotice,
   });
 
   @override
@@ -54,7 +56,7 @@ class StuHomeWidget extends StatelessWidget {
                             // NoticeCard를 왼쪽 절반 공간에 배치
                             Expanded(
                               child: NoticeCard(
-                                onTap: () {/* 처리 */},
+                                onTap: onViewNotice,
                               ),
                             ),
                             // 카드 사이 간격

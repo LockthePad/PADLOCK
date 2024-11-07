@@ -1,6 +1,8 @@
 // 로그인 시 보여질 로그인 위젯입니다.
 // 학생, 학부모 로그인에 따라 이동 페이지가 달라져야 합니다.
 
+// 지금은 notUsed
+
 import 'package:flutter/material.dart';
 import 'package:padlock_tablet/screens/student/stu_main_screen.dart';
 import 'package:padlock_tablet/screens/teacher/tea_main_screen.dart';

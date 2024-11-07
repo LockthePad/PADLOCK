@@ -18,8 +18,58 @@ class _LoginScreenState extends State<LoginScreen> {
   final _memberCodeController = TextEditingController();
   final _passwordController = TextEditingController();
   final storage = const FlutterSecureStorage();
+  String? errorMessage;
+  bool isLoading = false;
+
+  // newstock에서 가져온 자동로그인 코드입니다. 리프레쉬 토큰 api 만들어지면 memberApi파일에 함수 생성하고, 연결하면 됩니다.
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   WidgetsBinding.instance.addPostFrameCallback((_) {
+  //     _asyncMethod();
+  //   });
+  // }
+
+  // _asyncMethod() async {
+  //   // read 함수로 key값에 맞는 정보를 불러오고 데이터타입은 String 타입
+  //   // 데이터가 없을때는 null을 반환
+  //   userInfo = await storage.read(key: 'accessToken');
+  //   String? accessToken = await storage.read(key: 'accessToken');
+  //   String? refreshToken = await storage.read(key: 'refreshToken');
+
+  //   if (accessToken == null || refreshToken == null) {
+  //     print('로그인이 필요합니다');
+  //     return;
+  //   }
+
+  //   final response = await MemberApiService().memberInfo();
+
+  //   if (response.statusCode == 200) {
+  //     print('accessToken이 만료되었습니다. 토큰을 재발급합니다.');
+  //     await MemberApiService().refreshToken(refreshToken);
+
+  //     final retryResponse = await MemberApiService().memberInfo();
+
+  //     if (retryResponse.statusCode == 200) {
+  //       print('토큰 재발급 후 회원 정보 조회 성공');
+  //       // 회원 정보가 성공적으로 조회되면 메인 화면으로 이동
+  //       Navigator.of(context).pushReplacement(
+  //           MaterialPageRoute(builder: (_) => const MainScreen()));
+  //     } else {
+  //       print('재발급 후 회원 정보 조회 실패');
+  //     }
+  //   } else if (response.statusCode == 200) {
+  //     print("토큰 유효 확인 성공");
+  //     Navigator.of(context).pushReplacement(
+  //         MaterialPageRoute(builder: (_) => const MainScreen()));
+  //   }
+  //   setState(() {});
+  // }
 
   Future<void> _login() async {
+    setState(() {
+      isLoading = true;
+    });
     final memberCode = _memberCodeController.text;
     final password = _passwordController.text;
 
@@ -49,10 +99,18 @@ class _LoginScreenState extends State<LoginScreen> {
         }
       } else {
         print("로그인 실패 - 상태 코드: ${response.statusCode}");
+        setState(() {
+          isLoading = true;
+          errorMessage = "아이디 또는 비밀번호를 확인하세요!!";
+        });
       }
     } catch (e, stackTrace) {
       print("오류 발생: $e");
       print(stackTrace);
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
@@ -127,7 +185,20 @@ class _LoginScreenState extends State<LoginScreen> {
                   style: TextStyle(fontSize: 20, color: AppColors.white),
                 ),
               ),
-              const SizedBox(height: 100),
+              SizedBox(
+                height: 20,
+              ),
+              if (errorMessage != null)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 5),
+                  child: Center(
+                    child: Text(
+                      errorMessage!,
+                      style: const TextStyle(color: Colors.red, fontSize: 20),
+                    ),
+                  ),
+                ),
+              const SizedBox(height: 80),
               Image.asset('assets/yellowLogo.png'),
             ],
           ),

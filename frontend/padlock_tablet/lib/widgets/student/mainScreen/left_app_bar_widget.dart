@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:padlock_tablet/screens/common/login_screen.dart';
 import 'package:padlock_tablet/theme/colors.dart';
 import 'package:padlock_tablet/widgets/student/homeWidget/menu_item.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class LeftAppBarWidget extends StatelessWidget {
   final MenuItemStu selectedItem;
   final Function(MenuItemStu) onItemSelected;
+  final storage = const FlutterSecureStorage();
 
   LeftAppBarWidget({
     super.key,
@@ -85,8 +88,12 @@ class LeftAppBarWidget extends StatelessWidget {
               color: AppColors.grey,
             ),
             title: const Text('로그아웃'),
-            onTap: () {
-              // 로그아웃 처리
+            onTap: () async {
+              await storage.delete(key: "accessToken");
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => LoginScreen()),
+              );
             },
           ),
           SizedBox(
