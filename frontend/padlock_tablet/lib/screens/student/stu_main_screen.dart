@@ -115,6 +115,12 @@ class _StuMainScreenState extends State<StuMainScreen> {
     });
   }
 
+  void _navigateToNotice() {
+    setState(() {
+      _selectedItem = MenuItemStu.notification;
+    });
+  }
+
   Widget _buildContent() {
     switch (_selectedItem) {
       case MenuItemStu.home:
@@ -123,8 +129,9 @@ class _StuMainScreenState extends State<StuMainScreen> {
           timeTable: timeTable,
           meal: meal,
           availableApps: availableApps,
-          onPictureTaken: _handlePictureTaken, // 콜백 전달
+          onPictureTaken: _handlePictureTaken,
           onViewMealDetail: _navigateToMealInfo,
+          onViewNotice: _navigateToNotice,
         );
       case MenuItemStu.notification:
         return const Center(child: StuNotificationWidget());
