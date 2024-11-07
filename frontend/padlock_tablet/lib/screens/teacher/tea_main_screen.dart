@@ -29,21 +29,21 @@ class _TeaMainScreenState extends State<TeaMainScreen> {
   );
 
   final List<AppInfo> availableApps = [
-    AppInfo(
-      name: 'Flipnote',
-      iconData: Icons.edit_note,
-      backgroundColor: Colors.red,
-    ),
-    AppInfo(
-      name: 'Wear',
-      iconData: Icons.watch,
-      backgroundColor: Colors.blue,
-    ),
-    AppInfo(
-      name: 'Galaxy Shop',
-      iconData: Icons.shopping_bag,
-      backgroundColor: Colors.blue,
-    ),
+    // AppInfo(
+    //   name: 'Flipnote',
+    //   iconData: Icons.edit_note,
+    //   backgroundColor: Colors.red,
+    // ),
+    // AppInfo(
+    //   name: 'Wear',
+    //   iconData: Icons.watch,
+    //   backgroundColor: Colors.blue,
+    // ),
+    // AppInfo(
+    //   name: 'Galaxy Shop',
+    //   iconData: Icons.shopping_bag,
+    //   backgroundColor: Colors.blue,
+    // ),
   ];
 
   // 건의함 데이터
