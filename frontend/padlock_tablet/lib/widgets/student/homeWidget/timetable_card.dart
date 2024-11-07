@@ -88,7 +88,6 @@ class _TimetableCardState extends State<TimetableCard> {
               fontSize: 22,
             ),
           ),
-          const SizedBox(height: 16),
           Expanded(
             child: ListView.builder(
               itemCount: widget.timeTable.length,
