@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:padlock_tablet/api/common/mealInfo_api.dart';
+import 'package:padlock_tablet/api/student/timetable_api.dart';
 import 'package:padlock_tablet/models/students/app_info.dart';
 import 'package:padlock_tablet/models/students/class_info.dart';
 import 'package:padlock_tablet/models/students/meal_info.dart';
@@ -28,6 +29,7 @@ class _StuMainScreenState extends State<StuMainScreen> {
   XFile? _capturedPicture;
   late MealInfo meal;
   final storage = const FlutterSecureStorage();
+  List<TimeTableItem> todayTimeTable = [];
 
   @override
   void initState() {
@@ -38,6 +40,7 @@ class _StuMainScreenState extends State<StuMainScreen> {
 
   Future<void> _initializeData() async {
     await _fetchSelectedMealDetail(DateTime.now());
+    await _fetchTodayTimeTable();
   }
 
   Future<void> _fetchSelectedMealDetail(DateTime selectedDate) async {
@@ -70,6 +73,44 @@ class _StuMainScreenState extends State<StuMainScreen> {
     }
   }
 
+  Future<void> _fetchTodayTimeTable() async {
+    try {
+      String? accessToken = await storage.read(key: 'accessToken');
+      String? classroomId = await storage.read(key: 'classroomId');
+
+      if (accessToken != null && accessToken.isNotEmpty) {
+        final schedules = await TimetableApi.fetchSchedules(
+          token: accessToken,
+          classroomId: classroomId!,
+        );
+
+        // 오늘 요일 구하기 (월=MON, 화=TUE, ...)
+        final today = DateFormat('E').format(DateTime.now()).toUpperCase();
+
+        // 오늘 날짜의 시간표만 필터링
+        final todaySchedules =
+            schedules.where((schedule) => schedule['day'] == today).toList();
+
+        // 교시 순으로 정렬
+        todaySchedules.sort((a, b) => a['period'].compareTo(b['period']));
+
+        setState(() {
+          todayTimeTable = todaySchedules
+              .map((schedule) => TimeTableItem(
+                    period: '${schedule['period']}교시',
+                    subject: schedule['subject'],
+                  ))
+              .toList();
+        });
+      }
+    } catch (e) {
+      print('Error loading timetable: $e');
+      setState(() {
+        todayTimeTable = []; // 에러 시 빈 시간표
+      });
+    }
+  }
+
   // 테스트 데이터
   final ClassInfo currentClass = ClassInfo(
     date: '2024년 10월 22일 화요일',
@@ -77,6 +118,7 @@ class _StuMainScreenState extends State<StuMainScreen> {
     subject: '국어',
   );
 
+  // 시간표 테스트 데이터
   final List<TimeTableItem> timeTable = [
     TimeTableItem(period: '1교시', subject: '과학'),
     TimeTableItem(period: '2교시', subject: '수학'),
@@ -165,7 +207,7 @@ class _StuMainScreenState extends State<StuMainScreen> {
       case MenuItemStu.home:
         return StuHomeWidget(
           currentClass: currentClass,
-          timeTable: timeTable,
+          timeTable: todayTimeTable,
           meal: meal,
           availableApps: availableApps,
           onPictureTaken: _handlePictureTaken,
