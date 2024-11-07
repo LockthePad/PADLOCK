@@ -4,8 +4,11 @@ import com.ssafy.padlock.common.util.ScheduleCalculator;
 import com.ssafy.padlock.location.domain.Location;
 import com.ssafy.padlock.location.repository.LocationRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Map;
@@ -35,6 +38,15 @@ public class LocationService {
                 (currentTime.isAfter(endTime) && currentTime.isBefore(rangeEnd))) {
             Location location = new Location(memberId, latitude, longitude, now);
             locationRepository.save(location);
+        }
+    }
+
+    @Scheduled(cron = "0 0 0,13 * * MON-FRI") //평일 12시, 00시에 데이터 삭제
+    public void deleteLocation(){
+        DayOfWeek dayOfWeek = LocalDate.now().getDayOfWeek();
+
+        if(dayOfWeek != DayOfWeek.SATURDAY && dayOfWeek != DayOfWeek.SUNDAY){
+            locationRepository.deleteAll();
         }
     }
 }
