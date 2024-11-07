@@ -14,6 +14,7 @@ import 'package:padlock_tablet/widgets/student/stu_notification_widget.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
+import 'package:padlock_tablet/widgets/student/stu_saving_note_widget.dart';
 
 class StuMainScreen extends StatefulWidget {
   const StuMainScreen({super.key});
@@ -121,6 +122,44 @@ class _StuMainScreenState extends State<StuMainScreen> {
     });
   }
 
+  // Add test data for saved notes
+  final List<Map<String, dynamic>> testSavedNotes = [
+    {
+      'content':
+          '동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세',
+      'timestamp': '2024.11.06 수요일 2교시 국어시간'
+    },
+    {'content': '자리 바꾸고 싶어요○○○○○○○○○○○○○○○○', 'timestamp': '2024.11.06 09:07'},
+    {
+      'content': '자리 바꾸고 싶어요○○○○○○○○○○○○○○○○',
+      'timestamp': '2024.10.23 10:59 정석영'
+    },
+    {
+      'content': '자리 바꾸고 싶어요○○○○○○○○○○○○○○○○',
+      'timestamp': '2024.10.23 10:59 정석영'
+    },
+    {
+      'content': '자리 바꾸고 싶어요○○○○○○○○○○○○○○○○',
+      'timestamp': '2024.10.23 10:59 정석영'
+    },
+    {
+      'content': '자리 바꾸고 싶어요○○○○○○○○○○○○○○○○',
+      'timestamp': '2024.10.23 10:59 정석영'
+    },
+    {
+      'content': '자리 바꾸고 싶어요○○○○○○○○○○○○○○○○',
+      'timestamp': '2024.10.23 10:59 정석영'
+    },
+    {
+      'content': '자리 바꾸고 싶어요○○○○○○○○○○○○○○○○',
+      'timestamp': '2024.10.23 10:59 정석영'
+    },
+    {
+      'content': '자리 바꾸고 싶어요○○○○○○○○○○○○○○○○',
+      'timestamp': '2024.10.23 10:59 정석영'
+    },
+  ];
+
   Widget _buildContent() {
     switch (_selectedItem) {
       case MenuItemStu.home:
@@ -142,6 +181,11 @@ class _StuMainScreenState extends State<StuMainScreen> {
             onPictureTaken: _handlePictureTaken, // 동일한 콜백 전달
           ),
         );
+      case MenuItemStu.savingNotes:
+        return Center(
+            child: StuSavingNoteWidget(
+          savingNotes: testSavedNotes,
+        ));
       case MenuItemStu.mealInfo:
         return const Center(
           child: StuMealinfoWidget(),

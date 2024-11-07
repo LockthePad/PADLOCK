@@ -94,6 +94,7 @@ class _LoginScreenState extends State<LoginScreen> {
           Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (_) => const TeaMainScreen()));
         } else if (role == "STUDENT") {
+          debugPrint(accessToken);
           Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (_) => const StuMainScreen()));
         }
