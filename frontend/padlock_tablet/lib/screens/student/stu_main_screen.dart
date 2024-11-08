@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:padlock_tablet/api/common/current_period_api.dart';
 import 'package:padlock_tablet/api/common/mealInfo_api.dart';
+import 'package:padlock_tablet/api/student/pull_notes_api.dart';
 import 'package:padlock_tablet/api/student/timetable_api.dart';
 import 'package:padlock_tablet/models/students/app_info.dart';
 import 'package:padlock_tablet/models/students/meal_info.dart';
@@ -34,6 +35,8 @@ class _StuMainScreenState extends State<StuMainScreen> {
   final storage = const FlutterSecureStorage();
   List<TimeTableItem> todayTimeTable = [];
   Timer? _periodicTimer;
+  List<Map<String, dynamic>> savedNotes = [];
+  bool isLoadingNotes = false;
 
   @override
   void initState() {
@@ -47,6 +50,39 @@ class _StuMainScreenState extends State<StuMainScreen> {
     );
     _initializeData();
     _startPeriodicFetch();
+    _fetchSavedNotes();
+  }
+
+  Future<void> _fetchSavedNotes() async {
+    setState(() {
+      isLoadingNotes = true;
+    });
+
+    try {
+      String? accessToken = await storage.read(key: 'accessToken');
+      if (accessToken == null || accessToken.isEmpty) {
+        throw Exception('No access token found');
+      }
+
+      final notes = await PullNotesApi.fetchNotes(token: accessToken);
+
+      setState(() {
+        // Note 객체들을 Map으로 변환하여 저장
+        savedNotes = notes.map((note) => note.toSavingNote()).toList();
+        isLoadingNotes = false;
+      });
+    } catch (e) {
+      print('Error fetching notes: $e');
+      setState(() {
+        savedNotes = [];
+        isLoadingNotes = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('노트를 불러오는데 실패했습니다.')),
+        );
+      }
+    }
   }
 
   @override
@@ -71,6 +107,8 @@ class _StuMainScreenState extends State<StuMainScreen> {
       // home으로 돌아올 때 데이터 새로고침
       if (newItem == MenuItemStu.home) {
         _initializeData();
+      } else if (newItem == MenuItemStu.savingNotes) {
+        _fetchSavedNotes(); // 저장된 노트 화면으로 이동할 때 데이터 새로고침
       }
     });
   }
@@ -234,42 +272,42 @@ class _StuMainScreenState extends State<StuMainScreen> {
   }
 
   // Add test data for saved notes
-  final List<Map<String, dynamic>> testSavedNotes = [
-    {
-      'content':
-          '동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세',
-      'timestamp': '2024.11.06 수요일 2교시 국어시간'
-    },
-    {'content': '자리 바꾸고 싶어요○○○○○○○○○○○○○○○○', 'timestamp': '2024.11.06 09:07'},
-    {
-      'content': '자리 바꾸고 싶어요○○○○○○○○○○○○○○○○',
-      'timestamp': '2024.10.23 10:59 정석영'
-    },
-    {
-      'content': '자리 바꾸고 싶어요○○○○○○○○○○○○○○○○',
-      'timestamp': '2024.10.23 10:59 정석영'
-    },
-    {
-      'content': '자리 바꾸고 싶어요○○○○○○○○○○○○○○○○',
-      'timestamp': '2024.10.23 10:59 정석영'
-    },
-    {
-      'content': '자리 바꾸고 싶어요○○○○○○○○○○○○○○○○',
-      'timestamp': '2024.10.23 10:59 정석영'
-    },
-    {
-      'content': '자리 바꾸고 싶어요○○○○○○○○○○○○○○○○',
-      'timestamp': '2024.10.23 10:59 정석영'
-    },
-    {
-      'content': '자리 바꾸고 싶어요○○○○○○○○○○○○○○○○',
-      'timestamp': '2024.10.23 10:59 정석영'
-    },
-    {
-      'content': '자리 바꾸고 싶어요○○○○○○○○○○○○○○○○',
-      'timestamp': '2024.10.23 10:59 정석영'
-    },
-  ];
+  // final List<Map<String, dynamic>> testSavedNotes = [
+  //   {
+  //     'content':
+  //         '동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세',
+  //     'timestamp': '2024.11.06 수요일 2교시 국어시간'
+  //   },
+  //   {'content': '자리 바꾸고 싶어요○○○○○○○○○○○○○○○○', 'timestamp': '2024.11.06 09:07'},
+  //   {
+  //     'content': '자리 바꾸고 싶어요○○○○○○○○○○○○○○○○',
+  //     'timestamp': '2024.10.23 10:59 정석영'
+  //   },
+  //   {
+  //     'content': '자리 바꾸고 싶어요○○○○○○○○○○○○○○○○',
+  //     'timestamp': '2024.10.23 10:59 정석영'
+  //   },
+  //   {
+  //     'content': '자리 바꾸고 싶어요○○○○○○○○○○○○○○○○',
+  //     'timestamp': '2024.10.23 10:59 정석영'
+  //   },
+  //   {
+  //     'content': '자리 바꾸고 싶어요○○○○○○○○○○○○○○○○',
+  //     'timestamp': '2024.10.23 10:59 정석영'
+  //   },
+  //   {
+  //     'content': '자리 바꾸고 싶어요○○○○○○○○○○○○○○○○',
+  //     'timestamp': '2024.10.23 10:59 정석영'
+  //   },
+  //   {
+  //     'content': '자리 바꾸고 싶어요○○○○○○○○○○○○○○○○',
+  //     'timestamp': '2024.10.23 10:59 정석영'
+  //   },
+  //   {
+  //     'content': '자리 바꾸고 싶어요○○○○○○○○○○○○○○○○',
+  //     'timestamp': '2024.10.23 10:59 정석영'
+  //   },
+  // ];
 
   Widget _buildContent() {
     switch (_selectedItem) {
@@ -289,13 +327,14 @@ class _StuMainScreenState extends State<StuMainScreen> {
         return Center(
           child: StuNoteConvertWidget(
             picture: _capturedPicture,
-            onPictureTaken: _handlePictureTaken, // 동일한 콜백 전달
+            onPictureTaken: _handlePictureTaken,
+            currentClass: currentClass, // 현재 수업 정보 전달
           ),
         );
       case MenuItemStu.savingNotes:
         return Center(
             child: StuSavingNoteWidget(
-          savingNotes: testSavedNotes,
+          savingNotes: savedNotes,
         ));
       case MenuItemStu.mealInfo:
         return const Center(
