@@ -126,8 +126,8 @@ class CurrentPeriodApi {
           case 'OUT_OF_CLASS_TIME':
             return CurrentPeriodInfo(
               date: date,
-              period: '수업 시간',
-              subject: '외',
+              period: '수업 이외',
+              subject: '시간',
               backgroundColor: AppColors.yellow,
             );
           default:
