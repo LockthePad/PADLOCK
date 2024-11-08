@@ -1,58 +1,80 @@
 import 'package:flutter/material.dart';
+import 'package:padlock_tablet/api/student/timetable_api.dart';
 import 'package:padlock_tablet/models/students/titmetable_item.dart';
 import 'package:padlock_tablet/theme/colors.dart';
 import 'package:padlock_tablet/widgets/common/card_container.dart';
 import 'package:padlock_tablet/widgets/student/homeWidget/timetable_modal_widget.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-class TimetableCard extends StatelessWidget {
+class TimetableCard extends StatefulWidget {
   final List<TimeTableItem> timeTable;
   final VoidCallback? onViewAll;
 
-  TimetableCard({
+  const TimetableCard({
     super.key,
     required this.timeTable,
     this.onViewAll,
   });
 
-  //이건 테스트데이터 샘플
-  final List<TimeTableData> sampleTimeTableData = [
-    // 월요일
-    TimeTableData(day: "월", period: "1", subject: "과학"),
-    TimeTableData(day: "월", period: "2", subject: "과학"),
-    TimeTableData(day: "월", period: "3", subject: "영어"),
-    TimeTableData(day: "월", period: "4", subject: "음악"),
-    TimeTableData(day: "월", period: "5", subject: "사회"),
+  @override
+  State<TimetableCard> createState() => _TimetableCardState();
+}
 
-    // 화요일
-    TimeTableData(day: "화", period: "1", subject: "과학"),
-    TimeTableData(day: "화", period: "2", subject: "국어"),
-    TimeTableData(day: "화", period: "3", subject: "영어"),
-    TimeTableData(day: "화", period: "4", subject: "체육"),
-    TimeTableData(day: "화", period: "5", subject: "사회"),
-    TimeTableData(day: "화", period: "6", subject: "미술"),
+class _TimetableCardState extends State<TimetableCard> {
+  List<TimeTableData> fullTimeTable = [];
+  final storage = const FlutterSecureStorage();
 
-    // 수요일
-    TimeTableData(day: "수", period: "1", subject: "과학"),
-    TimeTableData(day: "수", period: "2", subject: "과학"),
-    TimeTableData(day: "수", period: "3", subject: "체육"),
-    TimeTableData(day: "수", period: "4", subject: "음악"),
-    TimeTableData(day: "수", period: "5", subject: "과학"),
-    TimeTableData(day: "수", period: "6", subject: "특활"),
+  @override
+  void initState() {
+    super.initState();
+    _fetchFullTimeTable();
+  }
 
-    // 목요일
-    TimeTableData(day: "목", period: "1", subject: "미술"),
-    TimeTableData(day: "목", period: "2", subject: "미술"),
-    TimeTableData(day: "목", period: "3", subject: "영어"),
-    TimeTableData(day: "목", period: "4", subject: "사회"),
-    TimeTableData(day: "목", period: "5", subject: "국어"),
+  Future<void> _fetchFullTimeTable() async {
+    try {
+      String? accessToken = await storage.read(key: 'accessToken');
+      String? classroomId = await storage.read(key: 'classroomId');
 
-    // 금요일
-    TimeTableData(day: "금", period: "1", subject: "과학"),
-    TimeTableData(day: "금", period: "2", subject: "과학"),
-    TimeTableData(day: "금", period: "3", subject: "영어"),
-    TimeTableData(day: "금", period: "4", subject: "국어"),
-    TimeTableData(day: "금", period: "5", subject: "사회"),
-  ];
+      if (accessToken != null && accessToken.isNotEmpty) {
+        final schedules = await TimetableApi.fetchSchedules(
+          token: accessToken,
+          classroomId: classroomId!,
+        );
+
+        // API 응답을 TimeTableData 형식으로 변환
+        final convertedSchedules = schedules
+            .map((schedule) => TimeTableData(
+                  day: _convertDayToKorean(schedule['day']),
+                  period: schedule['period'].toString(),
+                  subject: schedule['subject'],
+                ))
+            .toList();
+
+        setState(() {
+          fullTimeTable = convertedSchedules;
+        });
+      }
+    } catch (e) {
+      print('Error loading full timetable: $e');
+    }
+  }
+
+  String _convertDayToKorean(String englishDay) {
+    switch (englishDay) {
+      case 'MON':
+        return '월';
+      case 'TUE':
+        return '화';
+      case 'WED':
+        return '수';
+      case 'THU':
+        return '목';
+      case 'FRI':
+        return '금';
+      default:
+        return '';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -64,20 +86,18 @@ class TimetableCard extends StatelessWidget {
             '오늘의 시간표',
             style: TextStyle(
               fontSize: 22,
-              // fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 16),
           Expanded(
             child: ListView.builder(
-              itemCount: timeTable.length,
+              itemCount: widget.timeTable.length,
               itemBuilder: (context, index) {
-                final item = timeTable[index];
+                final item = widget.timeTable[index];
                 return _buildTimeTableItem(item);
               },
             ),
           ),
-          if (onViewAll != null)
+          if (widget.onViewAll != null)
             Container(
               width: double.infinity,
               height: 45,
@@ -88,7 +108,7 @@ class TimetableCard extends StatelessWidget {
                     context: context,
                     barrierColor: Colors.black.withOpacity(0.7),
                     builder: (context) => TimetableModalWidget(
-                      timeTableData: sampleTimeTableData,
+                      timeTableData: fullTimeTable, // API에서 가져온 전체 시간표 사용
                     ),
                   );
                 },

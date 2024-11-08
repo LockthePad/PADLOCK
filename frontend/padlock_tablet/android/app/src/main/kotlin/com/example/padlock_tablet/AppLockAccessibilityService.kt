@@ -57,7 +57,10 @@ class AppLockAccessibilityService : AccessibilityService() {
    "com.sec.android.app.launcher",  // 삼성 홈 런처
    "com.samsung.android.app.smartcapture", // 삼성 스크린샷
    "com.sec.android.provider.badge", // 삼성 배지 프로바이더
-   "com.android.chrome"
+   "com.android.chrome",
+   "com.miraeasset.trade",
+   "com.google.android.youtube",
+   "com.coupang.mobile",
 )
 
     override fun onServiceConnected() {

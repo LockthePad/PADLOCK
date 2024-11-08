@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:padlock_tablet/api/common/current_period_api.dart';
 import 'package:padlock_tablet/models/students/app_info.dart';
-import 'package:padlock_tablet/models/students/class_info.dart';
 import 'package:padlock_tablet/models/students/meal_info.dart';
 import 'package:padlock_tablet/models/students/titmetable_item.dart';
 import 'package:padlock_tablet/widgets/student/homeWidget/available_apps_card.dart';
@@ -12,12 +12,13 @@ import 'package:padlock_tablet/widgets/student/homeWidget/timetable_card.dart';
 import 'package:camera/camera.dart';
 
 class StuHomeWidget extends StatelessWidget {
-  final ClassInfo currentClass;
+  final CurrentPeriodInfo currentClass;
   final List<TimeTableItem> timeTable;
   final MealInfo meal;
   final List<AppInfo> availableApps;
   final Function(XFile) onPictureTaken;
   final VoidCallback onViewMealDetail;
+  final VoidCallback onViewNotice;
 
   const StuHomeWidget({
     super.key,
@@ -27,6 +28,7 @@ class StuHomeWidget extends StatelessWidget {
     required this.availableApps,
     required this.onPictureTaken,
     required this.onViewMealDetail,
+    required this.onViewNotice,
   });
 
   @override
@@ -54,7 +56,7 @@ class StuHomeWidget extends StatelessWidget {
                             // NoticeCard를 왼쪽 절반 공간에 배치
                             Expanded(
                               child: NoticeCard(
-                                onTap: () {/* 처리 */},
+                                onTap: onViewNotice,
                               ),
                             ),
                             // 카드 사이 간격

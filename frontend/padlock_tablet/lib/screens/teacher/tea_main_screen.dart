@@ -29,79 +29,21 @@ class _TeaMainScreenState extends State<TeaMainScreen> {
   );
 
   final List<AppInfo> availableApps = [
-    AppInfo(
-      name: 'Flipnote',
-      iconData: Icons.edit_note,
-      backgroundColor: Colors.red,
-    ),
-    AppInfo(
-      name: 'Wear',
-      iconData: Icons.watch,
-      backgroundColor: Colors.blue,
-    ),
-    AppInfo(
-      name: 'Galaxy Shop',
-      iconData: Icons.shopping_bag,
-      backgroundColor: Colors.blue,
-    ),
-  ];
-
-  // 건의함 데이터
-  final List<Map<String, dynamic>> suggestions = [
-    {
-      'content': '자리 바꾸고 싶어요.',
-      'timestamp': '2024.10.23 10:59',
-      'author': '정석영',
-      'isRead': false,
-    },
-    {
-      'content': '책상이 삐걱거려요.',
-      'timestamp': '2024.10.22 14:30',
-      'author': '홍수인',
-      'isRead': true,
-    },
-    {
-      'content': '창문 고쳐주세요.',
-      'timestamp': '2024.10.21 09:20',
-      'author': '김철수',
-      'isRead': false,
-    },
-    {
-      'content': '자리 바꾸고 싶어요.',
-      'timestamp': '2024.10.23 10:59',
-      'author': '정석영',
-      'isRead': false,
-    },
-    {
-      'content': '책상이 삐걱거려요.',
-      'timestamp': '2024.10.22 14:30',
-      'author': '홍수인',
-      'isRead': true,
-    },
-    {
-      'content': '창문 고쳐주세요.',
-      'timestamp': '2024.10.21 09:20',
-      'author': '김철수',
-      'isRead': false,
-    },
-    {
-      'content': '자리 바꾸고 싶어요.',
-      'timestamp': '2024.10.23 10:59',
-      'author': '정석영',
-      'isRead': false,
-    },
-    {
-      'content': '책상이 삐걱거려요.',
-      'timestamp': '2024.10.22 14:30',
-      'author': '홍수인',
-      'isRead': true,
-    },
-    {
-      'content': '창문 고쳐주세요.',
-      'timestamp': '2024.10.21 09:20',
-      'author': '김철수',
-      'isRead': false,
-    },
+    // AppInfo(
+    //   name: 'Flipnote',
+    //   iconData: Icons.edit_note,
+    //   backgroundColor: Colors.red,
+    // ),
+    // AppInfo(
+    //   name: 'Wear',
+    //   iconData: Icons.watch,
+    //   backgroundColor: Colors.blue,
+    // ),
+    // AppInfo(
+    //   name: 'Galaxy Shop',
+    //   iconData: Icons.shopping_bag,
+    //   backgroundColor: Colors.blue,
+    // ),
   ];
 
   Widget _buildContent() {
@@ -120,9 +62,8 @@ class _TeaMainScreenState extends State<TeaMainScreen> {
       case MenuItem.mealInfo:
         return const TeaMealinfoWidget();
       case MenuItem.rightInfo:
-        return TeaSuggestionWidget(suggestions: suggestions);
+        return TeaSuggestionWidget();
       case MenuItem.counseling:
-        // Counseling 데이터 전달
         return const TeaCounselingWidget();
     }
   }

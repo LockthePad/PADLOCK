@@ -68,9 +68,9 @@ class _TeaNotificationWidgetState extends State<TeaNotificationWidget> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: AppColors.white, // 배경색 설정
+          backgroundColor: AppColors.white,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30), // 모서리 둥글게 설정
+            borderRadius: BorderRadius.circular(30),
           ),
           title: const Text(
             " 삭제하시겠습니까?",
@@ -78,19 +78,18 @@ class _TeaNotificationWidgetState extends State<TeaNotificationWidget> {
               fontSize: 18,
             ),
           ),
-          // content: const Text("삭제하시겠습니까?"),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(), // 모달 닫기
               child: const Text(
                 "취소",
                 style: TextStyle(color: AppColors.navy),
               ),
+              onPressed: () => Navigator.of(context).pop(), // 모달 닫기
             ),
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // 모달 닫기
-                deleteNotification(noticeId); // 삭제 요청
+                Navigator.of(context).pop();
+                deleteNotification(noticeId);
               },
               child: const Text(
                 "확인",

@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:padlock_tablet/screens/common/login_screen.dart';
 import 'package:padlock_tablet/theme/colors.dart';
 import 'package:padlock_tablet/widgets/student/homeWidget/menu_item.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class LeftAppBarWidget extends StatelessWidget {
   final MenuItemStu selectedItem;
   final Function(MenuItemStu) onItemSelected;
+  final storage = const FlutterSecureStorage();
 
   LeftAppBarWidget({
     super.key,
@@ -15,7 +18,10 @@ class LeftAppBarWidget extends StatelessWidget {
   final List<MenuItemData> _menuItems = [
     MenuItemData('홈', Icons.home_rounded, MenuItemStu.home),
     MenuItemData('공지사항', Icons.campaign_rounded, MenuItemStu.notification),
-    MenuItemData('필기 변환하기', Icons.edit_note_rounded, MenuItemStu.boardToText),
+    MenuItemData('필기 변환하기', Icons.document_scanner_rounded,
+        MenuItemStu.boardToText), // 또는 Icons.camera_alt_rounded
+    MenuItemData('저장한 필기', Icons.folder_rounded,
+        MenuItemStu.savingNotes), // 또는 Icons.note_rounded
     MenuItemData('이달의 급식', Icons.restaurant_menu_rounded, MenuItemStu.mealInfo),
   ];
 
@@ -85,8 +91,12 @@ class LeftAppBarWidget extends StatelessWidget {
               color: AppColors.grey,
             ),
             title: const Text('로그아웃'),
-            onTap: () {
-              // 로그아웃 처리
+            onTap: () async {
+              await storage.delete(key: "accessToken");
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => LoginScreen()),
+              );
             },
           ),
           SizedBox(

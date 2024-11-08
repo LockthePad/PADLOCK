@@ -47,6 +47,7 @@ dependencies:
   flutter_local_notifications: ^18.0.0
   device_info_plus: ^11.1.1
   android_intent_plus: ^5.2.0
+  table_calendar: ^3.0.6
 
 dev_dependencies:
   flutter_test:

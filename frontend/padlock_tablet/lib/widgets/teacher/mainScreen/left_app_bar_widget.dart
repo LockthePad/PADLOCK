@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:padlock_tablet/theme/colors.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:padlock_tablet/screens/common/login_screen.dart';
 
 enum MenuItem {
   home,
@@ -14,6 +16,7 @@ enum MenuItem {
 class LeftAppBarWidget extends StatelessWidget {
   final MenuItem selectedItem;
   final Function(MenuItem) onItemSelected;
+  final storage = const FlutterSecureStorage();
 
   const LeftAppBarWidget({
     super.key,
@@ -104,8 +107,12 @@ class LeftAppBarWidget extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 15,
                 )),
-            onTap: () {
-              // 로그아웃 처리
+            onTap: () async {
+              await storage.delete(key: "accessToken");
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => LoginScreen()),
+              );
             },
           ),
           SizedBox(
