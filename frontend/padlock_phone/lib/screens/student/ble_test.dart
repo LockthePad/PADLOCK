@@ -36,7 +36,7 @@ class _MyHomePageState extends State<MyHomePage> {
   DateTime? lastDetectedTime;
   Timer? _attendanceTimer;
   Timer? _scanTimer;
-  final String targetMacAddress = '44:A6:E5:13:10:28'; // 목표 기기 MAC 주소
+  final String targetMacAddress = 'AC:23:3F:F6:BD:A2'; // 목표 기기 MAC 주소
   String detectionStatus = "감지되지 않음";
   String debugInfo = ""; // 디버깅 정보 저장용
 

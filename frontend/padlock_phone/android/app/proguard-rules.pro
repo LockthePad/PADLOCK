@@ -1,0 +1,4 @@
+-keep class com.example.padlock_phone.** { *; }
+-keep class id.flutter.flutter_background_service.** { *; }
+-keep class io.flutter.plugins.** { *; }
+-keep class com.dexterous.** { *; } # For flutter_local_notifications
