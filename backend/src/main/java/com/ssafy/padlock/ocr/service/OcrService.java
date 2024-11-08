@@ -3,6 +3,7 @@ package com.ssafy.padlock.ocr.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ssafy.padlock.ocr.controller.request.OcrRequest;
 import com.ssafy.padlock.ocr.controller.response.OcrResponse;
+import com.ssafy.padlock.ocr.controller.response.OcrTotalResponse;
 import com.ssafy.padlock.ocr.domain.Ocr;
 import com.ssafy.padlock.ocr.repository.OcrRepository;
 import jakarta.annotation.PostConstruct;
@@ -17,6 +18,9 @@ import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -71,5 +75,15 @@ public class OcrService {
         } catch (Exception e) {
             throw new RuntimeException("OCR content를 String으로 변환하는 중 오류 발생", e);
         }
+    }
+
+    public List<OcrTotalResponse> getOcrList(Long memberId) {
+        List<Ocr> ocrList = ocrRepository.findByMemberId(memberId);
+        return ocrList.stream()
+                .map(ocr -> new OcrTotalResponse(
+                        Arrays.asList(ocr.getContent().split(",")), // 문자열을 리스트로 변환
+                        ocr.getCreateDate()
+                ))
+                .collect(Collectors.toList());
     }
 }
