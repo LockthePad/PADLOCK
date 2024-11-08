@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:padlock_phone/screens/common/declare_screen.dart';
 import 'package:padlock_phone/screens/common/notice_screen.dart';
 import 'package:padlock_phone/screens/parent/par_counsel_screen.dart';
 import 'package:padlock_phone/screens/parent/par_gps_check_screen.dart';
