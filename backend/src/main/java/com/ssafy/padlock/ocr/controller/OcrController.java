@@ -1,5 +1,6 @@
 package com.ssafy.padlock.ocr.controller;
 
+import com.ssafy.padlock.auth.supports.LoginMember;
 import com.ssafy.padlock.ocr.controller.request.OcrRequest;
 import com.ssafy.padlock.ocr.controller.response.OcrResponse;
 import com.ssafy.padlock.ocr.service.OcrService;
@@ -21,7 +22,7 @@ public class OcrController {
     }
 
     @PostMapping("/ocr/save")
-    public void saveOcr(@RequestBody OcrRequest ocrRequest) {
-        ocrService.saveOcr(ocrRequest);
+    public void saveOcr(@LoginMember Long memberId, @RequestBody OcrRequest ocrRequest) {
+        ocrService.saveOcr(memberId ,ocrRequest);
     }
 }

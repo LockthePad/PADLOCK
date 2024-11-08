@@ -60,13 +60,13 @@ public class OcrService {
         }
     }
 
-    public void saveOcr(OcrRequest ocrRequest) {
+    public void saveOcr(Long memberId, OcrRequest ocrRequest) {
         try {
             // List<String> content를 JSON 문자열로 변환
             String content = objectMapper.writeValueAsString(ocrRequest.getContent());
             String date = ocrRequest.getCreateDate();
 
-            Ocr ocr = new Ocr(ocrRequest.getMemberId(), content, date);
+            Ocr ocr = new Ocr(memberId, content, date);
             ocrRepository.save(ocr);
         } catch (Exception e) {
             throw new RuntimeException("OCR content를 String으로 변환하는 중 오류 발생", e);
