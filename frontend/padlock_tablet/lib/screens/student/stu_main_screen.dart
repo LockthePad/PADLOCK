@@ -17,6 +17,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
 import 'package:padlock_tablet/widgets/student/stu_saving_note_widget.dart';
+import 'dart:async';
 
 class StuMainScreen extends StatefulWidget {
   const StuMainScreen({super.key});
@@ -32,6 +33,7 @@ class _StuMainScreenState extends State<StuMainScreen> {
   late CurrentPeriodInfo currentClass;
   final storage = const FlutterSecureStorage();
   List<TimeTableItem> todayTimeTable = [];
+  Timer? _periodicTimer;
 
   @override
   void initState() {
@@ -44,6 +46,33 @@ class _StuMainScreenState extends State<StuMainScreen> {
       backgroundColor: AppColors.grey,
     );
     _initializeData();
+    _startPeriodicFetch();
+  }
+
+  @override
+  void dispose() {
+    _periodicTimer?.cancel(); // 타이머 정리
+    super.dispose();
+  }
+
+  // 주기적 업데이트를 위한 타이머 시작
+  void _startPeriodicFetch() {
+    // 1분마다 현재 수업 정보 업데이트
+    _periodicTimer = Timer.periodic(const Duration(minutes: 1), (timer) {
+      if (_selectedItem == MenuItemStu.home) {
+        _fetchCurrentPeriod();
+      }
+    });
+  }
+
+  void _handleItemSelected(MenuItemStu newItem) {
+    setState(() {
+      _selectedItem = newItem;
+      // home으로 돌아올 때 데이터 새로고침
+      if (newItem == MenuItemStu.home) {
+        _initializeData();
+      }
+    });
   }
 
   Future<void> _initializeData() async {
@@ -284,11 +313,7 @@ class _StuMainScreenState extends State<StuMainScreen> {
           children: [
             LeftAppBarWidget(
               selectedItem: _selectedItem,
-              onItemSelected: (MenuItemStu newItem) {
-                setState(() {
-                  _selectedItem = newItem;
-                });
-              },
+              onItemSelected: _handleItemSelected,
             ),
             // const VerticalDivider(width: 1),
             Expanded(
