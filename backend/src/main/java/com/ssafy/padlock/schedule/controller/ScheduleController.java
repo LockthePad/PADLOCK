@@ -3,6 +3,7 @@ package com.ssafy.padlock.schedule.controller;
 import com.ssafy.padlock.auth.supports.LoginMember;
 import com.ssafy.padlock.schedule.controller.request.UpdateScheduleRequest;
 import com.ssafy.padlock.schedule.controller.response.ClassScheduleResponse;
+import com.ssafy.padlock.schedule.controller.response.CurrentPeriodResponse;
 import com.ssafy.padlock.schedule.service.ScheduleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -36,5 +37,10 @@ public class ScheduleController {
                                               @RequestParam String day, @RequestParam int period) {
         scheduleService.deleteClassSchedule(teacherId, classroomId, day, period);
         return ResponseEntity.ok(String.format("시간표 삭제 : 요일=%s, 교시=%d", day, period));
+    }
+
+    @GetMapping("/classrooms/{classroomId}/current-period")
+    public CurrentPeriodResponse getCurrentPeriodStatus(@PathVariable Long classroomId) {
+        return scheduleService.getCurrentPeriodStatus(classroomId);
     }
 }
