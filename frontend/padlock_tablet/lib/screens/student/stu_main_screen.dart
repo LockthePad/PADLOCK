@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:padlock_tablet/api/common/current_period_api.dart';
 import 'package:padlock_tablet/api/common/mealInfo_api.dart';
 import 'package:padlock_tablet/api/student/timetable_api.dart';
 import 'package:padlock_tablet/models/students/app_info.dart';
-import 'package:padlock_tablet/models/students/class_info.dart';
 import 'package:padlock_tablet/models/students/meal_info.dart';
 import 'package:padlock_tablet/models/students/titmetable_item.dart';
+import 'package:padlock_tablet/theme/colors.dart';
 import 'package:padlock_tablet/widgets/common/mainScreen/header_widget.dart';
 import 'package:padlock_tablet/widgets/student/homeWidget/menu_item.dart';
 import 'package:padlock_tablet/widgets/student/mainScreen/left_app_bar_widget.dart';
@@ -28,6 +29,7 @@ class _StuMainScreenState extends State<StuMainScreen> {
   MenuItemStu _selectedItem = MenuItemStu.home;
   XFile? _capturedPicture;
   late MealInfo meal;
+  late CurrentPeriodInfo currentClass;
   final storage = const FlutterSecureStorage();
   List<TimeTableItem> todayTimeTable = [];
 
@@ -35,12 +37,49 @@ class _StuMainScreenState extends State<StuMainScreen> {
   void initState() {
     super.initState();
     meal = MealInfo(dishes: ['급식 정보가 없습니다.']);
+    currentClass = CurrentPeriodInfo(
+      date: '로딩중...',
+      period: '',
+      subject: '',
+      backgroundColor: AppColors.grey,
+    );
     _initializeData();
   }
 
   Future<void> _initializeData() async {
     await _fetchSelectedMealDetail(DateTime.now());
     await _fetchTodayTimeTable();
+    await _fetchCurrentPeriod();
+  }
+
+  Future<void> _fetchCurrentPeriod() async {
+    try {
+      String? accessToken = await storage.read(key: 'accessToken');
+      String? classroomId = await storage.read(key: 'classroomId');
+
+      if (accessToken != null && accessToken.isNotEmpty) {
+        final currentPeriod = await CurrentPeriodApi.fetchCurrentPeriod(
+          token: accessToken,
+          classroomId: classroomId!,
+        );
+
+        setState(() {
+          currentClass = currentPeriod;
+        });
+      }
+    } catch (e) {
+      print('Error loading current period: $e');
+      // 에러 시 기본값 설정
+      setState(() {
+        currentClass = CurrentPeriodInfo(
+          date:
+              '${DateTime.now().year}년 ${DateTime.now().month}월 ${DateTime.now().day}일',
+          period: '오류',
+          subject: '발생',
+          backgroundColor: AppColors.grey,
+        );
+      });
+    }
   }
 
   Future<void> _fetchSelectedMealDetail(DateTime selectedDate) async {
@@ -112,11 +151,12 @@ class _StuMainScreenState extends State<StuMainScreen> {
   }
 
   // 테스트 데이터
-  final ClassInfo currentClass = ClassInfo(
-    date: '2024년 10월 22일 화요일',
-    period: '1교시',
-    subject: '국어',
-  );
+  // final CurrentPeriodInfo currentClass = CurrentPeriodInfo(
+  //   date: '2024년 10월 22일 화요일',
+  //   period: '1교시',
+  //   subject: '국어',
+  //   backgroundColor: AppColors.yellow,
+  // );
 
   // 시간표 테스트 데이터
   final List<TimeTableItem> timeTable = [

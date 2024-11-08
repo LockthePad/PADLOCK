@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:padlock_tablet/api/common/current_period_api.dart';
 import 'package:padlock_tablet/models/students/app_info.dart';
-import 'package:padlock_tablet/models/students/class_info.dart';
 import 'package:padlock_tablet/models/students/meal_info.dart';
 import 'package:padlock_tablet/models/students/titmetable_item.dart';
 import 'package:padlock_tablet/widgets/student/homeWidget/available_apps_card.dart';
@@ -12,7 +12,7 @@ import 'package:padlock_tablet/widgets/student/homeWidget/timetable_card.dart';
 import 'package:camera/camera.dart';
 
 class StuHomeWidget extends StatelessWidget {
-  final ClassInfo currentClass;
+  final CurrentPeriodInfo currentClass;
   final List<TimeTableItem> timeTable;
   final MealInfo meal;
   final List<AppInfo> availableApps;
