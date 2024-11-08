@@ -3,10 +3,13 @@ package com.ssafy.padlock.member.service;
 import com.ssafy.padlock.common.util.ScheduleCalculator;
 import com.ssafy.padlock.member.controller.response.AttendanceResponse;
 import com.ssafy.padlock.member.domain.Attendance;
-import com.ssafy.padlock.member.domain.Member;
+import com.ssafy.padlock.member.domain.Role;
 import com.ssafy.padlock.member.domain.Status;
 import com.ssafy.padlock.member.repository.AttendanceRepository;
 import com.ssafy.padlock.member.repository.MemberRepository;
+import com.ssafy.padlock.member.repository.ScheduledTaskRepository;
+import com.ssafy.padlock.member.scheduler.AttendanceUpdater;
+import com.ssafy.padlock.member.scheduler.ScheduledTask;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -22,6 +25,8 @@ public class AttendanceService {
     private final AttendanceRepository attendanceRepository;
     private final ScheduleCalculator scheduleCalculator;
     private final TaskScheduler taskScheduler;
+    private final AttendanceUpdater attendanceUpdater;
+    private final ScheduledTaskRepository scheduledTaskRepository;
 
     @Transactional
     public AttendanceResponse updateAttendanceStatus(Long memberId, Long classroomId, boolean communicationSuccess) {
@@ -47,24 +52,22 @@ public class AttendanceService {
         return new AttendanceResponse(attendance.getStatus(), attendance.isAway());
     }
 
-    @Scheduled(cron = "0 0 0 * * ?")
+    @Scheduled(cron = "0 0 0 * * MON-FRI")
     public void initializeDailyAttendance() {
-        LocalDate today = LocalDate.now();
-
-        memberRepository.findAll().forEach(member -> {
+        memberRepository.findByRole(Role.STUDENT).forEach(member -> {
             attendanceRepository.save(new Attendance(member.getId()));
 
             LocalTime endTime = scheduleCalculator.calculateScheduleTime(member.getClassRoom().getId()).get("endTime");
-            LocalDateTime endDateTime = LocalDateTime.of(today, endTime);
+            ScheduledTask task = new ScheduledTask(member.getId(), LocalDateTime.of(LocalDate.now(), endTime));
+            scheduledTaskRepository.save(task);
 
-            Instant endInstant = endDateTime.atZone(ZoneId.systemDefault()).toInstant();
-            taskScheduler.schedule(() -> updateUnreportedToAbsent(member, today), endInstant);
+            scheduleAttendanceTask(task);
         });
     }
 
-    public void updateUnreportedToAbsent(Member member, LocalDate date) {
-        attendanceRepository.findByMemberIdAndAttendanceDate(member.getId(), date)
-                .filter(attendance -> attendance.getStatus() == Status.UNREPORTED)
-                .ifPresent(attendance -> attendance.updateStatus(Status.ABSENT));
+    public void scheduleAttendanceTask(ScheduledTask task) {
+        Instant endInstant = task.getScheduledTime().atZone(ZoneId.systemDefault()).toInstant();
+        taskScheduler.schedule(
+                () -> attendanceUpdater.updateUnreportedToAbsent(task), endInstant);
     }
 }
