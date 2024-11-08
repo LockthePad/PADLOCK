@@ -15,14 +15,21 @@ class _ParCounselScreenState extends State<ParCounselScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('부모 메인페이지'),
+        title: const Text(''),
       ),
-      body: SafeArea(
+      body: Padding(
+        padding: const EdgeInsets.all(30),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            CounselinfoWidget(),
-            CounselCalenderWidget(),
-            CounselReservationListWidget(),
+            const CounselinfoWidget(),
+            SizedBox(
+              height: 30,
+            ),
+            CounselCalenderWidget(
+              onDateSelected: (selectedDate) {},
+            ),
+            const CounselReservationListWidget(),
           ],
         ),
       ),
