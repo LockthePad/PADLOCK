@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:padlock_tablet/api/common/current_period_api.dart';
 import 'package:padlock_tablet/api/student/ocr_api.dart';
 import 'package:padlock_tablet/screens/student/cameraScreen/camera_for_ocr.dart';
 import 'package:padlock_tablet/theme/colors.dart';
@@ -13,9 +14,12 @@ class StuNoteConvertWidget extends StatefulWidget {
     Key? key,
     this.picture,
     required this.onPictureTaken,
+    required this.currentClass,
   }) : super(key: key);
+
   final XFile? picture;
   final Function(XFile) onPictureTaken;
+  final CurrentPeriodInfo currentClass;
 
   @override
   State<StuNoteConvertWidget> createState() => _StuNoteConvertWidgetState();
@@ -95,15 +99,47 @@ class _StuNoteConvertWidgetState extends State<StuNoteConvertWidget> {
   }
 
   Future<void> _saveData() async {
-    if (ocrResult != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('저장되었습니다.')),
-      );
-      Navigator.pop(context);
-    } else {
+    if (ocrResult == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('먼저 이미지를 변환해주세요.')),
       );
+      return;
+    }
+
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      String? accessToken = await storage.read(key: 'accessToken');
+      if (accessToken == null || accessToken.isEmpty) {
+        throw Exception('인증 정보가 유효하지 않습니다.');
+      }
+
+      await OcrApi.saveOcrResult(
+        token: accessToken,
+        content: [ocrResult!],
+        currentClass: widget.currentClass,
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('저장되었습니다.')),
+        );
+      }
+    } catch (e) {
+      print('Save Error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('저장 중 오류가 발생했습니다.')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
     }
   }
 

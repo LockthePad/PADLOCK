@@ -51,7 +51,7 @@ class _NoteSavingCardState extends State<NoteSavingCard> {
             Text(
               widget.timestamp,
               style: const TextStyle(
-                fontSize: 14,
+                fontSize: 10,
                 color: Colors.grey,
               ),
             ),
