@@ -28,14 +28,10 @@ public class Attendance {
     @Column(name = "last_communication")
     private LocalDateTime lastCommunication;
 
-    @Column(name = "is_away")
-    private boolean isAway;
-
     public Attendance(Long memberId) {
         this.memberId = memberId;
         this.attendanceDate = LocalDate.now();
         this.status = Status.UNREPORTED;
-        this.isAway = false;
     }
 
     public void updateStatus(Status status) {
@@ -44,6 +40,9 @@ public class Attendance {
 
     public void updateLastCommunication(LocalDateTime lastCommunication) {
         this.lastCommunication = lastCommunication;
-        this.isAway = false;
+    }
+
+    public boolean isCurrentlyAway() {
+        return lastCommunication.isBefore(LocalDateTime.now().minusMinutes(20));
     }
 }

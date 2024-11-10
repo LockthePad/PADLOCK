@@ -34,22 +34,27 @@ public class AttendanceService {
                 .findByMemberIdAndAttendanceDate(memberId, LocalDate.now())
                 .orElseGet(() -> attendanceRepository.save(new Attendance(memberId)));
 
-        var time = scheduleCalculator.calculateScheduleTime(classroomId);
-        LocalTime currentTime = LocalTime.now();
-
-        if (communicationSuccess) {
-            attendance.updateLastCommunication(LocalDateTime.now());
-
-            if (attendance.getStatus() == Status.UNREPORTED) {
-                if (currentTime.isBefore(time.get("startTime"))) {
-                    attendance.updateStatus(Status.PRESENT);
-                } else if (currentTime.isBefore(time.get("endTime"))) {
-                    attendance.updateStatus(Status.LATE);
-                }
-            }
+        if (!communicationSuccess) {
+            return new AttendanceResponse(attendance.getStatus(), attendance.isCurrentlyAway());
         }
 
-        return new AttendanceResponse(attendance.getStatus(), attendance.isAway());
+        attendance.updateLastCommunication(LocalDateTime.now());
+        updateStatusBasedOnTime(attendance, classroomId);
+
+        return new AttendanceResponse(attendance.getStatus(), attendance.isCurrentlyAway());
+    }
+
+    private void updateStatusBasedOnTime(Attendance attendance, Long classroomId) {
+        var scheduleTimes = scheduleCalculator.calculateScheduleTime(classroomId);
+        LocalTime currentTime = LocalTime.now();
+
+        if (attendance.getStatus() == Status.UNREPORTED) {
+            if (currentTime.isBefore(scheduleTimes.get("startTime"))) {
+                attendance.updateStatus(Status.PRESENT);
+            } else if (currentTime.isBefore(scheduleTimes.get("endTime"))) {
+                attendance.updateStatus(Status.LATE);
+            }
+        }
     }
 
     @Scheduled(cron = "0 0 0 * * MON-FRI")
