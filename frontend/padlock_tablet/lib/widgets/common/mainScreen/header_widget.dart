@@ -67,19 +67,19 @@ class HeaderWidget extends StatelessWidget {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppColors.grey,
-                ),
-                child: const Icon(
-                  Icons.person,
-                  color: AppColors.white,
-                  size: 30,
-                ),
-              ),
+              // Container(
+              //   width: 40,
+              //   height: 40,
+              //   decoration: const BoxDecoration(
+              //     shape: BoxShape.circle,
+              //     color: AppColors.grey,
+              //   ),
+              //   child: const Icon(
+              //     Icons.person,
+              //     color: AppColors.white,
+              //     size: 30,
+              //   ),
+              // ),
               const SizedBox(width: 12),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
