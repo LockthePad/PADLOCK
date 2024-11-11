@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -20,55 +21,123 @@ class _LoginScreenState extends State<LoginScreen> {
   final storage = const FlutterSecureStorage();
   String? errorMessage;
   bool isLoading = false;
+  Timer? _tokenRefreshTimer;
 
-  // newstock에서 가져온 자동로그인 코드입니다. 리프레쉬 토큰 api 만들어지면 memberApi파일에 함수 생성하고, 연결하면 됩니다.
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   WidgetsBinding.instance.addPostFrameCallback((_) {
-  //     _asyncMethod();
-  //   });
-  // }
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkTokenAndAutoLogin();
+    });
+  }
 
-  // _asyncMethod() async {
-  //   // read 함수로 key값에 맞는 정보를 불러오고 데이터타입은 String 타입
-  //   // 데이터가 없을때는 null을 반환
-  //   userInfo = await storage.read(key: 'accessToken');
-  //   String? accessToken = await storage.read(key: 'accessToken');
-  //   String? refreshToken = await storage.read(key: 'refreshToken');
+  @override
+  void dispose() {
+    _tokenRefreshTimer?.cancel();
+    _memberCodeController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
-  //   if (accessToken == null || refreshToken == null) {
-  //     print('로그인이 필요합니다');
-  //     return;
-  //   }
+  void _startTokenRefreshTimer() {
+    _tokenRefreshTimer?.cancel();
+    // 55분마다 토큰 갱신
+    _tokenRefreshTimer = Timer.periodic(const Duration(minutes: 55), (_) async {
+      await _refreshTokenIfNeeded();
+    });
+  }
 
-  //   final response = await MemberApiService().memberInfo();
+  Future<void> _refreshTokenIfNeeded() async {
+    try {
+      final refreshToken = await storage.read(key: 'refreshToken');
+      if (refreshToken == null) {
+        print('리프레시 토큰이 없습니다.');
+        return;
+      }
 
-  //   if (response.statusCode == 200) {
-  //     print('accessToken이 만료되었습니다. 토큰을 재발급합니다.');
-  //     await MemberApiService().refreshToken(refreshToken);
+      try {
+        final response = await MemberApiService().refreshToken(refreshToken);
+        final data = jsonDecode(utf8.decode(response.bodyBytes));
 
-  //     final retryResponse = await MemberApiService().memberInfo();
+        // 응답 코드별 처리
+        if (response.statusCode == 200) {
+          final String accessToken = data['accessToken'];
+          final String newRefreshToken = data['refreshToken'];
 
-  //     if (retryResponse.statusCode == 200) {
-  //       print('토큰 재발급 후 회원 정보 조회 성공');
-  //       // 회원 정보가 성공적으로 조회되면 메인 화면으로 이동
-  //       Navigator.of(context).pushReplacement(
-  //           MaterialPageRoute(builder: (_) => const MainScreen()));
-  //     } else {
-  //       print('재발급 후 회원 정보 조회 실패');
-  //     }
-  //   } else if (response.statusCode == 200) {
-  //     print("토큰 유효 확인 성공");
-  //     Navigator.of(context).pushReplacement(
-  //         MaterialPageRoute(builder: (_) => const MainScreen()));
-  //   }
-  //   setState(() {});
-  // }
+          await storage.write(key: 'accessToken', value: accessToken);
+          await storage.write(key: 'refreshToken', value: newRefreshToken);
+          print('토큰 갱신 성공');
+        } else {
+          // 에러 코드별 처리
+          switch (data['code']) {
+            case 4000:
+              print("액세스 토큰 만료");
+              // 액세스 토큰 만료시에는 리프레시 토큰으로 재시도
+              break;
+            case 4001:
+              print("리프레시 토큰 만료");
+              await _handleTokenExpiration();
+              break;
+            default:
+              print("토큰 재발급 실패: ${data['message']}");
+              throw Exception('Token refresh failed: ${data['message']}');
+          }
+        }
+      } catch (e) {
+        print("토큰 갱신 중 오류 발생: $e");
+        await _handleTokenExpiration();
+        throw Exception('Token refresh failed: $e');
+      }
+    } catch (e) {
+      print("토큰 갱신 프로세스 실패: $e");
+      await _handleTokenExpiration();
+    }
+  }
+
+  Future<void> _handleTokenExpiration() async {
+    _tokenRefreshTimer?.cancel();
+    await storage.deleteAll();
+    if (mounted) {
+      Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const LoginScreen()));
+    }
+  }
+
+  Future<void> _checkTokenAndAutoLogin() async {
+    String? accessToken = await storage.read(key: 'accessToken');
+    String? refreshToken = await storage.read(key: 'refreshToken');
+    String? role = await storage.read(key: 'role');
+
+    if (accessToken == null || refreshToken == null || role == null) {
+      print('저장된 토큰이 없습니다. 로그인이 필요합니다.');
+      return;
+    }
+
+    try {
+      await _refreshTokenIfNeeded();
+      _startTokenRefreshTimer();
+
+      if (role == "TEACHER") {
+        if (mounted) {
+          Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (_) => const TeaMainScreen()));
+        }
+      } else if (role == "STUDENT") {
+        if (mounted) {
+          Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (_) => const StuMainScreen()));
+        }
+      }
+    } catch (e) {
+      print('자동 로그인 실패: $e');
+      await _handleTokenExpiration();
+    }
+  }
 
   Future<void> _login() async {
     setState(() {
       isLoading = true;
+      errorMessage = null;
     });
 
     try {
@@ -79,11 +148,8 @@ class _LoginScreenState extends State<LoginScreen> {
         Map<String, dynamic> data = jsonDecode(response.body);
         print('Login response data: $data');
 
-        // memberInfo UTF-8 디코딩
         String rawMemberInfo = data['memberInfo'].toString();
         String memberInfo = utf8.decode(rawMemberInfo.codeUnits);
-
-        print('Decoded memberInfo: $memberInfo');
 
         await storage.write(key: 'accessToken', value: data['accessToken']);
         await storage.write(key: 'refreshToken', value: data['refreshToken']);
@@ -93,6 +159,8 @@ class _LoginScreenState extends State<LoginScreen> {
         await storage.write(
             key: 'classroomId', value: data['classroomId'].toString());
         await storage.write(key: 'memberInfo', value: memberInfo);
+
+        _startTokenRefreshTimer();
 
         if (data['role'] == "TEACHER") {
           Navigator.of(context).pushReplacement(
@@ -133,9 +201,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 width: 250,
                 height: 250,
               ),
-              SizedBox(
-                height: 20,
-              ),
+              const SizedBox(height: 20),
               TextField(
                 controller: _memberCodeController,
                 decoration: InputDecoration(
@@ -176,7 +242,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 20),
               ElevatedButton(
-                onPressed: _login,
+                onPressed: isLoading ? null : _login,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.yellow,
                   shape: RoundedRectangleBorder(
@@ -184,14 +250,14 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   minimumSize: const ui.Size(double.infinity, 60),
                 ),
-                child: const Text(
-                  '로그인하기',
-                  style: TextStyle(fontSize: 20, color: AppColors.white),
-                ),
+                child: isLoading
+                    ? const CircularProgressIndicator(color: AppColors.white)
+                    : const Text(
+                        '로그인하기',
+                        style: TextStyle(fontSize: 20, color: AppColors.white),
+                      ),
               ),
-              SizedBox(
-                height: 20,
-              ),
+              const SizedBox(height: 20),
               if (errorMessage != null)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 5),
