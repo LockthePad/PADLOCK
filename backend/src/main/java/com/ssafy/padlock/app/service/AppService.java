@@ -1,6 +1,7 @@
 package com.ssafy.padlock.app.service;
 
 import com.ssafy.padlock.app.controller.request.AppRequest;
+import com.ssafy.padlock.app.controller.response.AppResponse;
 import com.ssafy.padlock.app.domain.App;
 import com.ssafy.padlock.app.repository.AppRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +15,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -46,7 +49,18 @@ public class AppService {
         }
     }
 
-    public String crawlAppImg(String appName) {
+    public List<AppResponse> getAppList(Long classroomId) {
+        return appRepository.findByClassroomIdAndDeleteStateFalse(classroomId).stream()
+                .map(app -> new AppResponse(
+                        app.getClassroomId(),
+                        app.getAppName(),
+                        app.getAppImg(),
+                        app.getAppPackage()
+                ))
+                .collect(Collectors.toList());
+    }
+
+    private String crawlAppImg(String appName) {
         System.setProperty("webdriver.chrome.driver", chromeDriverPath);
 
         ChromeOptions options = new ChromeOptions();
@@ -84,4 +98,6 @@ public class AppService {
             driver.quit();
         }
     }
+
+
 }
