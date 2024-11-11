@@ -3,6 +3,7 @@ package com.ssafy.padlock.member.service;
 import com.ssafy.padlock.common.util.ScheduleCalculator;
 import com.ssafy.padlock.member.controller.response.AttendanceResponse;
 import com.ssafy.padlock.member.domain.Attendance;
+import com.ssafy.padlock.member.domain.Member;
 import com.ssafy.padlock.member.domain.Role;
 import com.ssafy.padlock.member.domain.Status;
 import com.ssafy.padlock.member.repository.AttendanceRepository;
@@ -17,6 +18,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.*;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -33,13 +36,13 @@ public class AttendanceService {
         Attendance attendance = getOrCreateAttendance(memberId);
 
         if (!communicationSuccess) {
-            return new AttendanceResponse(attendance.getStatus(), attendance.isCurrentlyAway());
+            return AttendanceResponse.from(attendance);
         }
 
         attendance.updateLastCommunication(LocalDateTime.now());
         updateStatusBasedOnTime(attendance, classroomId);
 
-        return new AttendanceResponse(attendance.getStatus(), attendance.isCurrentlyAway());
+        return AttendanceResponse.from(attendance);
     }
 
     private void updateStatusBasedOnTime(Attendance attendance, Long classroomId) {
@@ -76,12 +79,28 @@ public class AttendanceService {
 
     public AttendanceResponse getAttendanceStatus(Long studentId) {
         Attendance attendance = getOrCreateAttendance(studentId);
-        return new AttendanceResponse(attendance.getStatus(), attendance.isCurrentlyAway());
+        return AttendanceResponse.from(attendance);
+    }
+
+    public List<AttendanceResponse> getClassroomAttendanceStatus(Long classroomId) {
+        List<Long> memberIds = memberRepository.findStudentIdsByClassroomId(classroomId, Role.STUDENT);
+        for (Long memberId : memberIds) {
+            System.out.println(memberId);
+        }
+
+        return attendanceRepository.findByMemberIdInAndAttendanceDate(memberIds, LocalDate.now())
+                .stream()
+                .map(attendance -> AttendanceResponse.from(attendance, findByMemberId(attendance.getMemberId()).getName()))
+                .collect(Collectors.toList());
     }
 
     private Attendance getOrCreateAttendance(Long memberId) {
         return attendanceRepository
                 .findByMemberIdAndAttendanceDate(memberId, LocalDate.now())
                 .orElseGet(() -> attendanceRepository.save(new Attendance(memberId)));
+    }
+
+    private Member findByMemberId(Long memberId) {
+        return memberRepository.findById(memberId).orElseThrow();
     }
 }
