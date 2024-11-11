@@ -15,3 +15,7 @@ spring:
         dialect: org.hibernate.dialect.MariaDBDialect
   flyway:
     enabled: false
+
+app:
+  chromedriver:
+    path: "/usr/local/bin/chromedriver"
