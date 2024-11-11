@@ -22,16 +22,21 @@ public class App {
     @Column(name = "app_name", nullable = false)
     private String appName;
 
+    @Column(name = "app_package", nullable = false)
+    private String appPackage;
+
     @Column(name = "app_img", nullable = false)
     private String appImg;
 
     @Column(name = "delete_state", nullable = false)
     private Boolean deleteState = false;
 
-    public static App createApp(Long classroomId, String appName, String appImg) {
+
+    public static App createApp(Long classroomId, String appName, String appPackage,String appImg) {
         App app = new App();
         app.classroomId = classroomId;
         app.appName = appName;
+        app.appPackage = appPackage;
         app.appImg = appImg;
         app.deleteState = false;
         return app;
