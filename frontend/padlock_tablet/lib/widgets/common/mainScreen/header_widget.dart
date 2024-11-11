@@ -6,7 +6,7 @@ class HeaderWidget extends StatelessWidget {
     super.key,
     required this.memberInfo,
     required this.isStudent,
-    required this.attendanceStatus,
+    this.attendanceStatus = const {}, // 기본값으로 빈 맵 제공
   });
 
   final String memberInfo;
@@ -16,7 +16,6 @@ class HeaderWidget extends StatelessWidget {
   Map<String, String> _parseMemberInfo() {
     print('Parsing memberInfo: $memberInfo');
 
-    // memberInfo가 비어있거나 null이면 로딩 상태 표시
     if (memberInfo.isEmpty) {
       return {
         'userClass': '로딩중...',
@@ -28,11 +27,9 @@ class HeaderWidget extends StatelessWidget {
       final parts = memberInfo.split(' ');
       print('Split parts: $parts');
 
-      // 최소 4개 파트가 있어야 함 (학교명, 학년, 반, 이름)
       if (parts.length >= 4) {
-        final String name = parts.last; // 마지막 부분이 이름
-        final String userClass =
-            parts.take(parts.length - 1).join(' '); // 나머지는 학급정보
+        final String name = parts.last;
+        final String userClass = parts.take(parts.length - 1).join(' ');
 
         return {
           'userClass': userClass,
@@ -43,7 +40,6 @@ class HeaderWidget extends StatelessWidget {
       print('Error parsing memberInfo: $e');
     }
 
-    // 파싱 실패 시 기본값
     return {
       'userClass': '정보 없음',
       'userName': '정보 없음',
@@ -51,11 +47,12 @@ class HeaderWidget extends StatelessWidget {
   }
 
   String _getStatusText() {
+    if (!isStudent) return ''; // 선생님일 경우 빈 문자열 반환
+
     if (attendanceStatus['away'] == true) {
       return '자리비움';
     }
 
-    // API status 값을 한글로 변환
     switch (attendanceStatus['status']) {
       case 'PRESENT':
         return '출석';
@@ -71,6 +68,8 @@ class HeaderWidget extends StatelessWidget {
   }
 
   Color _getStatusColor() {
+    if (!isStudent) return AppColors.grey; // 선생님일 경우 기본 색상 반환
+
     if (attendanceStatus['away'] == true) {
       return AppColors.paleYellow;
     }
@@ -108,19 +107,6 @@ class HeaderWidget extends StatelessWidget {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Container(
-              //   width: 40,
-              //   height: 40,
-              //   decoration: const BoxDecoration(
-              //     shape: BoxShape.circle,
-              //     color: AppColors.grey,
-              //   ),
-              //   child: const Icon(
-              //     Icons.person,
-              //     color: AppColors.white,
-              //     size: 30,
-              //   ),
-              // ),
               const SizedBox(width: 12),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
