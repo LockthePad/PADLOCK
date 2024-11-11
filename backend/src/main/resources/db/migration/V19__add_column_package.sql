@@ -1,0 +1,2 @@
+ALTER TABLE app
+    ADD COLUMN app_package VARCHAR(255) NOT NULL ;

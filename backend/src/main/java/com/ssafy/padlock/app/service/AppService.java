@@ -29,6 +29,7 @@ public class AppService {
     public void addApp(AppRequest appRequest) {
         Long classroomId = appRequest.getClassroomId();
         String appName = appRequest.getAppName();
+        String appPackage = appRequest.getAppPackage();
 
         //db에 존재하는지 확인
         Optional<App> existingApp = appRepository.findByClassroomIdAndAppName(classroomId, appName);
@@ -40,7 +41,7 @@ public class AppService {
         // 기존 DB에 존재 하지 않을 때
         else {
             String appImgUrl = crawlAppImg(appName);
-            App newApp = App.createApp(classroomId, appName, appImgUrl);
+            App newApp = App.createApp(classroomId, appName, appPackage, appImgUrl);
             appRepository.save(newApp);
         }
     }
