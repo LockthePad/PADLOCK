@@ -10,6 +10,8 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AppResponse {
+    private Long classroomId;
     private String appName;
     private String appImgUrl;
+    private String packageName;
 }
