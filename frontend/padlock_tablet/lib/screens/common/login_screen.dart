@@ -70,44 +70,47 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() {
       isLoading = true;
     });
-    final memberCode = _memberCodeController.text;
-    final password = _passwordController.text;
 
     try {
-      final response = await MemberApiService().login(memberCode, password);
+      final response = await MemberApiService()
+          .login(_memberCodeController.text, _passwordController.text);
 
       if (response.statusCode == 200) {
         Map<String, dynamic> data = jsonDecode(response.body);
-        String accessToken = data['accessToken'];
-        String refreshToken = data['refreshToken'];
-        String role = data['role'];
-        String memberId = data['memberId'].toString();
-        String classroomId = data['classroomId'].toString();
+        print('Login response data: $data');
 
-        await storage.write(key: 'accessToken', value: accessToken);
-        await storage.write(key: 'refreshToken', value: refreshToken);
-        await storage.write(key: 'role', value: role);
-        await storage.write(key: 'memberId', value: memberId);
-        await storage.write(key: 'classroomId', value: classroomId);
+        // memberInfo UTF-8 디코딩
+        String rawMemberInfo = data['memberInfo'].toString();
+        String memberInfo = utf8.decode(rawMemberInfo.codeUnits);
 
-        if (role == "TEACHER") {
+        print('Decoded memberInfo: $memberInfo');
+
+        await storage.write(key: 'accessToken', value: data['accessToken']);
+        await storage.write(key: 'refreshToken', value: data['refreshToken']);
+        await storage.write(key: 'role', value: data['role']);
+        await storage.write(
+            key: 'memberId', value: data['memberId'].toString());
+        await storage.write(
+            key: 'classroomId', value: data['classroomId'].toString());
+        await storage.write(key: 'memberInfo', value: memberInfo);
+
+        if (data['role'] == "TEACHER") {
           Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (_) => const TeaMainScreen()));
-        } else if (role == "STUDENT") {
-          debugPrint(accessToken);
+        } else if (data['role'] == "STUDENT") {
           Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (_) => const StuMainScreen()));
         }
       } else {
-        print("로그인 실패 - 상태 코드: ${response.statusCode}");
         setState(() {
-          isLoading = true;
           errorMessage = "아이디 또는 비밀번호를 확인하세요!!";
         });
       }
-    } catch (e, stackTrace) {
-      print("오류 발생: $e");
-      print(stackTrace);
+    } catch (e) {
+      print("Login error: $e");
+      setState(() {
+        errorMessage = "로그인 중 오류가 발생했습니다.";
+      });
     } finally {
       setState(() {
         isLoading = false;
