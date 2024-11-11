@@ -37,6 +37,7 @@ class _StuMainScreenState extends State<StuMainScreen> {
   Timer? _periodicTimer;
   List<Map<String, dynamic>> savedNotes = [];
   bool isLoadingNotes = false;
+  String memberInfo = '';
 
   @override
   void initState() {
@@ -48,9 +49,32 @@ class _StuMainScreenState extends State<StuMainScreen> {
       subject: '',
       backgroundColor: AppColors.grey,
     );
+    _loadMemberInfo();
     _initializeData();
     _startPeriodicFetch();
     _fetchSavedNotes();
+  }
+
+  Future<void> _loadMemberInfo() async {
+    try {
+      String? storedMemberInfo = await storage.read(key: 'memberInfo');
+      print('Loaded raw memberInfo: $storedMemberInfo'); // 디버그 로그 추가
+
+      if (storedMemberInfo != null) {
+        setState(() {
+          memberInfo = storedMemberInfo;
+        });
+      } else {
+        setState(() {
+          memberInfo = '알 수 없음';
+        });
+      }
+    } catch (e) {
+      print('Error loading member info: $e');
+      setState(() {
+        memberInfo = '알 수 없음';
+      });
+    }
   }
 
   Future<void> _fetchSavedNotes() async {
@@ -358,9 +382,8 @@ class _StuMainScreenState extends State<StuMainScreen> {
             Expanded(
               child: Column(
                 children: [
-                  const HeaderWidget(
-                    userName: "정석영",
-                    userClass: "대전초 2학년 2반",
+                  HeaderWidget(
+                    memberInfo: memberInfo,
                     isStudent: true,
                   ),
                   Expanded(

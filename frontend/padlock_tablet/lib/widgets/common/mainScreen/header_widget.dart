@@ -4,21 +4,56 @@ import 'package:padlock_tablet/theme/colors.dart';
 class HeaderWidget extends StatelessWidget {
   const HeaderWidget({
     super.key,
-    required this.userName,
-    required this.userClass,
+    required this.memberInfo,
     required this.isStudent,
-    this.userImage,
   });
 
-  final String userName;
-  final String userClass;
+  final String memberInfo;
   final bool isStudent;
-  final String? userImage;
+
+  Map<String, String> _parseMemberInfo() {
+    print('Parsing memberInfo: $memberInfo');
+
+    // memberInfo가 비어있거나 null이면 로딩 상태 표시
+    if (memberInfo.isEmpty) {
+      return {
+        'userClass': '로딩중...',
+        'userName': '로딩중...',
+      };
+    }
+
+    try {
+      final parts = memberInfo.split(' ');
+      print('Split parts: $parts');
+
+      // 최소 4개 파트가 있어야 함 (학교명, 학년, 반, 이름)
+      if (parts.length >= 4) {
+        final String name = parts.last; // 마지막 부분이 이름
+        final String userClass =
+            parts.take(parts.length - 1).join(' '); // 나머지는 학급정보
+
+        return {
+          'userClass': userClass,
+          'userName': name,
+        };
+      }
+    } catch (e) {
+      print('Error parsing memberInfo: $e');
+    }
+
+    // 파싱 실패 시 기본값
+    return {
+      'userClass': '정보 없음',
+      'userName': '정보 없음',
+    };
+  }
 
   @override
   Widget build(BuildContext context) {
     final String logoAsset =
         isStudent ? 'assets/yellowLogo.png' : 'assets/navyLogo.png';
+
+    final userInfo = _parseMemberInfo();
 
     return Container(
       padding: const EdgeInsets.only(right: 50, top: 30, bottom: 10),
@@ -32,30 +67,20 @@ class HeaderWidget extends StatelessWidget {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // 프로필 이미지
               Container(
                 width: 40,
                 height: 40,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   shape: BoxShape.circle,
                   color: AppColors.grey,
-                  image: userImage != null
-                      ? DecorationImage(
-                          image: NetworkImage(userImage!),
-                          fit: BoxFit.cover,
-                        )
-                      : null,
                 ),
-                child: userImage == null
-                    ? Icon(
-                        Icons.person,
-                        color: AppColors.white,
-                        size: 30,
-                      )
-                    : null,
+                child: const Icon(
+                  Icons.person,
+                  color: AppColors.white,
+                  size: 30,
+                ),
               ),
               const SizedBox(width: 12),
-              // 상태 및 이름 정보
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
@@ -82,8 +107,8 @@ class HeaderWidget extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     isStudent
-                        ? '$userClass $userName'
-                        : '$userClass $userName 선생님',
+                        ? '${userInfo['userClass']} ${userInfo['userName']}'
+                        : '${userInfo['userClass']} ${userInfo['userName']} 선생님',
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
