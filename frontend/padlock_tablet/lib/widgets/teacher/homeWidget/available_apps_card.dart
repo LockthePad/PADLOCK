@@ -1,7 +1,7 @@
 import 'dart:convert';
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:padlock_tablet/api/teacher/available_apps_api.dart';
 import 'package:padlock_tablet/models/teacher/app_info.dart' as custom_app_info;
 import 'package:padlock_tablet/theme/colors.dart';
 import 'package:installed_apps/installed_apps.dart';
@@ -21,26 +21,61 @@ class AvailableAppsCard extends StatefulWidget {
 
 class _AvailableAppsCardState extends State<AvailableAppsCard> {
   static const platform = MethodChannel('com.example.padlock_tablet/app_icons');
+  List<custom_app_info.AppInfo> allowedApps = [];
   List<custom_app_info.AppInfo> allInstalledApps = [];
+
+  // 각 앱의 허용 상태를 관리하는 맵
+  Map<String, bool> appAllowedStatus = {};
 
   @override
   void initState() {
     super.initState();
+    _fetchAllowedApps();
     _fetchInstalledApps();
   }
 
-  Future<void> _fetchInstalledApps() async {
-    List<installed_app_info.AppInfo> apps =
-        await InstalledApps.getInstalledApps();
+  Future<void> _fetchAllowedApps() async {
+    List<dynamic> fetchedApps = await AvailableAppsApi.fetchAllowedApps();
+
     setState(() {
-      allInstalledApps = apps.map((app) {
+      allowedApps = fetchedApps.map((app) {
         return custom_app_info.AppInfo(
-          name: app.name,
-          packageName: app.packageName,
-          iconData: Icons.apps, // 기본 아이콘 설정
+          name: app['appName'] ?? 'Unknown App',
+          packageName: app['appPackage'] ?? 'unknown.package',
+          iconData: Icons.apps,
         );
       }).toList();
+
+      // 초기 허용 상태 설정
+      for (var app in allowedApps) {
+        appAllowedStatus[app.packageName] = true;
+      }
     });
+  }
+
+  Future<void> _fetchInstalledApps() async {
+    try {
+      List<installed_app_info.AppInfo> apps =
+          await InstalledApps.getInstalledApps();
+      setState(() {
+        allInstalledApps = apps.map((app) {
+          return custom_app_info.AppInfo(
+            name: app.name,
+            packageName: app.packageName,
+            iconData: Icons.apps,
+          );
+        }).toList();
+
+        // 설치된 앱의 초기 허용 상태를 false로 설정
+        for (var app in allInstalledApps) {
+          if (!appAllowedStatus.containsKey(app.packageName)) {
+            appAllowedStatus[app.packageName] = false;
+          }
+        }
+      });
+    } catch (e) {
+      print('설치된 앱 불러오기 실패: $e');
+    }
   }
 
   Future<Image?> _getAppIcon(String packageName) async {
@@ -54,7 +89,7 @@ class _AvailableAppsCardState extends State<AvailableAppsCard> {
         return Image.memory(bytes);
       }
     } catch (e) {
-      print("Failed to get app icon: $e");
+      print("아이콘 불러오기 실패: $e");
     }
     return null;
   }
@@ -63,7 +98,7 @@ class _AvailableAppsCardState extends State<AvailableAppsCard> {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.only(top: 30, bottom: 20, left: 40, right: 20),
+      padding: const EdgeInsets.only(top: 30, bottom: 20, left: 40, right: 20),
       decoration: BoxDecoration(
         color: AppColors.lilac,
         borderRadius: BorderRadius.circular(30),
@@ -81,8 +116,8 @@ class _AvailableAppsCardState extends State<AvailableAppsCard> {
           const SizedBox(height: 10),
           Row(
             children: [
-              ...widget.apps.map((app) => _buildAppIcon(app)).toList(),
-              _buildAddButton(), // 추가 버튼 추가
+              ...allowedApps.map((app) => _buildAppIcon(app)),
+              _buildAddButton(),
             ],
           ),
         ],
@@ -95,7 +130,7 @@ class _AvailableAppsCardState extends State<AvailableAppsCard> {
       future: _getAppIcon(app.packageName),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return CircularProgressIndicator();
+          return const CircularProgressIndicator();
         } else if (snapshot.hasData) {
           return Padding(
             padding: const EdgeInsets.only(right: 10),
@@ -117,7 +152,7 @@ class _AvailableAppsCardState extends State<AvailableAppsCard> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.apps,
                 color: AppColors.white,
                 size: 24,
@@ -130,8 +165,10 @@ class _AvailableAppsCardState extends State<AvailableAppsCard> {
   }
 
   Widget _buildAddButton() {
-    return GestureDetector(
-      onTap: () => _showInstalledAppsModal(),
+    return InkWell(
+      onTap: () {
+        _showInstalledAppsDialog();
+      },
       child: Container(
         width: 48,
         height: 48,
@@ -148,41 +185,67 @@ class _AvailableAppsCardState extends State<AvailableAppsCard> {
     );
   }
 
-  void _showInstalledAppsModal() {
-    showModalBottomSheet(
+  void _showInstalledAppsDialog() {
+    if (allInstalledApps.isEmpty) {
+      return;
+    }
+
+    showDialog(
       context: context,
       builder: (context) {
-        return Container(
-          padding: EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '설치된 앱 목록',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: allInstalledApps.length,
-                  itemBuilder: (context, index) {
-                    final app = allInstalledApps[index];
+        return AlertDialog(
+          backgroundColor: AppColors.white,
+          title: const Text('설치된 앱 목록'),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: allInstalledApps.length,
+              itemBuilder: (context, index) {
+                final app = allInstalledApps[index];
+
+                return StatefulBuilder(
+                  builder: (context, setState) {
                     return ListTile(
+                      leading: FutureBuilder<Image?>(
+                        future: _getAppIcon(app.packageName),
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData) {
+                            return snapshot.data!;
+                          } else {
+                            return const Icon(Icons.apps);
+                          }
+                        },
+                      ),
                       title: Text(app.name),
-                      subtitle: Text(app.packageName), // 패키지 이름 표시
-                      onTap: () {
-                        // 앱을 선택하여 허용된 앱 목록에 추가
-                        setState(() {
-                          widget.apps.add(app);
-                        });
-                        Navigator.pop(context); // 모달 닫기
-                      },
+                      subtitle: Text(app.packageName),
+                      trailing: Switch(
+                        value: appAllowedStatus[app.packageName] ?? false,
+                        onChanged: (bool value) {
+                          setState(() {
+                            appAllowedStatus[app.packageName] = value;
+                            if (value) {
+                              allowedApps.add(app);
+                            } else {
+                              allowedApps.removeWhere((allowedApp) =>
+                                  allowedApp.packageName == app.packageName);
+                            }
+                          });
+                          this.setState(() {}); // 외부 상태 반영
+                        },
+                      ),
                     );
                   },
-                ),
-              ),
-            ],
+                );
+              },
+            ),
           ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('닫기'),
+            ),
+          ],
         );
       },
     );
