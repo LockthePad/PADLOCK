@@ -59,7 +59,7 @@ class CurrentClassBanner extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          ' ${classInfo.subject}시간',
+                          ' ${classInfo.subject}',
                           style: const TextStyle(
                             color: AppColors.white,
                             fontSize: 40,
