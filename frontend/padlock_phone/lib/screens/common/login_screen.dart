@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:padlock_phone/apis/member/member_api.dart';
@@ -17,41 +18,163 @@ class _LoginScreenState extends State<LoginScreen> {
   final _memberCodeController = TextEditingController();
   final _passwordController = TextEditingController();
   final storage = const FlutterSecureStorage();
+  String? errorMessage;
+  bool isLoading = false;
+  Timer? _tokenRefreshTimer;
 
-  Future<void> _login() async {
-    final memberCode = _memberCodeController.text;
-    final password = _passwordController.text;
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkTokenAndAutoLogin();
+    });
+  }
+
+  @override
+  void dispose() {
+    _tokenRefreshTimer?.cancel();
+    _memberCodeController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  void _startTokenRefreshTimer() {
+    _tokenRefreshTimer?.cancel();
+    // 55분마다 토큰 갱신
+    _tokenRefreshTimer = Timer.periodic(const Duration(minutes: 55), (_) async {
+      await _refreshTokenIfNeeded();
+    });
+  }
+
+  Future<void> _refreshTokenIfNeeded() async {
+    try {
+      final refreshToken = await storage.read(key: 'refreshToken');
+      if (refreshToken == null) {
+        print('리프레시 토큰이 없습니다.');
+        return;
+      }
+
+      try {
+        final response = await MemberApiService().refreshToken(refreshToken);
+        final data = jsonDecode(utf8.decode(response.bodyBytes));
+
+        if (response.statusCode == 200) {
+          final String accessToken = data['accessToken'];
+          final String newRefreshToken = data['refreshToken'];
+
+          await storage.write(key: 'accessToken', value: accessToken);
+          await storage.write(key: 'refreshToken', value: newRefreshToken);
+          print('토큰 갱신 성공');
+        } else {
+          switch (data['code']) {
+            case 4000:
+              print("액세스 토큰 만료");
+              break;
+            case 4001:
+              print("리프레시 토큰 만료");
+              await _handleTokenExpiration();
+              break;
+            default:
+              print("토큰 재발급 실패: ${data['message']}");
+              throw Exception('Token refresh failed: ${data['message']}');
+          }
+        }
+      } catch (e) {
+        print("토큰 갱신 중 오류 발생: $e");
+        await _handleTokenExpiration();
+        throw Exception('Token refresh failed: $e');
+      }
+    } catch (e) {
+      print("토큰 갱신 프로세스 실패: $e");
+      await _handleTokenExpiration();
+    }
+  }
+
+  Future<void> _handleTokenExpiration() async {
+    _tokenRefreshTimer?.cancel();
+    await storage.deleteAll();
+    if (mounted) {
+      Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const LoginScreen()));
+    }
+  }
+
+  Future<void> _checkTokenAndAutoLogin() async {
+    String? accessToken = await storage.read(key: 'accessToken');
+    String? refreshToken = await storage.read(key: 'refreshToken');
+    String? role = await storage.read(key: 'role');
+
+    if (accessToken == null || refreshToken == null || role == null) {
+      print('저장된 토큰이 없습니다. 로그인이 필요합니다.');
+      return;
+    }
 
     try {
-      final response = await MemberApiService().login(memberCode, password);
+      await _refreshTokenIfNeeded();
+      _startTokenRefreshTimer();
+
+      if (role == "PARENTS") {
+        if (mounted) {
+          Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (_) => const ParMainScreen()));
+        }
+      } else if (role == "STUDENT") {
+        if (mounted) {
+          Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (_) => const StuMainScreen()));
+        }
+      }
+    } catch (e) {
+      print('자동 로그인 실패: $e');
+      await _handleTokenExpiration();
+    }
+  }
+
+  Future<void> _login() async {
+    setState(() {
+      isLoading = true;
+      errorMessage = null;
+    });
+
+    try {
+      final response = await MemberApiService()
+          .login(_memberCodeController.text, _passwordController.text);
 
       if (response.statusCode == 200) {
         Map<String, dynamic> data = jsonDecode(response.body);
-        String accessToken = data['accessToken'];
-        String refreshToken = data['refreshToken'];
-        String role = data['role'];
-        String memberId = data['memberId'].toString();
-        String classroomId = data['classroomId'].toString();
+        print('Login response data: $data');
 
-        await storage.write(key: 'accessToken', value: accessToken);
-        await storage.write(key: 'refreshToken', value: refreshToken);
-        await storage.write(key: 'role', value: role);
-        await storage.write(key: 'memberId', value: memberId);
-        await storage.write(key: 'classroomId', value: classroomId);
+        await storage.write(key: 'accessToken', value: data['accessToken']);
+        await storage.write(key: 'refreshToken', value: data['refreshToken']);
+        await storage.write(key: 'role', value: data['role']);
+        await storage.write(
+            key: 'memberId', value: data['memberId'].toString());
+        await storage.write(
+            key: 'classroomId', value: data['classroomId'].toString());
 
-        if (role == "PARENTS") {
+        _startTokenRefreshTimer();
+
+        if (data['role'] == "PARENTS") {
           Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (_) => const ParMainScreen()));
-        } else if (role == "STUDENT") {
+        } else if (data['role'] == "STUDENT") {
           Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (_) => const StuMainScreen()));
         }
       } else {
-        print("로그인 실패 - 상태 코드: ${response.statusCode}");
+        setState(() {
+          errorMessage = "아이디 또는 비밀번호를 확인하세요!!";
+        });
       }
-    } catch (e, stackTrace) {
-      print("오류 발생: $e");
-      print(stackTrace);
+    } catch (e) {
+      print("Login error: $e");
+      setState(() {
+        errorMessage = "로그인 중 오류가 발생했습니다.";
+      });
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
@@ -122,7 +245,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 SizedBox(height: screenSize.height * 0.03),
                 ElevatedButton(
-                  onPressed: _login,
+                  onPressed: isLoading ? null : _login,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.yellow,
                     shape: RoundedRectangleBorder(
@@ -130,11 +253,23 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     minimumSize: Size(double.infinity, buttonHeight),
                   ),
-                  child: const Text(
-                    '로그인하기',
-                    style: TextStyle(fontSize: 18, color: AppColors.white),
-                  ),
+                  child: isLoading
+                      ? const CircularProgressIndicator(color: AppColors.white)
+                      : const Text(
+                          '로그인하기',
+                          style:
+                              TextStyle(fontSize: 18, color: AppColors.white),
+                        ),
                 ),
+                if (errorMessage != null)
+                  Padding(
+                    padding: EdgeInsets.symmetric(
+                        vertical: screenSize.height * 0.02),
+                    child: Text(
+                      errorMessage!,
+                      style: const TextStyle(color: Colors.red, fontSize: 16),
+                    ),
+                  ),
                 SizedBox(height: screenSize.height * 0.08),
                 Image.asset(
                   'assets/images/yellowLogo.png',
