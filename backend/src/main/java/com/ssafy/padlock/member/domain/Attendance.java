@@ -43,6 +43,7 @@ public class Attendance {
     }
 
     public boolean isCurrentlyAway() {
+        if (lastCommunication == null) return false;
         return lastCommunication.isBefore(LocalDateTime.now().minusMinutes(20));
     }
 }

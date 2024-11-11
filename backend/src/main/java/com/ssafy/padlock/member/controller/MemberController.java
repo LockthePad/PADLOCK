@@ -45,4 +45,9 @@ public class MemberController {
                                                          @RequestParam boolean success) {
         return attendanceService.updateAttendanceStatus(studentId, classroomId, success);
     }
+
+    @GetMapping("/attendance/{studentId}")
+    public AttendanceResponse getAttendance(@PathVariable Long studentId) {
+        return attendanceService.getAttendanceStatus(studentId);
+    }
 }

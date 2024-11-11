@@ -30,9 +30,7 @@ public class AttendanceService {
 
     @Transactional
     public AttendanceResponse updateAttendanceStatus(Long memberId, Long classroomId, boolean communicationSuccess) {
-        Attendance attendance = attendanceRepository
-                .findByMemberIdAndAttendanceDate(memberId, LocalDate.now())
-                .orElseGet(() -> attendanceRepository.save(new Attendance(memberId)));
+        Attendance attendance = getOrCreateAttendance(memberId);
 
         if (!communicationSuccess) {
             return new AttendanceResponse(attendance.getStatus(), attendance.isCurrentlyAway());
@@ -74,5 +72,16 @@ public class AttendanceService {
         Instant endInstant = task.getScheduledTime().atZone(ZoneId.systemDefault()).toInstant();
         taskScheduler.schedule(
                 () -> attendanceUpdater.updateUnreportedToAbsent(task), endInstant);
+    }
+
+    public AttendanceResponse getAttendanceStatus(Long studentId) {
+        Attendance attendance = getOrCreateAttendance(studentId);
+        return new AttendanceResponse(attendance.getStatus(), attendance.isCurrentlyAway());
+    }
+
+    private Attendance getOrCreateAttendance(Long memberId) {
+        return attendanceRepository
+                .findByMemberIdAndAttendanceDate(memberId, LocalDate.now())
+                .orElseGet(() -> attendanceRepository.save(new Attendance(memberId)));
     }
 }
