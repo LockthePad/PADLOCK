@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:padlock_tablet/api/member/member_api_service.dart';
 import 'package:padlock_tablet/screens/common/login_screen.dart';
 import 'package:padlock_tablet/theme/colors.dart';
 import 'package:padlock_tablet/widgets/student/homeWidget/menu_item.dart';
@@ -92,10 +93,14 @@ class LeftAppBarWidget extends StatelessWidget {
             ),
             title: const Text('로그아웃'),
             onTap: () async {
+              final refreshToken = await storage.read(key: 'refreshToken');
+              if (refreshToken != null) {
+                await MemberApiService().logout(refreshToken);
+              }
               await storage.delete(key: "accessToken");
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => LoginScreen()),
+                MaterialPageRoute(builder: (context) => const LoginScreen()),
               );
             },
           ),
