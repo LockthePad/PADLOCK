@@ -40,7 +40,7 @@ public class JwtTokenProvider {
     }
 
     public String createAccessToken(Member member) {
-        return createToken(member, 1000 * 60 * 60 * 24, secretKey);
+        return createToken(member, 1000 * 60 * 60, secretKey);
     }
 
     public String createRefreshToken(Member member) {
@@ -91,6 +91,10 @@ public class JwtTokenProvider {
                 .parseClaimsJws(token)
                 .getBody().get("id").toString();
         return Long.valueOf(id);
+    }
+
+    public Long getMemberIdFromRefreshToken(String token) {
+        return getMemberId(token, refreshKey);
     }
 
     public Authentication getAuthentication(String token) {
