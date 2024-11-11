@@ -50,4 +50,10 @@ public class MemberController {
     public AttendanceResponse getAttendance(@PathVariable Long studentId) {
         return attendanceService.getAttendanceStatus(studentId);
     }
+
+    @PreAuthorize("hasRole('TEACHER')")
+    @GetMapping("/attendances")
+    public List<AttendanceResponse> getAttendancesByClassroom(@RequestParam Long classroomId) {
+        return attendanceService.getClassroomAttendanceStatus(classroomId);
+    }
 }
