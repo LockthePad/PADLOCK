@@ -6,10 +6,12 @@ class HeaderWidget extends StatelessWidget {
     super.key,
     required this.memberInfo,
     required this.isStudent,
+    required this.attendanceStatus,
   });
 
   final String memberInfo;
   final bool isStudent;
+  final Map<String, dynamic> attendanceStatus;
 
   Map<String, String> _parseMemberInfo() {
     print('Parsing memberInfo: $memberInfo');
@@ -46,6 +48,45 @@ class HeaderWidget extends StatelessWidget {
       'userClass': '정보 없음',
       'userName': '정보 없음',
     };
+  }
+
+  String _getStatusText() {
+    if (attendanceStatus['away'] == true) {
+      return '자리비움';
+    }
+
+    // API status 값을 한글로 변환
+    switch (attendanceStatus['status']) {
+      case 'PRESENT':
+        return '출석';
+      case 'UNREPORTED':
+        return '미체크';
+      case 'LATE':
+        return '지각';
+      case 'ABSENT':
+        return '결석';
+      default:
+        return '로딩중...';
+    }
+  }
+
+  Color _getStatusColor() {
+    if (attendanceStatus['away'] == true) {
+      return AppColors.paleYellow;
+    }
+
+    switch (attendanceStatus['status']) {
+      case 'PRESENT':
+        return AppColors.successGreen;
+      case 'UNREPORTED':
+        return AppColors.grey;
+      case 'LATE':
+        return AppColors.paleYellow;
+      case 'ABSENT':
+        return AppColors.errorRed;
+      default:
+        return AppColors.grey;
+    }
   }
 
   @override
@@ -92,12 +133,12 @@ class HeaderWidget extends StatelessWidget {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.successGreen,
+                        color: _getStatusColor(),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Text(
-                        '출석완료',
-                        style: TextStyle(
+                      child: Text(
+                        _getStatusText(),
+                        style: const TextStyle(
                           color: AppColors.white,
                           fontSize: 12,
                           fontWeight: FontWeight.w500,

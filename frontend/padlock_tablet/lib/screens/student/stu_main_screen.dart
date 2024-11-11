@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:padlock_tablet/api/common/current_period_api.dart';
 import 'package:padlock_tablet/api/common/mealInfo_api.dart';
+import 'package:padlock_tablet/api/student/attendance_api.dart';
 import 'package:padlock_tablet/api/student/pull_notes_api.dart';
 import 'package:padlock_tablet/api/student/timetable_api.dart';
 import 'package:padlock_tablet/models/students/app_info.dart';
@@ -38,6 +39,11 @@ class _StuMainScreenState extends State<StuMainScreen> {
   List<Map<String, dynamic>> savedNotes = [];
   bool isLoadingNotes = false;
   String memberInfo = '';
+  Map<String, dynamic> attendanceStatus = {
+    'status': '로딩중...',
+    'away': false,
+  };
+  Timer? _attendanceTimer;
 
   @override
   void initState() {
@@ -53,6 +59,50 @@ class _StuMainScreenState extends State<StuMainScreen> {
     _initializeData();
     _startPeriodicFetch();
     _fetchSavedNotes();
+    _fetchAttendanceStatus(); // 초기 출석 상태 조회
+    _startAttendanceTimer(); // 출석 상태 주기적 업데이트 시작
+  }
+
+  void _startAttendanceTimer() {
+    // 1분마다 출석 상태 업데이트
+    _attendanceTimer = Timer.periodic(const Duration(minutes: 1), (timer) {
+      _fetchAttendanceStatus();
+    });
+  }
+
+  Future<void> _fetchAttendanceStatus() async {
+    try {
+      String? accessToken = await storage.read(key: 'accessToken');
+      String? studentId = await storage.read(key: 'memberId');
+
+      debugPrint('Fetching attendance status...');
+      debugPrint('AccessToken: $accessToken');
+      debugPrint('StudentId: $studentId');
+
+      if (accessToken != null && studentId != null) {
+        final status = await AttendanceApi.getAttendanceStatus(
+          studentId: studentId,
+          token: accessToken,
+        );
+
+        debugPrint('Received status: $status');
+
+        setState(() {
+          attendanceStatus = status;
+        });
+      } else {
+        debugPrint(
+            'Missing credentials - Token: ${accessToken != null}, StudentId: ${studentId != null}');
+      }
+    } catch (e) {
+      debugPrint('Error fetching attendance status: $e');
+      setState(() {
+        attendanceStatus = {
+          'status': 'unreported',
+          'away': false,
+        };
+      });
+    }
   }
 
   Future<void> _loadMemberInfo() async {
@@ -112,6 +162,7 @@ class _StuMainScreenState extends State<StuMainScreen> {
   @override
   void dispose() {
     _periodicTimer?.cancel(); // 타이머 정리
+    _attendanceTimer?.cancel();
     super.dispose();
   }
 
@@ -385,6 +436,7 @@ class _StuMainScreenState extends State<StuMainScreen> {
                   HeaderWidget(
                     memberInfo: memberInfo,
                     isStudent: true,
+                    attendanceStatus: attendanceStatus, // 출석 상태 전달
                   ),
                   Expanded(
                     child: _buildContent(),
