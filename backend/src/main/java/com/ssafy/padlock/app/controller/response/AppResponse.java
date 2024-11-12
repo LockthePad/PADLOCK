@@ -14,4 +14,5 @@ public class AppResponse {
     private String appName;
     private String appImgUrl;
     private String packageName;
+    private Boolean deleteState;
 }

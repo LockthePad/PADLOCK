@@ -12,5 +12,5 @@ import lombok.Setter;
 public class AppRequest {
     private Long classroomId;
     private String appName;
-    private String appPackage;
+    private String packageName;
 }
