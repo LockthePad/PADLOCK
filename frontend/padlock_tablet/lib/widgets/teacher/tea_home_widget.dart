@@ -32,11 +32,7 @@ class TeaHomeWidget extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
-                  child: AttendanceStatus(
-                    presentCount: 25, // 테스트 데이터
-                    absentCount: 2, // 테스트 데이터
-                    lateCount: 1, // 테스트 데이터
-                  ),
+                  child: AttendanceStatus(),
                 ),
                 // 카드 사이 간격
                 SizedBox(width: 10),

@@ -1,17 +1,39 @@
 import 'package:flutter/material.dart';
+import 'package:padlock_tablet/api/teacher/attendance_api.dart';
 import 'package:padlock_tablet/theme/colors.dart';
 
-class AttendanceStatus extends StatelessWidget {
-  final int presentCount;
-  final int absentCount;
-  final int lateCount;
+class AttendanceStatus extends StatefulWidget {
+  const AttendanceStatus({super.key});
 
-  const AttendanceStatus({
-    super.key,
-    required this.presentCount,
-    required this.absentCount,
-    required this.lateCount,
-  });
+  @override
+  _AttendanceStatusState createState() => _AttendanceStatusState();
+}
+
+class _AttendanceStatusState extends State<AttendanceStatus> {
+  int presentCount = 0;
+  int absentCount = 0;
+  int lateCount = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchAttendanceData();
+  }
+
+  Future<void> _fetchAttendanceData() async {
+    try {
+      final counts = await AttendanceApi.fetchAttendanceCounts();
+
+      setState(() {
+        presentCount = counts['online']!;
+        lateCount = counts['offline']!;
+        absentCount = counts['absent']!;
+      });
+    } catch (e) {
+      print('출석 데이터 가져오기 실패: $e');
+      // Optionally, handle error and show a message to the user
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +52,6 @@ class AttendanceStatus extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // 왼쪽: 출석현황 및 인원수
           Expanded(
             flex: 3,
             child: Column(
@@ -44,11 +65,11 @@ class AttendanceStatus extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 15),
-                _buildStatusCard('출석', presentCount, AppColors.successGreen),
+                _buildStatusCard('온라인', presentCount, AppColors.successGreen),
                 const SizedBox(height: 5),
-                _buildStatusCard('자리비움', lateCount, AppColors.yellow),
+                _buildStatusCard('오프라인', lateCount, AppColors.yellow),
                 const SizedBox(height: 5),
-                _buildStatusCard('결석', absentCount, AppColors.errorRed),
+                _buildStatusCard('미출결', absentCount, AppColors.errorRed),
               ],
             ),
           ),
