@@ -8,5 +8,6 @@ import java.util.Optional;
 
 public interface AppRepository extends JpaRepository<App, Long> {
     Optional<App> findAppByClassroomIdAndAppName(Long classroomId, String appName);
-    List<App> findByClassroomIdAndDeleteStateFalse(Long classroomId);
+    List<App> findByClassroomIdAndDeleteStateTrue(Long classroomId);
+    Optional<App> findByClassroomIdAndAppId(Long classroomId, Long appId);
 }
