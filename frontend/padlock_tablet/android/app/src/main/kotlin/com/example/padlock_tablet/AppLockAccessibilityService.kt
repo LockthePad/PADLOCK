@@ -6,7 +6,6 @@ import android.content.Intent
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import android.widget.Toast
-import android.app.ActivityManager
 import android.content.Context
 import android.view.WindowManager
 import android.graphics.PixelFormat
@@ -14,58 +13,102 @@ import android.view.Gravity
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.graphics.Color
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import org.json.JSONArray
+import java.util.concurrent.CopyOnWriteArraySet
+import android.os.Handler
+import android.os.Looper
 
 class AppLockAccessibilityService : AccessibilityService() {
     private val TAG = "AppLock_Accessibility"
     private var lastBlockedPackage = ""
     private var overlayView: FrameLayout? = null
     private lateinit var windowManager: WindowManager
-    private val PREFS_NAME = "AppLockPrefs"
-    private val KEY_IS_LOCKED = "isLocked"
+    private val coroutineScope = CoroutineScope(Dispatchers.Main + Job())
+    private val mainHandler = Handler(Looper.getMainLooper())
 
-    // 허용할 앱 패키지명 리스트
-    // private val ALLOWED_PACKAGES = setOf(
-    //     "com.example.padlock_tablet",    // 우리 앱
-    //     "com.android.systemui",          // 시스템 UI
-    //     "com.google.android.apps.nexuslauncher",  // Pixel 런처
-    //     "com.android.launcher3",         // 기본 런처
-    //     "com.android.settings",          // 설정
-    //     "com.android.permissioncontroller", // 권한 컨트롤러
-    //     "android",                       // 안드로이드 시스템
-    //     "com.google.android.permissioncontroller", // Google 권한 컨트롤러
-    //     "com.android.chrome",
-    //     "com.sec.android.app.launcher",
-    // )
-    
-    private val ALLOWED_PACKAGES = setOf(
-   "com.example.padlock_tablet",    // 우리 앱
-   "com.android.systemui",          // 시스템 UI
-   "com.google.android.apps.nexuslauncher",  // Pixel 런처
-   "com.android.launcher3",         // 기본 런처
-   "com.sec.android.app.launcher",  // 삼성 OneUI 런처
-   "com.samsung.android.app.settings", // 삼성 설정
-   "com.android.settings",          // 설정
-   "com.android.permissioncontroller", // 권한 컨트롤러
-   "com.samsung.android.permissioncontroller", // 삼성 권한 컨트롤러
-   "android",                       // 안드로이드 시스템
-   "com.google.android.permissioncontroller", // Google 권한 컨트롤러
-   "com.samsung.android.lool",      // 삼성 디바이스 케어
-   "com.samsung.android.oneui.taskmanager", // OneUI 태스크 매니저
-   "com.sec.android.app.quicktool", // 삼성 퀵 패널
-   "com.samsung.android.incallui",  // 전화 앱
-   "com.samsung.android.honeyboard", // 삼성 키보드
-   "com.sec.android.app.launcher",  // 삼성 홈 런처
-   "com.samsung.android.app.smartcapture", // 삼성 스크린샷
-   "com.sec.android.provider.badge", // 삼성 배지 프로바이더
-   "com.android.chrome",
-   "com.miraeasset.trade",
-   "com.google.android.youtube",
-   "com.coupang.mobile",
-)
+    // 기본 허용 패키지 목록
+    private val DEFAULT_ALLOWED_PACKAGES = setOf(
+        "com.example.padlock_tablet",
+        "com.android.systemui",
+        "com.google.android.apps.nexuslauncher",
+        "com.android.launcher3",
+        "com.sec.android.app.launcher",
+        "com.samsung.android.app.settings",
+        "com.android.settings",
+        "com.android.permissioncontroller",
+        "com.samsung.android.permissioncontroller",
+        "android",
+        "com.google.android.permissioncontroller",
+        "com.samsung.android.lool",
+        "com.samsung.android.oneui.taskmanager",
+        "com.sec.android.app.quicktool",
+        "com.samsung.android.incallui",
+        "com.samsung.android.honeyboard",
+        "com.samsung.android.app.smartcapture",
+        "com.sec.android.provider.badge"
+    )
+
+    // Thread-safe한 동적 패키지 목록
+    private val dynamicAllowedPackages = CopyOnWriteArraySet<String>().apply {
+        addAll(DEFAULT_ALLOWED_PACKAGES)
+    }
+
+    private fun fetchAllowedApps() {
+        coroutineScope.launch {
+            try {
+                val apiUrl = "http://k11b208.p.ssafy.io:8080/app?classroomId=9"
+                Log.d(TAG, "Fetching allowed apps from: $apiUrl")
+                
+                val response = makeRequest(apiUrl)
+                Log.d(TAG, "Raw API Response: $response")
+
+                val jsonArray = JSONArray(response)
+                Log.d(TAG, "Number of apps in response: ${jsonArray.length()}")
+
+                for (i in 0 until jsonArray.length()) {
+                    val app = jsonArray.getJSONObject(i)
+                    val packageName = app.getString("packageName")
+                    val appName = app.getString("appName")
+                    
+                    // 패키지명 매핑
+                    val actualPackageName = when(packageName) {
+                        "com.android.youtube" -> "com.google.android.youtube"
+                        else -> packageName
+                    }
+                    
+                    Log.d(TAG, "Adding app to allowed list - Name: $appName, Original Package: $packageName, Actual Package: $actualPackageName")
+                    dynamicAllowedPackages.add(actualPackageName)
+                }
+
+                Log.d(TAG, "Current dynamicAllowedPackages: $dynamicAllowedPackages")
+                
+            } catch (e: Exception) {
+                Log.e(TAG, "Error fetching allowed apps: ${e.message}")
+                e.printStackTrace()
+            }
+        }
+    }
+
+    private suspend fun makeRequest(url: String): String = withContext(Dispatchers.IO) {
+        val client = OkHttpClient()
+        val request = Request.Builder()
+            .url(url)
+            .build()
+
+        client.newCall(request).execute().use { response ->
+            response.body?.string() ?: ""
+        }
+    }
 
     override fun onServiceConnected() {
-        val info = AccessibilityServiceInfo()
-        info.apply {
+        val info = AccessibilityServiceInfo().apply {
             eventTypes = AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
             feedbackType = AccessibilityServiceInfo.FEEDBACK_GENERIC
             flags = AccessibilityServiceInfo.FLAG_INCLUDE_NOT_IMPORTANT_VIEWS
@@ -73,28 +116,22 @@ class AppLockAccessibilityService : AccessibilityService() {
         }
         serviceInfo = info
         windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        fetchAllowedApps()
         Log.i(TAG, "Accessibility Service Connected")
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
-        val isLocked = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .getBoolean(KEY_IS_LOCKED, false)
-        
-        if (!isLocked) {
-            hideBlockingOverlay()
-            lastBlockedPackage = ""
-            return
-        }
-
         if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
             val packageName = event.packageName?.toString()
             
-            if (packageName != null && !ALLOWED_PACKAGES.contains(packageName)) {
+            // 패키지 이름 로깅
+            Log.d(TAG, "Current package attempt: $packageName")
+            Log.d(TAG, "Is package allowed: ${dynamicAllowedPackages.contains(packageName)}")
+            
+            if (packageName != null && !dynamicAllowedPackages.contains(packageName)) {
                 if (packageName != lastBlockedPackage) {
-                    Log.i(TAG, "Blocking unauthorized app: $packageName")
                     lastBlockedPackage = packageName
-
-                    // 앱 이름 가져오기
+                    
                     val appName = try {
                         val packageManager = packageManager
                         val applicationInfo = packageManager.getApplicationInfo(packageName, 0)
@@ -102,18 +139,18 @@ class AppLockAccessibilityService : AccessibilityService() {
                     } catch (e: Exception) {
                         packageName
                     }
-
-                    // 차단 화면 표시
+    
+                    Log.d(TAG, "Blocking app - Name: $appName, Package: $packageName")
                     showBlockingOverlay()
                     
-                    // 홈 화면으로 강제 이동
-                    val homeIntent = Intent(Intent.ACTION_MAIN).apply {
-                        addCategory(Intent.CATEGORY_HOME)
-                        flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                    mainHandler.post {
+                        val homeIntent = Intent(Intent.ACTION_MAIN).apply {
+                            addCategory(Intent.CATEGORY_HOME)
+                            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                        }
+                        startActivity(homeIntent)
+                        Toast.makeText(this, "'$appName' 앱이 차단되었습니다", Toast.LENGTH_SHORT).show()
                     }
-                    startActivity(homeIntent)
-
-                    Toast.makeText(this, "'$appName' 앱이 차단되었습니다", Toast.LENGTH_SHORT).show()
                 }
             } else {
                 lastBlockedPackage = ""
@@ -123,39 +160,43 @@ class AppLockAccessibilityService : AccessibilityService() {
     }
 
     private fun showBlockingOverlay() {
-        try {
-            if (overlayView == null) {
-                overlayView = FrameLayout(this).apply {
-                    setBackgroundColor(Color.argb(250, 0, 0, 0))
-                }
+        mainHandler.post {
+            try {
+                if (overlayView == null) {
+                    overlayView = FrameLayout(this).apply {
+                        setBackgroundColor(Color.argb(250, 0, 0, 0))
+                    }
 
-                val params = WindowManager.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
-                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-                            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
-                            WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
-                    PixelFormat.TRANSLUCENT
-                ).apply {
-                    gravity = Gravity.FILL
-                }
+                    val params = WindowManager.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
+                        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
+                                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+                        PixelFormat.TRANSLUCENT
+                    ).apply {
+                        gravity = Gravity.FILL
+                    }
 
-                windowManager.addView(overlayView, params)
+                    windowManager.addView(overlayView, params)
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error showing overlay: ${e.message}")
             }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error showing overlay: ${e.message}")
         }
     }
 
     private fun hideBlockingOverlay() {
-        try {
-            overlayView?.let {
-                windowManager.removeView(it)
-                overlayView = null
+        mainHandler.post {
+            try {
+                overlayView?.let {
+                    windowManager.removeView(it)
+                    overlayView = null
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error hiding overlay: ${e.message}")
             }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error hiding overlay: ${e.message}")
         }
     }
 
@@ -167,5 +208,8 @@ class AppLockAccessibilityService : AccessibilityService() {
     override fun onDestroy() {
         super.onDestroy()
         hideBlockingOverlay()
+        coroutineScope.launch {
+            // cleanup
+        }
     }
 }

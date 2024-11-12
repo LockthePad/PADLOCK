@@ -8,6 +8,8 @@ import 'package:padlock_tablet/theme/colors.dart';
 import 'package:padlock_tablet/api/member/member_api_service.dart';
 import 'dart:convert';
 
+import 'package:padlock_tablet/widgets/kotilin/app_lock_service.dart';
+
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -166,6 +168,9 @@ class _LoginScreenState extends State<LoginScreen> {
           Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (_) => const TeaMainScreen()));
         } else if (data['role'] == "STUDENT") {
+          // 학생으로 로그인한 경우에만 앱 잠금 서비스 초기화
+          await AppLockService().initialize();
+
           Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (_) => const StuMainScreen()));
         }
