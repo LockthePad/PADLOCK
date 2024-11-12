@@ -11,6 +11,10 @@ import com.ssafy.padlock.member.repository.MemberRepository;
 import com.ssafy.padlock.member.repository.ScheduledTaskRepository;
 import com.ssafy.padlock.member.scheduler.AttendanceUpdater;
 import com.ssafy.padlock.member.scheduler.ScheduledTask;
+import com.ssafy.padlock.notification.domain.Notification;
+import com.ssafy.padlock.notification.domain.NotificationType;
+import com.ssafy.padlock.notification.repository.NotificationRepository;
+import com.ssafy.padlock.notification.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -30,6 +34,8 @@ public class AttendanceService {
     private final TaskScheduler taskScheduler;
     private final AttendanceUpdater attendanceUpdater;
     private final ScheduledTaskRepository scheduledTaskRepository;
+    private final NotificationService notificationService;
+    private final NotificationRepository notificationRepository;
 
     @Transactional
     public AttendanceResponse updateAttendanceStatus(Long memberId, Long classroomId, boolean communicationSuccess) {
@@ -40,16 +46,21 @@ public class AttendanceService {
         }
 
         attendance.updateLastCommunication(LocalDateTime.now());
-        updateStatusBasedOnTime(attendance, classroomId);
+        updateStatusBasedOnTime(attendance, classroomId, memberId);
 
         return AttendanceResponse.from(attendance);
     }
 
-    private void updateStatusBasedOnTime(Attendance attendance, Long classroomId) {
+    private void updateStatusBasedOnTime(Attendance attendance, Long classroomId, Long studentId) {
         var scheduleTimes = scheduleCalculator.calculateScheduleTime(classroomId);
         LocalTime currentTime = LocalTime.now();
 
         if (attendance.getStatus() == Status.UNREPORTED) {
+            Long parentId = memberRepository.findParentIdByStudentId(studentId);
+
+            notificationRepository.save(new Notification(parentId, NotificationType.ATTENDANCE));
+            notificationService.sendMessageToMember(NotificationType.ATTENDANCE, parentId);
+
             if (currentTime.isBefore(scheduleTimes.get("startTime"))) {
                 attendance.updateStatus(Status.PRESENT);
             } else if (currentTime.isBefore(scheduleTimes.get("endTime"))) {
@@ -84,9 +95,6 @@ public class AttendanceService {
 
     public List<AttendanceResponse> getClassroomAttendanceStatus(Long classroomId) {
         List<Long> memberIds = memberRepository.findStudentIdsByClassroomId(classroomId, Role.STUDENT);
-        for (Long memberId : memberIds) {
-            System.out.println(memberId);
-        }
 
         return attendanceRepository.findByMemberIdInAndAttendanceDate(memberIds, LocalDate.now())
                 .stream()

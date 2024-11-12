@@ -1,5 +1,6 @@
 package com.ssafy.padlock.member.repository;
 
+import com.ssafy.padlock.classroom.domain.Classroom;
 import com.ssafy.padlock.member.domain.Member;
 import com.ssafy.padlock.member.domain.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -19,4 +20,6 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 
     @Query("SELECT m.parents.id FROM Member m WHERE m.id = :studentId")
     Long findParentIdByStudentId(@Param("studentId") Long studentId);
+
+    Optional<Member> findByClassRoomAndRole(Classroom classroom, Role role);
 }

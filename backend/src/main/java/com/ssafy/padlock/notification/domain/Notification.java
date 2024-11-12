@@ -29,6 +29,7 @@ public class Notification {
 
     public Notification(NotificationType type) {
         this.type = type;
+        this.timestamp = LocalDateTime.now();
     }
 
     public Notification(Long receiverId, NotificationType type) {
