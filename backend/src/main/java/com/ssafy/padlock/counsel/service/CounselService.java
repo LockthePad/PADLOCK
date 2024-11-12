@@ -10,6 +10,10 @@ import com.ssafy.padlock.counsel.repository.CounselRepository;
 import com.ssafy.padlock.member.domain.Member;
 import com.ssafy.padlock.member.domain.Role;
 import com.ssafy.padlock.member.repository.MemberRepository;
+import com.ssafy.padlock.notification.domain.Notification;
+import com.ssafy.padlock.notification.domain.NotificationType;
+import com.ssafy.padlock.notification.repository.NotificationRepository;
+import com.ssafy.padlock.notification.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +32,8 @@ public class CounselService {
     private final CounselRepository counselRepository;
     private final CounselAvailableTimeRepository counselAvailableTimeRepository;
     private final MemberRepository memberRepository;
+    private final NotificationService notificationService;
+    private final NotificationRepository notificationRepository;
 
     //교사 상담 취소
     @Transactional
@@ -118,6 +124,9 @@ public class CounselService {
 
         counselAvailableTime.changeClosed(3);
         counselRepository.save(counsel);
+
+        notificationRepository.save(new Notification(teacher.getId(), NotificationType.COUNSELING));
+        notificationService.sendMessageToMember(NotificationType.COUNSELING, teacher.getId());
     }
 
     //날짜별 선생님 상담 목록 조회
