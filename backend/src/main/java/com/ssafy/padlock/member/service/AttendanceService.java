@@ -2,6 +2,7 @@ package com.ssafy.padlock.member.service;
 
 import com.ssafy.padlock.common.util.ScheduleCalculator;
 import com.ssafy.padlock.member.controller.response.AttendanceResponse;
+import com.ssafy.padlock.member.controller.response.MonthlyAttendanceResponse;
 import com.ssafy.padlock.member.domain.Attendance;
 import com.ssafy.padlock.member.domain.Member;
 import com.ssafy.padlock.member.domain.Role;
@@ -22,7 +23,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.*;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -100,6 +104,34 @@ public class AttendanceService {
                 .stream()
                 .map(attendance -> AttendanceResponse.from(attendance, findByMemberId(attendance.getMemberId()).getName()))
                 .collect(Collectors.toList());
+    }
+
+    public List<MonthlyAttendanceResponse> getMonthlyAttendance(Long studentId) {
+        if (findByMemberId(studentId).getRole() != Role.STUDENT) {
+            throw new IllegalArgumentException("학생만 출석 조회가 가능합니다.");
+        }
+
+        LocalDate now = LocalDate.now();
+        LocalDate startDate = now.withDayOfMonth(1);
+        LocalDate endDate = now.withDayOfMonth(now.lengthOfMonth());
+
+        List<Attendance> attendances = attendanceRepository.findByMemberIdAndAttendanceDateBetween(studentId, startDate, endDate);
+
+        return attendances.stream()
+                .map(MonthlyAttendanceResponse::from)
+                .toList();
+    }
+
+    public Map<Long, String> getStudentsByClassroom(Long classroomId) {
+        return memberRepository.findByClassRoom_IdAndRole(classroomId, Role.STUDENT)
+                .stream()
+                .sorted(Comparator.comparing(Member::getName))
+                .collect(Collectors.toMap(
+                        Member::getId,
+                        Member::getName,
+                        (existing, replacement) -> existing,
+                        LinkedHashMap::new
+                ));
     }
 
     private Attendance getOrCreateAttendance(Long memberId) {

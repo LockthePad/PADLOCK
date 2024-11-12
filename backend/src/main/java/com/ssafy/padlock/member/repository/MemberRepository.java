@@ -22,4 +22,6 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     Long findParentIdByStudentId(@Param("studentId") Long studentId);
 
     Optional<Member> findByClassRoomAndRole(Classroom classroom, Role role);
+
+    List<Member> findByClassRoom_IdAndRole(Long classroomId, Role role);
 }
