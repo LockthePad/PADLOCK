@@ -17,8 +17,8 @@ public class AppController {
 
     @PreAuthorize("hasRole('TEACHER')")
     @PostMapping("/app")
-    public List<AppResponse> addApp(@RequestBody AppRequest appRequest) {
-        return appService.addApp(appRequest);
+    public List<AppResponse> addApp(@RequestBody List<AppRequest> appRequestList) {
+        return appService.addApp(appRequestList);
     }
 
     @GetMapping("/app")
