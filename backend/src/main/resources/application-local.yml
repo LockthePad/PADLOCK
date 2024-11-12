@@ -19,6 +19,3 @@ spring:
     baseline-version: 1
     fail-on-missing-locations: true
 
-app:
-  chromedriver:
-    path: "C:/Users/SSAFY/Desktop/chromedriver-win64/chromedriver.exe"

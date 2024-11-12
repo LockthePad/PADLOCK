@@ -1,52 +1,82 @@
 package com.ssafy.padlock.app.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ssafy.padlock.app.controller.request.AppRequest;
 import com.ssafy.padlock.app.controller.response.AppResponse;
 import com.ssafy.padlock.app.domain.App;
 import com.ssafy.padlock.app.repository.AppRepository;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import org.openqa.selenium.*;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.WebClient;
 
-import java.time.Duration;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class AppService {
 
-    @Value("${app.chromedriver.path}")
-    private String chromeDriverPath;
+    private final WebClient.Builder webClientBuilder;
+    @Value("${app.fastapi.url}")
+    private String fastApiUrl;
 
     private final AppRepository appRepository;
+    private WebClient webClient;
+    private final ObjectMapper objectMapper;
+
+    @PostConstruct
+    public void init() {
+        this.webClient = webClientBuilder.build();
+    }
 
     @Transactional
-    public void addApp(AppRequest appRequest) {
-        Long classroomId = appRequest.getClassroomId();
-        String appName = appRequest.getAppName();
-        String appPackage = appRequest.getAppPackage();
+    public List<AppResponse> addApp(AppRequest appRequest) {
+        App app = appRepository.findAppByClassroomIdAndAppName(appRequest.getClassroomId(), appRequest.getAppName())
+                .orElse(null);
 
-        //db에 존재하는지 확인
-        Optional<App> existingApp = appRepository.findByClassroomIdAndAppName(classroomId, appName);
+        String appImgUrl;
+        if (app == null) {
+            try {
+                String url = fastApiUrl + "/get-app-image";
+                String responseBody = webClient.post()
+                        .uri(url)
+                        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                        .body(BodyInserters.fromValue(Map.of("appName", appRequest.getAppName())))
+                        .retrieve()
+                        .bodyToMono(String.class)
+                        .block();
 
-        if (existingApp.isPresent()) {
-            App app = existingApp.get();
-            app.activate();
+                Map<String, String> responseMap = objectMapper.readValue(responseBody, new TypeReference<Map<String, String>>() {});
+                appImgUrl = responseMap.get("appImgUrl");
+
+                // appImgUrl이 null인 경우 예외 처리
+                if (appImgUrl == null) {
+                    throw new IllegalArgumentException("FastAPI에서 유효한 appImgUrl을 반환하지 않았습니다.");
+                }
+
+            } catch (Exception e) {
+                throw new RuntimeException("앱 이미지 URL 크롤링 중 오류 발생", e);
+            }
+        } else {
+            // 이미 존재하는 경우 기존 이미지 URL 사용
+            appImgUrl = app.getAppImg();
         }
-        // 기존 DB에 존재 하지 않을 때
-        else {
-            String appImgUrl = crawlAppImg(appName);
-            App newApp = App.createApp(classroomId, appName, appPackage, appImgUrl);
-            appRepository.save(newApp);
-        }
+
+        return List.of(new AppResponse(
+                app.getClassroomId(),
+                app.getAppName(),
+                appImgUrl,
+                app.getAppPackage(),
+                app.getDeleteState()
+        ));
     }
 
     public List<AppResponse> getAppList(Long classroomId) {
@@ -55,49 +85,9 @@ public class AppService {
                         app.getClassroomId(),
                         app.getAppName(),
                         app.getAppImg(),
-                        app.getAppPackage()
+                        app.getAppPackage(),
+                        app.getDeleteState()
                 ))
                 .collect(Collectors.toList());
     }
-
-    private String crawlAppImg(String appName) {
-        System.setProperty("webdriver.chrome.driver", chromeDriverPath);
-
-        ChromeOptions options = new ChromeOptions();
-        options.addArguments("--headless");
-        options.addArguments("--no-sandbox");
-        options.addArguments("--disable-dev-shm-usage");
-
-        WebDriver driver = new ChromeDriver(options);
-
-        try {
-            String url = "https://m.onestore.co.kr/mobilepoc/search/integrateSearch.omp";
-            driver.get(url);
-
-            WebElement searchField = driver.findElement(By.cssSelector("#integrateQuery"));
-            searchField.sendKeys(appName);
-            searchField.sendKeys(Keys.RETURN);
-
-            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-            WebElement imgElement = wait.until(ExpectedConditions.visibilityOfElementLocated(
-                    By.cssSelector("#productListDiv > div:nth-child(1) > div > div.searchcard-item > a > span > span.searchcard-cell.searchcard-cell-thumbnail > span")));
-
-            // JavaScript 실행을 통해 background-image 속성 가져오기
-            String backgroundImageUrl = (String) ((JavascriptExecutor) driver).executeScript(
-                    "return window.getComputedStyle(arguments[0]).backgroundImage;", imgElement);
-
-            // URL만 추출
-            backgroundImageUrl = backgroundImageUrl.replace("url(\"", "").replace("\")", "");
-            System.out.println("이미지 URL: " + backgroundImageUrl);
-            return backgroundImageUrl;
-
-        } catch (Exception e) {
-            System.out.println("이미지 URL을 크롤링하는 중 오류 발생: " + e.getMessage());
-            return null;
-        } finally {
-            driver.quit();
-        }
-    }
-
-
 }
