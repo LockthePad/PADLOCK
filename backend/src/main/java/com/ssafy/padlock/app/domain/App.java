@@ -29,10 +29,10 @@ public class App {
     private String appImg;
 
     @Column(name = "delete_state", nullable = false)
-    private Boolean deleteState = false;
+    private Boolean deleteState = false; // false 면 금지, true면 허용
 
 
-    public static App createApp(Long classroomId, String appName, String appPackage,String appImg) {
+    public static App createApp(Long classroomId, String appName, String appPackage, String appImg) {
         App app = new App();
         app.classroomId = classroomId;
         app.appName = appName;

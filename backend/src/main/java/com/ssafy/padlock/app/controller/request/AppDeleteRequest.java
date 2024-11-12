@@ -1,4 +1,4 @@
-package com.ssafy.padlock.app.controller.response;
+package com.ssafy.padlock.app.controller.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,11 +9,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class AppResponse {
+public class AppDeleteRequest {
     private Long classroomId;
     private Long appId;
-    private String appName;
-    private String appImgUrl;
-    private String packageName;
-    private Boolean deleteState;
 }

@@ -1,6 +1,7 @@
 package com.ssafy.padlock.app.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ssafy.padlock.app.controller.request.AppDeleteRequest;
 import com.ssafy.padlock.app.controller.request.AppRequest;
 import com.ssafy.padlock.app.controller.response.AppResponse;
 import com.ssafy.padlock.app.domain.App;
@@ -76,6 +77,7 @@ public class AppService {
 
             AppResponse appResponse = new AppResponse(
                     app.getClassroomId(),
+                    app.getAppId(),
                     app.getAppName(),
                     appImgUrl,
                     app.getAppPackage(),
@@ -86,15 +88,29 @@ public class AppService {
         return appResponses;
     }
 
+    // 허용된 앱 리스트 조회
     public List<AppResponse> getAppList(Long classroomId) {
-        return appRepository.findByClassroomIdAndDeleteStateFalse(classroomId).stream()
+        return appRepository.findByClassroomIdAndDeleteStateTrue(classroomId).stream()
                 .map(app -> new AppResponse(
                         app.getClassroomId(),
+                        app.getAppId(),
                         app.getAppName(),
                         app.getAppImg(),
                         app.getAppPackage(),
                         app.getDeleteState()
                 ))
                 .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void updateDeleteState(AppDeleteRequest appDeleteRequest) {
+        App app = appRepository.findByClassroomIdAndAppId(appDeleteRequest.getClassroomId(), appDeleteRequest.getAppId())
+                .orElseThrow(() -> new IllegalArgumentException("해당 ID를 가진 앱이 존재하지 않습니다: " + appDeleteRequest.getAppId()));
+
+        if (app.getDeleteState()) {
+            app.activate();  // 비활성 상태에서 활성화
+        } else {
+            app.deactivate();  // 활성 상태에서 비활성화
+        }
     }
 }
