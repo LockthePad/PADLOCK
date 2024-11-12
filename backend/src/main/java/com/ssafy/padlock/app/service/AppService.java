@@ -1,6 +1,5 @@
 package com.ssafy.padlock.app.service;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ssafy.padlock.app.controller.request.AppRequest;
 import com.ssafy.padlock.app.controller.response.AppResponse;
@@ -17,7 +16,6 @@ import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -48,19 +46,16 @@ public class AppService {
                 String url = fastApiUrl + "/get-app-image";
                 String responseBody = webClient.post()
                         .uri(url)
-                        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                        .body(BodyInserters.fromValue(Map.of("appName", appRequest.getAppName())))
+                        .header(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_PLAIN_VALUE)
+                        .body(BodyInserters.fromValue(appRequest.getAppName()))
                         .retrieve()
                         .bodyToMono(String.class)
                         .block();
 
-                Map<String, String> responseMap = objectMapper.readValue(responseBody, new TypeReference<Map<String, String>>() {});
-                appImgUrl = responseMap.get("appImgUrl");
+                appImgUrl = responseBody;
 
-                // appImgUrl이 null인 경우 예외 처리
-                if (appImgUrl == null) {
-                    throw new IllegalArgumentException("FastAPI에서 유효한 appImgUrl을 반환하지 않았습니다.");
-                }
+                app = App.createApp(appRequest.getClassroomId(), appRequest.getAppName(), appRequest.getPackageName(), appImgUrl);
+                appRepository.save(app);
 
             } catch (Exception e) {
                 throw new RuntimeException("앱 이미지 URL 크롤링 중 오류 발생", e);
