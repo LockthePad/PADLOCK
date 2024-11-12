@@ -7,6 +7,7 @@ import com.ssafy.padlock.app.domain.App;
 import com.ssafy.padlock.app.repository.AppRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -16,9 +17,11 @@ import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AppService {
@@ -48,10 +51,11 @@ public class AppService {
             if (app == null) {
                 try {
                     String url = fastApiUrl + "/get-app-image";
+
                     String responseBody = webClient.post()
                             .uri(url)
-                            .header(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_PLAIN_VALUE)
-                            .body(BodyInserters.fromValue(appRequest.getAppName()))
+                            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                            .body(BodyInserters.fromValue(Collections.singletonMap("appName", appRequest.getAppName())))
                             .retrieve()
                             .bodyToMono(String.class)
                             .block();
