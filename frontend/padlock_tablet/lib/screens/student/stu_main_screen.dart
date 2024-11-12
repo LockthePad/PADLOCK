@@ -3,6 +3,7 @@ import 'package:padlock_tablet/api/common/current_period_api.dart';
 import 'package:padlock_tablet/api/common/mealInfo_api.dart';
 import 'package:padlock_tablet/api/student/attendance_api.dart';
 import 'package:padlock_tablet/api/student/pull_notes_api.dart';
+import 'package:padlock_tablet/api/student/stu_available_apps_api.dart';
 import 'package:padlock_tablet/api/student/timetable_api.dart';
 import 'package:padlock_tablet/models/students/app_info.dart';
 import 'package:padlock_tablet/models/students/meal_info.dart';
@@ -44,6 +45,7 @@ class _StuMainScreenState extends State<StuMainScreen> {
     'away': false,
   };
   Timer? _attendanceTimer;
+  List<AppInfo> availableApps = [];
 
   @override
   void initState() {
@@ -60,7 +62,28 @@ class _StuMainScreenState extends State<StuMainScreen> {
     _startPeriodicFetch();
     _fetchSavedNotes();
     _fetchAttendanceStatus(); // 초기 출석 상태 조회
-    _startAttendanceTimer(); // 출석 상태 주기적 업데이트 시작
+    _startAttendanceTimer();
+    _fetchAvailableApps(); // 출석 상태 주기적 업데이트 시작
+  }
+
+  Future<void> _fetchAvailableApps() async {
+    try {
+      String? classroomId = await storage.read(key: 'classroomId');
+      if (classroomId != null) {
+        final apps = await StuAvailableAppsApi.fetchAvailableApps(
+          classroomId: classroomId,
+        );
+        setState(() {
+          availableApps = apps;
+        });
+      }
+    } catch (e) {
+      print('Error loading available apps: $e');
+      // 에러 시 빈 리스트 유지
+      setState(() {
+        availableApps = [];
+      });
+    }
   }
 
   void _startAttendanceTimer() {
@@ -309,23 +332,23 @@ class _StuMainScreenState extends State<StuMainScreen> {
     TimeTableItem(period: '5교시', subject: '사회'),
   ];
 
-  final List<AppInfo> availableApps = [
-    AppInfo(
-      name: 'Flipnote',
-      iconData: Icons.edit_note, // 노트 아이콘
-      backgroundColor: Colors.red,
-    ),
-    AppInfo(
-      name: 'Wear',
-      iconData: Icons.watch, // 시계 아이콘
-      backgroundColor: Colors.blue,
-    ),
-    AppInfo(
-      name: 'Galaxy Shop',
-      iconData: Icons.shopping_bag, // 쇼핑백 아이콘
-      backgroundColor: Colors.blue,
-    ),
-  ];
+  // final List<AppInfo> availableApps = [
+  //   AppInfo(
+  //     name: 'Flipnote',
+  //     iconData: Icons.edit_note, // 노트 아이콘
+  //     backgroundColor: Colors.red,
+  //   ),
+  //   AppInfo(
+  //     name: 'Wear',
+  //     iconData: Icons.watch, // 시계 아이콘
+  //     backgroundColor: Colors.blue,
+  //   ),
+  //   AppInfo(
+  //     name: 'Galaxy Shop',
+  //     iconData: Icons.shopping_bag, // 쇼핑백 아이콘
+  //     backgroundColor: Colors.blue,
+  //   ),
+  // ];
 
   void _handlePictureTaken(XFile picture) {
     setState(() {
