@@ -14,7 +14,7 @@ class AvailableAppsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.only(top: 20, bottom: 20, left: 30, right: 20),
+      padding: const EdgeInsets.only(top: 20, bottom: 20, left: 30, right: 20),
       decoration: BoxDecoration(
         color: AppColors.paleYellow,
         borderRadius: BorderRadius.circular(30),
@@ -26,12 +26,14 @@ class AvailableAppsCard extends StatelessWidget {
             '사용 가능한 앱',
             style: TextStyle(
               fontSize: 18,
-              // fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 16),
-          Row(
-            children: apps.map((app) => _buildAppIcon(app)).toList(),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: apps.map((app) => _buildAppIcon(app)).toList(),
+            ),
           ),
         ],
       ),
@@ -45,13 +47,22 @@ class AvailableAppsCard extends StatelessWidget {
         width: 48,
         height: 48,
         decoration: BoxDecoration(
-          color: app.backgroundColor,
+          color: Colors.white,
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Icon(
-          app.iconData,
-          color: Colors.white,
-          size: 24,
+        clipBehavior: Clip.antiAlias, // 이미지가 모서리를 벗어나지 않도록
+        child: Image.network(
+          app.appImgUrl,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            return const Center(
+              child: Icon(
+                Icons.error_outline,
+                color: Colors.grey,
+                size: 24,
+              ),
+            );
+          },
         ),
       ),
     );
