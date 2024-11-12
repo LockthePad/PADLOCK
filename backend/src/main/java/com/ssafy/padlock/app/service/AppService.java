@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,42 +37,47 @@ public class AppService {
     }
 
     @Transactional
-    public List<AppResponse> addApp(AppRequest appRequest) {
-        App app = appRepository.findAppByClassroomIdAndAppName(appRequest.getClassroomId(), appRequest.getAppName())
-                .orElse(null);
+    public List<AppResponse> addApp(List<AppRequest> appRequestList) {
+        List<AppResponse> appResponses = new ArrayList<>();
 
-        String appImgUrl;
-        if (app == null) {
-            try {
-                String url = fastApiUrl + "/get-app-image";
-                String responseBody = webClient.post()
-                        .uri(url)
-                        .header(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_PLAIN_VALUE)
-                        .body(BodyInserters.fromValue(appRequest.getAppName()))
-                        .retrieve()
-                        .bodyToMono(String.class)
-                        .block();
+        for (AppRequest appRequest : appRequestList) {
+            App app = appRepository.findAppByClassroomIdAndAppName(appRequest.getClassroomId(), appRequest.getAppName())
+                    .orElse(null);
 
-                appImgUrl = responseBody;
+            String appImgUrl;
+            if (app == null) {
+                try {
+                    String url = fastApiUrl + "/get-app-image";
+                    String responseBody = webClient.post()
+                            .uri(url)
+                            .header(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_PLAIN_VALUE)
+                            .body(BodyInserters.fromValue(appRequest.getAppName()))
+                            .retrieve()
+                            .bodyToMono(String.class)
+                            .block();
 
-                app = App.createApp(appRequest.getClassroomId(), appRequest.getAppName(), appRequest.getPackageName(), appImgUrl);
-                appRepository.save(app);
+                    appImgUrl = responseBody;
 
-            } catch (Exception e) {
-                throw new RuntimeException("앱 이미지 URL 크롤링 중 오류 발생", e);
+                    app = App.createApp(appRequest.getClassroomId(), appRequest.getAppName(), appRequest.getPackageName(), appImgUrl);
+                    appRepository.save(app);
+
+                } catch (Exception e) {
+                    throw new RuntimeException("앱 이미지 URL 크롤링 중 오류 발생", e);
+                }
+            } else {
+                appImgUrl = app.getAppImg();
             }
-        } else {
-            // 이미 존재하는 경우 기존 이미지 URL 사용
-            appImgUrl = app.getAppImg();
-        }
 
-        return List.of(new AppResponse(
-                app.getClassroomId(),
-                app.getAppName(),
-                appImgUrl,
-                app.getAppPackage(),
-                app.getDeleteState()
-        ));
+            AppResponse appResponse = new AppResponse(
+                    app.getClassroomId(),
+                    app.getAppName(),
+                    appImgUrl,
+                    app.getAppPackage(),
+                    app.getDeleteState()
+            );
+            appResponses.add(appResponse);
+        }
+        return appResponses;
     }
 
     public List<AppResponse> getAppList(Long classroomId) {
