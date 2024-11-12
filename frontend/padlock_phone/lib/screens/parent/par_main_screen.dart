@@ -1,13 +1,83 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:padlock_phone/apis/common/attendance_api.dart';
 import 'package:padlock_phone/screens/common/notice_screen.dart';
 import 'package:padlock_phone/screens/parent/par_counsel_screen.dart';
 import 'package:padlock_phone/screens/parent/par_gps_check_screen.dart';
 import 'package:padlock_phone/widgets/common/mainScreen/userinfo_widget.dart';
 import 'package:padlock_phone/widgets/parent/mainScreen/par_attendance_state_widget.dart';
 import 'package:padlock_phone/widgets/common/mainScreen/cardcontainer_widget.dart';
+import 'dart:async';
 
-class ParMainScreen extends StatelessWidget {
+class ParMainScreen extends StatefulWidget {
   const ParMainScreen({super.key});
+
+  @override
+  State<ParMainScreen> createState() => _ParMainScreenState();
+}
+
+class _ParMainScreenState extends State<ParMainScreen> {
+  final storage = const FlutterSecureStorage();
+  Map<String, dynamic> attendanceStatus = {
+    'status': '로딩중...',
+    'away': false,
+  };
+  Timer? _attendanceTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchAttendanceStatus(); // 초기 출석 상태 조회
+    _startAttendanceTimer(); // 출석 상태 주기적 업데이트 시작
+  }
+
+  @override
+  void dispose() {
+    _attendanceTimer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _fetchAttendanceStatus() async {
+    try {
+      String? accessToken = await storage.read(key: 'accessToken');
+      String? studentId = await storage.read(key: 'memberId');
+
+      debugPrint('Fetching attendance status...');
+      debugPrint('AccessToken: $accessToken');
+      debugPrint('StudentId: $studentId');
+
+      if (accessToken != null && studentId != null) {
+        final status = await AttendanceApi.getAttendanceStatus(
+          studentId: studentId,
+          token: accessToken,
+        );
+
+        debugPrint('Received status: $status');
+
+        setState(() {
+          attendanceStatus = status;
+        });
+      } else {
+        debugPrint(
+            'Missing credentials - Token: ${accessToken != null}, StudentId: ${studentId != null}');
+      }
+    } catch (e) {
+      debugPrint('Error fetching attendance status: $e');
+      setState(() {
+        attendanceStatus = {
+          'status': 'unreported',
+          'away': false,
+        };
+      });
+    }
+  }
+
+  void _startAttendanceTimer() {
+    // 1분마다 출석 상태 업데이트
+    _attendanceTimer = Timer.periodic(const Duration(minutes: 1), (timer) {
+      _fetchAttendanceStatus();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,11 +106,11 @@ class ParMainScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 30),
-          const Row(
+          Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Padding(
+              const Padding(
                 padding: EdgeInsets.only(left: 35),
                 child: Align(
                   alignment: Alignment.centerLeft,
@@ -50,14 +120,15 @@ class ParMainScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              // SizedBox(width: 70),
               Padding(
-                padding: EdgeInsets.only(right: 35),
-                child: ParAttendanceStateWidget(),
-              )
+                padding: const EdgeInsets.only(right: 23),
+                child: ParAttendanceStateWidget(
+                  attendanceStatus: attendanceStatus,
+                ),
+              ),
             ],
           ),
-          const SizedBox(height: 28),
+          const SizedBox(height: 18),
           GestureDetector(
             onTap: () {
               Navigator.push(
