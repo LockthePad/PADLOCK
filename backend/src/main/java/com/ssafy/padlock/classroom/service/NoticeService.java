@@ -8,7 +8,12 @@ import com.ssafy.padlock.classroom.domain.Notice;
 import com.ssafy.padlock.classroom.repository.ClassroomRepository;
 import com.ssafy.padlock.classroom.repository.NoticeRepository;
 import com.ssafy.padlock.member.domain.Member;
+import com.ssafy.padlock.member.domain.Role;
 import com.ssafy.padlock.member.repository.MemberRepository;
+import com.ssafy.padlock.notification.domain.Notification;
+import com.ssafy.padlock.notification.domain.NotificationType;
+import com.ssafy.padlock.notification.repository.NotificationRepository;
+import com.ssafy.padlock.notification.service.NotificationService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,12 +28,28 @@ public class NoticeService {
     private final MemberRepository memberRepository;
     private final NoticeRepository noticeRepository;
     private final ClassroomRepository classroomRepository;
+    private final NotificationService notificationService;
+    private final NotificationRepository notificationRepository;
 
     @Transactional
     public Long createNotice(Long teacherId, Long classroomId, NoticeRequest request) {
         Classroom classroom = findClassroomById(classroomId);
         validateTeacherOfClassroom(findMemberById(teacherId), classroom);
-        return noticeRepository.save(new Notice(request.getTitle(), request.getContent(), classroom)).getId();
+
+        Long noticeId = noticeRepository.save(new Notice(request.getTitle(), request.getContent(), classroom)).getId();
+        notificationRepository.save(new Notification(NotificationType.NOTICE));
+
+        List<Long> studentIds = memberRepository.findStudentIdsByClassroomId(classroomId, Role.STUDENT);
+        for (Long studentId : studentIds) {
+            notificationService.sendMessageToMember(NotificationType.NOTICE, studentId);
+
+            Long parentId = memberRepository.findParentIdByStudentId(studentId);
+            if (parentId != null) {
+                notificationService.sendMessageToMember(NotificationType.NOTICE, parentId);
+            }
+        }
+
+        return noticeId;
     }
 
     public NoticeResponse getNotice(Long noticeId) {
