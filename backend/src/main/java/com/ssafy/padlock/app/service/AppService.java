@@ -19,6 +19,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -60,7 +61,8 @@ public class AppService {
                             .bodyToMono(String.class)
                             .block();
 
-                    appImgUrl = responseBody;
+                    Map<String, String> responseMap = objectMapper.readValue(responseBody, Map.class);
+                    appImgUrl = responseMap.get("imageUrl");
 
                     app = App.createApp(appRequest.getClassroomId(), appRequest.getAppName(), appRequest.getPackageName(), appImgUrl);
                     appRepository.save(app);
