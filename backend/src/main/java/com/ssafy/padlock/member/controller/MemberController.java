@@ -4,6 +4,7 @@ import com.ssafy.padlock.auth.supports.LoginMember;
 import com.ssafy.padlock.member.controller.request.AddStudentRequest;
 import com.ssafy.padlock.member.controller.response.AttendanceResponse;
 import com.ssafy.padlock.member.controller.response.ChildResponse;
+import com.ssafy.padlock.member.controller.response.MonthlyAttendanceResponse;
 import com.ssafy.padlock.member.service.AttendanceService;
 import com.ssafy.padlock.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -55,5 +57,17 @@ public class MemberController {
     @GetMapping("/attendances")
     public List<AttendanceResponse> getAttendancesByClassroom(@RequestParam Long classroomId) {
         return attendanceService.getClassroomAttendanceStatus(classroomId);
+    }
+
+    @PreAuthorize("hasRole('TEACHER')")
+    @GetMapping("/attendances/monthly")
+    public List<MonthlyAttendanceResponse> getMonthlyAttendance(@RequestParam Long studentId) {
+        return attendanceService.getMonthlyAttendance(studentId);
+    }
+
+    @PreAuthorize("hasRole('TEACHER')")
+    @GetMapping("/classrooms/{classroomId}/students")
+    public Map<Long, String> getStudentsByClassroom(@PathVariable Long classroomId) {
+        return attendanceService.getStudentsByClassroom(classroomId);
     }
 }
