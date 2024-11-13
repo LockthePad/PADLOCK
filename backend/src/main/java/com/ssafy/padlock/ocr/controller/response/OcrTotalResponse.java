@@ -12,6 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OcrTotalResponse {
+    private Long ocrId;
     private List<String> content;
     private String date;
 }
