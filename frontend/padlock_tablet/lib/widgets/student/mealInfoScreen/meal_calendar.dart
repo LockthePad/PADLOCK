@@ -193,7 +193,7 @@ class _MealCalendarState extends State<MealCalendar> {
                     crossAxisSpacing: 1,
                     mainAxisSpacing: 1,
                   ),
-                  itemCount: 30,
+                  itemCount: 25,
                   itemBuilder: (context, index) {
                     final weekNumber = index ~/ 5;
                     final weekday = index % 5;

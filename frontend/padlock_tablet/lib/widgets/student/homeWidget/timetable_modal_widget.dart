@@ -51,7 +51,7 @@ class TimetableModalWidget extends StatelessWidget {
         width: MediaQuery.of(context).size.width * 0.4,
         height: MediaQuery.of(context).size.height * 0.8,
         padding:
-            const EdgeInsets.only(left: 36, right: 24, top: 24, bottom: 24),
+            const EdgeInsets.only(left: 36, right: 24, top: 24, bottom: 12),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(30),
