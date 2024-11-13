@@ -12,7 +12,9 @@ import java.util.Optional;
 
 public interface MemberRepository extends JpaRepository<Member, Long> {
     Optional<Member> findByMemberCode(String memberCode);
+
     List<Member> findAllByParentsId(Long parentsId);
+
     List<Member> findByRole(Role role);
 
     @Query("SELECT m.id FROM Member m WHERE m.classRoom.id = :classroomId AND m.role = :role")
@@ -24,4 +26,8 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     Optional<Member> findByClassRoomAndRole(Classroom classroom, Role role);
 
     List<Member> findByClassRoom_IdAndRole(Long classroomId, Role role);
+
+    @Query("SELECT m.id FROM Member m WHERE m.classRoom.id = :classroomId AND m.role = 'TEACHER'")
+    Optional<Long> findTeacherIdByClassroomId(@Param("classroomId") Long classroomId);
+
 }
