@@ -7,6 +7,7 @@ import com.ssafy.padlock.ocr.controller.response.OcrTotalResponse;
 import com.ssafy.padlock.ocr.repository.OcrRepository;
 import com.ssafy.padlock.ocr.service.OcrService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -31,5 +32,11 @@ public class OcrController {
     @GetMapping("/ocr")
     public List<OcrTotalResponse> getOcrList(@LoginMember Long memberId) {
         return ocrService.getOcrList(memberId);
+    }
+
+    @DeleteMapping("/ocr")
+    public ResponseEntity<?> deleteOcr(@LoginMember Long memberId, @RequestParam Long ocrId) {
+        ocrService.deleteOcr(memberId, ocrId);
+        return ResponseEntity.ok().build();
     }
 }
