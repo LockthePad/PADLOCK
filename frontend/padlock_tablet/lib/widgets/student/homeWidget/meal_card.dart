@@ -22,7 +22,7 @@ class MealCard extends StatelessWidget {
           const Text(
             '오늘의 급식',
             style: TextStyle(
-              fontSize: 22,
+              fontSize: 20,
               // fontWeight: FontWeight.bold,
             ),
           ),
