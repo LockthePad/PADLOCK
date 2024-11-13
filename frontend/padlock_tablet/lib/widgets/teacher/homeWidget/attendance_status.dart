@@ -13,6 +13,12 @@ class _AttendanceStatusState extends State<AttendanceStatus> {
   int presentCount = 0;
   int absentCount = 0;
   int lateCount = 0;
+  Map<String, List<String>> studentAttendanceDetails = {
+    'online': [],
+    'offline': [],
+    'absent': [],
+    'late': [], // 지각자 리스트
+  };
 
   @override
   void initState() {
@@ -23,15 +29,16 @@ class _AttendanceStatusState extends State<AttendanceStatus> {
   Future<void> _fetchAttendanceData() async {
     try {
       final counts = await AttendanceApi.fetchAttendanceCounts();
+      final details = await AttendanceApi.fetchAttendanceDetails();
 
       setState(() {
         presentCount = counts['online']!;
         lateCount = counts['offline']!;
         absentCount = counts['absent']!;
+        studentAttendanceDetails = details;
       });
     } catch (e) {
       print('출석 데이터 가져오기 실패: $e');
-      // Optionally, handle error and show a message to the user
     }
   }
 
@@ -39,46 +46,49 @@ class _AttendanceStatusState extends State<AttendanceStatus> {
   Widget build(BuildContext context) {
     int total = presentCount + absentCount + lateCount;
 
-    return Container(
-      padding: const EdgeInsets.all(40),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(30),
-        border: Border.all(
-          color: AppColors.lilac,
-          width: 1.5,
+    return GestureDetector(
+      onTap: () => _showAttendanceDetailsDialog(),
+      child: Container(
+        padding: const EdgeInsets.all(40),
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(30),
+          border: Border.all(
+            color: AppColors.lilac,
+            width: 1.5,
+          ),
         ),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Expanded(
-            flex: 3,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  '우리반 출석현황',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(
+              flex: 3,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    '우리반 출석현황',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 15),
-                _buildStatusCard('온라인', presentCount, AppColors.successGreen),
-                const SizedBox(height: 5),
-                _buildStatusCard('오프라인', lateCount, AppColors.yellow),
-                const SizedBox(height: 5),
-                _buildStatusCard('미출결', absentCount, AppColors.errorRed),
-              ],
+                  const SizedBox(height: 15),
+                  _buildStatusCard('온라인', presentCount, AppColors.successGreen),
+                  const SizedBox(height: 5),
+                  _buildStatusCard('오프라인', lateCount, AppColors.yellow),
+                  const SizedBox(height: 5),
+                  _buildStatusCard('미출결', absentCount, AppColors.errorRed),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(width: 40),
-          Expanded(
-            flex: 3,
-            child: _buildAttendanceGraph(total),
-          ),
-        ],
+            const SizedBox(width: 40),
+            Expanded(
+              flex: 3,
+              child: _buildAttendanceGraph(total),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -124,8 +134,8 @@ class _AttendanceStatusState extends State<AttendanceStatus> {
       alignment: Alignment.center,
       children: [
         SizedBox(
-          width: 150,
-          height: 150,
+          width: 130,
+          height: 130,
           child: CircularProgressIndicator(
             value: 1.0, // 100%
             strokeWidth: 13,
@@ -134,8 +144,8 @@ class _AttendanceStatusState extends State<AttendanceStatus> {
           ),
         ),
         SizedBox(
-          width: 150,
-          height: 150,
+          width: 130,
+          height: 130,
           child: CircularProgressIndicator(
             value: (presentPercentage + latePercentage) / 100,
             strokeWidth: 13,
@@ -144,8 +154,8 @@ class _AttendanceStatusState extends State<AttendanceStatus> {
           ),
         ),
         SizedBox(
-          width: 150,
-          height: 150,
+          width: 130,
+          height: 130,
           child: CircularProgressIndicator(
             value: presentPercentage / 100,
             strokeWidth: 13,
@@ -158,6 +168,95 @@ class _AttendanceStatusState extends State<AttendanceStatus> {
           style: const TextStyle(
             fontSize: 25,
           ),
+        ),
+      ],
+    );
+  }
+
+  // 출석 세부 정보 모달 다이얼로그
+  void _showAttendanceDetailsDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: AppColors.white,
+          contentPadding: const EdgeInsets.all(20),
+          content: SizedBox(
+            width: 400,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                  ],
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildAttendanceDetailSection(
+                          '온라인',
+                          studentAttendanceDetails['online']!,
+                          AppColors.successGreen),
+                      const SizedBox(height: 20),
+                      _buildAttendanceDetailSection(
+                          '오프라인',
+                          studentAttendanceDetails['offline']!,
+                          AppColors.yellow),
+                      const SizedBox(height: 20),
+                      _buildAttendanceDetailSection(
+                          '미출결',
+                          studentAttendanceDetails['absent']!,
+                          AppColors.errorRed),
+                      const SizedBox(height: 30),
+                      const Divider(),
+                      const SizedBox(height: 30),
+                      _buildAttendanceDetailSection(
+                        '지각자',
+                        studentAttendanceDetails['late'] ?? [],
+                        AppColors.grey,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // 출석 세부 정보 섹션 빌더
+  Widget _buildAttendanceDetailSection(
+      String title, List<String> students, Color color) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            CircleAvatar(
+              radius: 5,
+              backgroundColor: color,
+            ),
+            const SizedBox(width: 5),
+            Text(
+              '$title(${students.length}명)',
+              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+        const SizedBox(height: 5),
+        Text(
+          students.join(', '),
+          style: const TextStyle(fontSize: 14),
         ),
       ],
     );
