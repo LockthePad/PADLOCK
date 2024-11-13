@@ -21,7 +21,7 @@ class NoticeCard extends StatelessWidget {
           const Text(
             '공지사항',
             style: TextStyle(
-              fontSize: 22,
+              fontSize: 20,
               // fontWeight: FontWeight.bold,
             ),
           ),

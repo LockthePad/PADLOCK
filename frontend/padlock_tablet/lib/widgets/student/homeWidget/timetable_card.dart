@@ -85,7 +85,7 @@ class _TimetableCardState extends State<TimetableCard> {
           const Text(
             '오늘의 시간표',
             style: TextStyle(
-              fontSize: 22,
+              fontSize: 20,
             ),
           ),
           Expanded(

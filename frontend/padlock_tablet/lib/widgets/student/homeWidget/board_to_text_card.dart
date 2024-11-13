@@ -46,7 +46,7 @@ class BoardToTextCard extends StatelessWidget {
           const Text(
             '필기 변환하기',
             style: TextStyle(
-              fontSize: 22,
+              fontSize: 20,
             ),
           ),
         ],
