@@ -76,12 +76,12 @@ public class MemberService {
 
         Member parent = parts.length > 4
                 ? memberRepository.findByMemberCode(parts[4])
-                    .orElseThrow(() -> new IllegalArgumentException("부모 코드가 잘못되었습니다: " + parts[4]))
+                .orElseThrow(() -> new IllegalArgumentException("부모 코드가 잘못되었습니다: " + parts[4]))
                 : null;
 
         Classroom classroom = parts.length > 5
                 ? classroomRepository.findById(Long.parseLong(parts[5]))
-                    .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 Classroom ID: " + parts[5]))
+                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 Classroom ID: " + parts[5]))
                 : null;
 
         return switch (role) {
@@ -97,5 +97,10 @@ public class MemberService {
                 .orElseThrow(() -> new EntityNotFoundException(
                         String.format("학급(classroomId: %d)이 존재하지 않습니다.", classroomId)
                 ));
+    }
+
+    public Long getTeacherId(Long classroomId) {
+        return memberRepository.findTeacherIdByClassroomId(classroomId)
+                .orElseThrow(() -> new EntityNotFoundException("담임 선생님을 찾을 수 없습니다."));
     }
 }

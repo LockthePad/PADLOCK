@@ -44,7 +44,7 @@ public class MemberController {
     @PreAuthorize("hasRole('STUDENT')")
     @PostMapping("/communication")
     public AttendanceResponse receiveCommunication(@LoginMember Long studentId, @RequestParam Long classroomId,
-                                                         @RequestParam boolean success) {
+                                                   @RequestParam boolean success) {
         return attendanceService.updateAttendanceStatus(studentId, classroomId, success);
     }
 
@@ -69,5 +69,11 @@ public class MemberController {
     @GetMapping("/classrooms/{classroomId}/students")
     public Map<Long, String> getStudentsByClassroom(@PathVariable Long classroomId) {
         return attendanceService.getStudentsByClassroom(classroomId);
+    }
+
+    //선생님 ID 구하기
+    @GetMapping("/get-teacherId")
+    public Long getTeacherId(@RequestParam Long classroomId) {
+        return memberService.getTeacherId(classroomId);
     }
 }
