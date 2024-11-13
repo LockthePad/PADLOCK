@@ -67,12 +67,38 @@ class _NotificationModalState extends State<NotificationModal> {
     }
   }
 
+  Future<void> _markAsRead(int notificationId) async {
+    try {
+      await widget.notificationService.markAsRead(notificationId);
+
+      setState(() {
+        _unreadNotifications
+            .removeWhere((notification) => notification.id == notificationId);
+      });
+
+      widget.onNotificationsRead();
+
+      if (_unreadNotifications.isEmpty && mounted) {
+        Navigator.of(context).pop();
+      }
+    } catch (e) {
+      print('Error marking notification as read: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('알림 읽음 처리 중 오류가 발생했습니다.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   Future<void> _markAllAsRead() async {
     try {
       for (var notification in _unreadNotifications) {
         await widget.notificationService.markAsRead(notification.id);
       }
-      // 부모 위젯에 알림
       widget.onNotificationsRead();
 
       if (mounted) {
@@ -80,7 +106,6 @@ class _NotificationModalState extends State<NotificationModal> {
       }
     } catch (e) {
       print('Error marking notifications as read: $e');
-      // 에러 처리 (선택적으로 사용자에게 에러 메시지 표시)
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -159,21 +184,29 @@ class _NotificationModalState extends State<NotificationModal> {
                       separatorBuilder: (context, index) => const Divider(),
                       itemBuilder: (context, index) {
                         final notification = _unreadNotifications[index];
-                        return ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          leading: _getNotificationIcon(notification.type),
-                          title: Text(
-                            _getNotificationMessage(notification.type),
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
+                        return InkWell(
+                          onTap: () => _markAsRead(notification.id),
+                          child: ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            leading: _getNotificationIcon(notification.type),
+                            title: Text(
+                              _getNotificationMessage(notification.type),
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
-                          ),
-                          subtitle: Text(
-                            _formatDateTime(notification.time),
-                            style: const TextStyle(
+                            subtitle: Text(
+                              _formatDateTime(notification.time),
+                              style: const TextStyle(
+                                color: AppColors.grey,
+                                fontSize: 14,
+                              ),
+                            ),
+                            trailing: const Icon(
+                              Icons.check_circle_outline,
                               color: AppColors.grey,
-                              fontSize: 14,
+                              size: 20,
                             ),
                           ),
                         );

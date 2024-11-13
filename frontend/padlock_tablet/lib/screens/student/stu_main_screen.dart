@@ -315,41 +315,6 @@ class _StuMainScreenState extends State<StuMainScreen> {
     }
   }
 
-  // 테스트 데이터
-  // final CurrentPeriodInfo currentClass = CurrentPeriodInfo(
-  //   date: '2024년 10월 22일 화요일',
-  //   period: '1교시',
-  //   subject: '국어',
-  //   backgroundColor: AppColors.yellow,
-  // );
-
-  // 시간표 테스트 데이터
-  final List<TimeTableItem> timeTable = [
-    TimeTableItem(period: '1교시', subject: '과학'),
-    TimeTableItem(period: '2교시', subject: '수학'),
-    TimeTableItem(period: '3교시', subject: '영어'),
-    TimeTableItem(period: '4교시', subject: '음악'),
-    TimeTableItem(period: '5교시', subject: '사회'),
-  ];
-
-  // final List<AppInfo> availableApps = [
-  //   AppInfo(
-  //     name: 'Flipnote',
-  //     iconData: Icons.edit_note, // 노트 아이콘
-  //     backgroundColor: Colors.red,
-  //   ),
-  //   AppInfo(
-  //     name: 'Wear',
-  //     iconData: Icons.watch, // 시계 아이콘
-  //     backgroundColor: Colors.blue,
-  //   ),
-  //   AppInfo(
-  //     name: 'Galaxy Shop',
-  //     iconData: Icons.shopping_bag, // 쇼핑백 아이콘
-  //     backgroundColor: Colors.blue,
-  //   ),
-  // ];
-
   void _handlePictureTaken(XFile picture) {
     setState(() {
       _selectedItem = MenuItemStu.boardToText;
@@ -368,44 +333,6 @@ class _StuMainScreenState extends State<StuMainScreen> {
       _selectedItem = MenuItemStu.notification;
     });
   }
-
-  // Add test data for saved notes
-  // final List<Map<String, dynamic>> testSavedNotes = [
-  //   {
-  //     'content':
-  //         '동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세동해물과 백두산이 마르고 닳도록 하느님이 보우하사 우리 나라 만세',
-  //     'timestamp': '2024.11.06 수요일 2교시 국어시간'
-  //   },
-  //   {'content': '자리 바꾸고 싶어요○○○○○○○○○○○○○○○○', 'timestamp': '2024.11.06 09:07'},
-  //   {
-  //     'content': '자리 바꾸고 싶어요○○○○○○○○○○○○○○○○',
-  //     'timestamp': '2024.10.23 10:59 정석영'
-  //   },
-  //   {
-  //     'content': '자리 바꾸고 싶어요○○○○○○○○○○○○○○○○',
-  //     'timestamp': '2024.10.23 10:59 정석영'
-  //   },
-  //   {
-  //     'content': '자리 바꾸고 싶어요○○○○○○○○○○○○○○○○',
-  //     'timestamp': '2024.10.23 10:59 정석영'
-  //   },
-  //   {
-  //     'content': '자리 바꾸고 싶어요○○○○○○○○○○○○○○○○',
-  //     'timestamp': '2024.10.23 10:59 정석영'
-  //   },
-  //   {
-  //     'content': '자리 바꾸고 싶어요○○○○○○○○○○○○○○○○',
-  //     'timestamp': '2024.10.23 10:59 정석영'
-  //   },
-  //   {
-  //     'content': '자리 바꾸고 싶어요○○○○○○○○○○○○○○○○',
-  //     'timestamp': '2024.10.23 10:59 정석영'
-  //   },
-  //   {
-  //     'content': '자리 바꾸고 싶어요○○○○○○○○○○○○○○○○',
-  //     'timestamp': '2024.10.23 10:59 정석영'
-  //   },
-  // ];
 
   Widget _buildContent() {
     switch (_selectedItem) {
@@ -444,6 +371,7 @@ class _StuMainScreenState extends State<StuMainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.white,
       body: Padding(
         padding: const EdgeInsets.all(12.0),
         child: Row(
