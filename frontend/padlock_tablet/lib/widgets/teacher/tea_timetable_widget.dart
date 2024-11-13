@@ -24,7 +24,6 @@ class _TeaTimetableWidgetState extends State<TeaTimetableWidget> {
   ];
   List<List<String?>> timetable =
       List.generate(6, (_) => List<String?>.filled(5, null));
-  final int classroomId = 9; // 예시로 고정된 값, 실제 상황에 맞게 변경 필요
 
   @override
   void initState() {

@@ -1,6 +1,4 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:padlock_tablet/api/teacher/available_apps_api.dart';
 import 'package:padlock_tablet/models/teacher/app_info.dart' as custom_app_info;
 import 'package:padlock_tablet/theme/colors.dart';
@@ -20,18 +18,14 @@ class AvailableAppsCard extends StatefulWidget {
 }
 
 class _AvailableAppsCardState extends State<AvailableAppsCard> {
-  static const platform = MethodChannel('com.example.padlock_tablet/app_icons');
   List<custom_app_info.AppInfo> allowedApps = [];
   List<custom_app_info.AppInfo> allInstalledApps = [];
-
-  // 각 앱의 허용 상태를 관리하는 맵
   Map<String, bool> appAllowedStatus = {};
 
   @override
   void initState() {
     super.initState();
     _fetchAllowedApps();
-    _fetchInstalledApps();
   }
 
   Future<void> _fetchAllowedApps() async {
@@ -39,59 +33,42 @@ class _AvailableAppsCardState extends State<AvailableAppsCard> {
 
     setState(() {
       allowedApps = fetchedApps.map((app) {
+        appAllowedStatus[app.packageName] = true; // 초기 상태 설정
         return custom_app_info.AppInfo(
-          name: app['appName'] ?? 'Unknown App',
-          packageName: app['appPackage'] ?? 'unknown.package',
-          iconData: Icons.apps,
+          appId: app.appId,
+          name: app.name,
+          packageName: app.packageName,
+          appImgUrl: app.appImgUrl,
         );
       }).toList();
-
-      // 초기 허용 상태 설정
-      for (var app in allowedApps) {
-        appAllowedStatus[app.packageName] = true;
-      }
     });
   }
 
-  Future<void> _fetchInstalledApps() async {
+  Future<void> _fetchInstalledAppsAndShowDialog() async {
     try {
       List<installed_app_info.AppInfo> apps =
           await InstalledApps.getInstalledApps();
+
+      List<custom_app_info.AppInfo> tempApps = apps.map((app) {
+        return custom_app_info.AppInfo(
+          appId: null, // 초기화
+          name: app.name,
+          packageName: app.packageName,
+          appImgUrl: null,
+        );
+      }).toList();
+
+      List<custom_app_info.AppInfo> updatedApps =
+          await AvailableAppsApi.postInstalledApps(tempApps);
+
       setState(() {
-        allInstalledApps = apps.map((app) {
-          return custom_app_info.AppInfo(
-            name: app.name,
-            packageName: app.packageName,
-            iconData: Icons.apps,
-          );
-        }).toList();
-
-        // 설치된 앱의 초기 허용 상태를 false로 설정
-        for (var app in allInstalledApps) {
-          if (!appAllowedStatus.containsKey(app.packageName)) {
-            appAllowedStatus[app.packageName] = false;
-          }
-        }
-      });
-    } catch (e) {
-      print('설치된 앱 불러오기 실패: $e');
-    }
-  }
-
-  Future<Image?> _getAppIcon(String packageName) async {
-    try {
-      final String? base64Icon = await platform.invokeMethod('getAppIcon', {
-        'packageName': packageName,
+        allInstalledApps = updatedApps;
       });
 
-      if (base64Icon != null) {
-        Uint8List bytes = base64Decode(base64Icon);
-        return Image.memory(bytes);
-      }
+      _showInstalledAppsDialog();
     } catch (e) {
-      print("아이콘 불러오기 실패: $e");
+      print('설치된 앱을 불러오거나 서버에 요청하는 중 오류 발생: $e');
     }
-    return null;
   }
 
   @override
@@ -126,59 +103,38 @@ class _AvailableAppsCardState extends State<AvailableAppsCard> {
   }
 
   Widget _buildAppIcon(custom_app_info.AppInfo app) {
-    return FutureBuilder<Image?>(
-      future: _getAppIcon(app.packageName),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const CircularProgressIndicator();
-        } else if (snapshot.hasData) {
-          return Padding(
-            padding: const EdgeInsets.only(right: 10),
-            child: Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: snapshot.data,
-            ),
-          );
-        } else {
-          return Padding(
-            padding: const EdgeInsets.only(right: 10),
-            child: Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: const Icon(
+    return Padding(
+      padding: const EdgeInsets.only(right: 10),
+      child: Container(
+        width: 48,
+        height: 48,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: app.appImgUrl != null && app.appImgUrl!.isNotEmpty
+            ? Image.network(app.appImgUrl!, fit: BoxFit.cover)
+            : const Icon(
                 Icons.apps,
                 color: AppColors.white,
                 size: 24,
               ),
-            ),
-          );
-        }
-      },
+      ),
     );
   }
 
   Widget _buildAddButton() {
     return InkWell(
-      onTap: () {
-        _showInstalledAppsDialog();
-      },
+      onTap: _fetchInstalledAppsAndShowDialog,
       child: Container(
         width: 48,
         height: 48,
         decoration: BoxDecoration(
-          color: Colors.blue,
+          color: AppColors.white,
           borderRadius: BorderRadius.circular(20),
         ),
         child: Icon(
           Icons.add,
-          color: AppColors.white,
+          color: AppColors.grey,
           size: 24,
         ),
       ),
@@ -196,49 +152,81 @@ class _AvailableAppsCardState extends State<AvailableAppsCard> {
         return AlertDialog(
           backgroundColor: AppColors.white,
           title: const Text('설치된 앱 목록'),
-          content: SizedBox(
-            width: double.maxFinite,
-            child: ListView.builder(
-              shrinkWrap: true,
-              itemCount: allInstalledApps.length,
-              itemBuilder: (context, index) {
-                final app = allInstalledApps[index];
+          content: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setDialogState) {
+              return SizedBox(
+                width: 500,
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: allInstalledApps.length,
+                  itemBuilder: (context, index) {
+                    final app = allInstalledApps[index];
+                    final isAllowed =
+                        appAllowedStatus[app.packageName] ?? false;
 
-                return StatefulBuilder(
-                  builder: (context, setState) {
                     return ListTile(
-                      leading: FutureBuilder<Image?>(
-                        future: _getAppIcon(app.packageName),
-                        builder: (context, snapshot) {
-                          if (snapshot.hasData) {
-                            return snapshot.data!;
-                          } else {
-                            return const Icon(Icons.apps);
-                          }
-                        },
-                      ),
+                      leading:
+                          app.appImgUrl != null && app.appImgUrl!.isNotEmpty
+                              ? Image.network(app.appImgUrl!, fit: BoxFit.cover)
+                              : const Icon(Icons.apps),
                       title: Text(app.name),
                       subtitle: Text(app.packageName),
                       trailing: Switch(
-                        value: appAllowedStatus[app.packageName] ?? false,
-                        onChanged: (bool value) {
-                          setState(() {
+                        value: isAllowed,
+                        onChanged: (bool value) async {
+                          final appId = app.appId ?? 0;
+                          final previousState =
+                              appAllowedStatus[app.packageName] ?? false;
+
+                          // 다이얼로그와 전체 화면 상태 동시 업데이트
+                          setDialogState(() {
                             appAllowedStatus[app.packageName] = value;
                             if (value) {
-                              allowedApps.add(app);
+                              if (!allowedApps.any(
+                                  (a) => a.packageName == app.packageName)) {
+                                setState(() {
+                                  allowedApps.add(app); // 전체 화면 상태 업데이트
+                                });
+                              }
                             } else {
-                              allowedApps.removeWhere((allowedApp) =>
-                                  allowedApp.packageName == app.packageName);
+                              setState(() {
+                                allowedApps.removeWhere(
+                                    (a) => a.packageName == app.packageName);
+                              });
                             }
                           });
-                          this.setState(() {}); // 외부 상태 반영
+
+                          // API 요청 후 성공 시 상태 확정, 실패 시 롤백
+                          final success =
+                              await AvailableAppsApi.toggleAppStatus(
+                                  appId, value);
+
+                          if (!success) {
+                            // API 실패 시 이전 상태로 롤백
+                            setDialogState(() {
+                              appAllowedStatus[app.packageName] = previousState;
+                              if (previousState) {
+                                setState(() {
+                                  allowedApps.add(app);
+                                });
+                              } else {
+                                setState(() {
+                                  allowedApps.removeWhere(
+                                      (a) => a.packageName == app.packageName);
+                                });
+                              }
+                            });
+                            print('앱 상태 변경 실패');
+                          } else {
+                            print('앱 상태 변경 성공');
+                          }
                         },
                       ),
                     );
                   },
-                );
-              },
-            ),
+                ),
+              );
+            },
           ),
           actions: [
             TextButton(
