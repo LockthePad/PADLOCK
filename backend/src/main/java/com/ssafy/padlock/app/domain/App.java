@@ -8,7 +8,7 @@ import static lombok.AccessLevel.PROTECTED;
 
 @Entity
 @Getter
-@Table(name = "app")
+@Table(name = "app", uniqueConstraints = {@UniqueConstraint(columnNames = {"classroom_id", "app_name"})})
 @NoArgsConstructor(access = PROTECTED)
 public class App {
 
