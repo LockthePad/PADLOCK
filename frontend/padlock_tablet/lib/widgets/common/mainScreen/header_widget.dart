@@ -1,22 +1,112 @@
-import 'package:flutter/material.dart';
-import 'package:padlock_tablet/theme/colors.dart';
+// header_widget.dart
+import 'dart:async';
 
-class HeaderWidget extends StatelessWidget {
+import 'package:flutter/material.dart';
+import 'package:padlock_tablet/api/common/notification_service_api.dart';
+import 'package:padlock_tablet/theme/colors.dart';
+import 'package:padlock_tablet/widgets/common/mainScreen/notification_modal.dart';
+import 'package:padlock_tablet/models/common/notification_item.dart';
+
+class HeaderWidget extends StatefulWidget {
   const HeaderWidget({
     super.key,
     required this.memberInfo,
     required this.isStudent,
-    this.attendanceStatus = const {}, // 기본값으로 빈 맵 제공
+    this.attendanceStatus = const {},
   });
 
   final String memberInfo;
   final bool isStudent;
   final Map<String, dynamic> attendanceStatus;
 
-  Map<String, String> _parseMemberInfo() {
-    print('Parsing memberInfo: $memberInfo');
+  @override
+  State<HeaderWidget> createState() => _HeaderWidgetState();
+}
 
-    if (memberInfo.isEmpty) {
+class _HeaderWidgetState extends State<HeaderWidget> {
+  final NotificationServiceApi _notificationService = NotificationServiceApi();
+  List<NotificationItem> _notifications = [];
+  bool _hasUnreadNotifications = false;
+  StreamSubscription? _notificationSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    print('HeaderWidget initialized');
+    _initializeNotifications();
+  }
+
+  @override
+  void dispose() {
+    print('HeaderWidget disposing');
+    _notificationSubscription?.cancel();
+    _notificationService.dispose();
+    super.dispose();
+  }
+
+  Future<void> _initializeNotifications() async {
+    print('Initializing notifications in HeaderWidget');
+
+    // 초기 알림 상태 설정
+    try {
+      final initialNotifications =
+          await _notificationService.getNotifications();
+      if (mounted) {
+        setState(() {
+          _notifications = initialNotifications;
+          _updateUnreadStatus();
+        });
+      }
+    } catch (e) {
+      print('Error loading initial notifications: $e');
+    }
+
+    // 스트림 구독
+    _notificationSubscription = _notificationService.notificationStream.listen(
+      (notifications) {
+        print(
+            'Received notification update in HeaderWidget: ${notifications.length} notifications');
+        if (mounted) {
+          setState(() {
+            _notifications = notifications;
+            _updateUnreadStatus();
+          });
+        }
+      },
+      onError: (error) {
+        print('Error in notification stream: $error');
+      },
+      onDone: () {
+        print('Notification stream closed');
+      },
+    );
+
+    // SSE 구독 시작
+    await _notificationService.subscribeToNotifications();
+  }
+
+  void _updateUnreadStatus() {
+    final hasUnread = _notifications.any((notification) => !notification.read);
+    print('Updating unread status: $hasUnread');
+    if (_hasUnreadNotifications != hasUnread) {
+      setState(() {
+        _hasUnreadNotifications = hasUnread;
+        print('Notification icon status updated: $_hasUnreadNotifications');
+      });
+    }
+  }
+
+  Future<void> _handleNotificationsRead() async {
+    setState(() {
+      _notifications = _notificationService.currentNotifications;
+      _updateUnreadStatus();
+    });
+  }
+
+  Map<String, String> _parseMemberInfo() {
+    print('Parsing memberInfo: ${widget.memberInfo}');
+
+    if (widget.memberInfo.isEmpty) {
       return {
         'userClass': '로딩중...',
         'userName': '로딩중...',
@@ -24,7 +114,7 @@ class HeaderWidget extends StatelessWidget {
     }
 
     try {
-      final parts = memberInfo.split(' ');
+      final parts = widget.memberInfo.split(' ');
       print('Split parts: $parts');
 
       if (parts.length >= 4) {
@@ -47,13 +137,13 @@ class HeaderWidget extends StatelessWidget {
   }
 
   String _getStatusText() {
-    if (!isStudent) return ''; // 선생님일 경우 빈 문자열 반환
+    if (!widget.isStudent) return '';
 
-    if (attendanceStatus['away'] == true) {
+    if (widget.attendanceStatus['away'] == true) {
       return '자리비움';
     }
 
-    switch (attendanceStatus['status']) {
+    switch (widget.attendanceStatus['status']) {
       case 'PRESENT':
         return '출석';
       case 'UNREPORTED':
@@ -68,13 +158,13 @@ class HeaderWidget extends StatelessWidget {
   }
 
   Color _getStatusColor() {
-    if (!isStudent) return AppColors.grey; // 선생님일 경우 기본 색상 반환
+    if (!widget.isStudent) return AppColors.grey;
 
-    if (attendanceStatus['away'] == true) {
+    if (widget.attendanceStatus['away'] == true) {
       return AppColors.paleYellow;
     }
 
-    switch (attendanceStatus['status']) {
+    switch (widget.attendanceStatus['status']) {
       case 'PRESENT':
         return AppColors.successGreen;
       case 'UNREPORTED':
@@ -88,10 +178,22 @@ class HeaderWidget extends StatelessWidget {
     }
   }
 
+  void _showNotificationModal() {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) => NotificationModal(
+        notifications: _notifications,
+        notificationService: _notificationService,
+        onNotificationsRead: _handleNotificationsRead,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final String logoAsset =
-        isStudent ? 'assets/yellowLogo.png' : 'assets/navyLogo.png';
+        widget.isStudent ? 'assets/yellowLogo.png' : 'assets/navyLogo.png';
 
     final userInfo = _parseMemberInfo();
 
@@ -107,12 +209,39 @@ class HeaderWidget extends StatelessWidget {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
+              Stack(
+                children: [
+                  IconButton(
+                    icon: Icon(
+                      Icons.notifications,
+                      color: _hasUnreadNotifications
+                          ? AppColors.yellow
+                          : AppColors.grey,
+                      size: 28,
+                    ),
+                    onPressed: _showNotificationModal,
+                  ),
+                  if (_hasUnreadNotifications)
+                    Positioned(
+                      right: 8,
+                      top: 8,
+                      child: Container(
+                        width: 8,
+                        height: 8,
+                        decoration: const BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
               const SizedBox(width: 12),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (isStudent)
+                  if (widget.isStudent)
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 12,
@@ -133,7 +262,7 @@ class HeaderWidget extends StatelessWidget {
                     ),
                   const SizedBox(height: 4),
                   Text(
-                    isStudent
+                    widget.isStudent
                         ? '${userInfo['userClass']} ${userInfo['userName']}'
                         : '${userInfo['userClass']} ${userInfo['userName']} 선생님',
                     style: const TextStyle(

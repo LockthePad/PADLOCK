@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:padlock_tablet/api/common/notification_service_api.dart';
 import 'package:padlock_tablet/screens/teacher/tea_main_screen.dart';
 import 'package:padlock_tablet/screens/student/stu_main_screen.dart';
 import 'package:padlock_tablet/theme/colors.dart';
@@ -21,6 +22,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _memberCodeController = TextEditingController();
   final _passwordController = TextEditingController();
   final storage = const FlutterSecureStorage();
+  final NotificationServiceApi _notificationService = NotificationServiceApi();
   String? errorMessage;
   bool isLoading = false;
   Timer? _tokenRefreshTimer;
@@ -38,6 +40,7 @@ class _LoginScreenState extends State<LoginScreen> {
     _tokenRefreshTimer?.cancel();
     _memberCodeController.dispose();
     _passwordController.dispose();
+    _notificationService.dispose();
     super.dispose();
   }
 
@@ -61,7 +64,6 @@ class _LoginScreenState extends State<LoginScreen> {
         final response = await MemberApiService().refreshToken(refreshToken);
         final data = jsonDecode(utf8.decode(response.bodyBytes));
 
-        // 응답 코드별 처리
         if (response.statusCode == 200) {
           final String accessToken = data['accessToken'];
           final String newRefreshToken = data['refreshToken'];
@@ -70,11 +72,9 @@ class _LoginScreenState extends State<LoginScreen> {
           await storage.write(key: 'refreshToken', value: newRefreshToken);
           print('토큰 갱신 성공');
         } else {
-          // 에러 코드별 처리
           switch (data['code']) {
             case 4000:
               print("액세스 토큰 만료");
-              // 액세스 토큰 만료시에는 리프레시 토큰으로 재시도
               break;
             case 4001:
               print("리프레시 토큰 만료");
@@ -98,6 +98,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _handleTokenExpiration() async {
     _tokenRefreshTimer?.cancel();
+    _notificationService.dispose(); // 알림 서비스 정리
     await storage.deleteAll();
     if (mounted) {
       Navigator.of(context).pushReplacement(
@@ -118,6 +119,9 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       await _refreshTokenIfNeeded();
       _startTokenRefreshTimer();
+
+      // 토큰이 유효하면 알림 구독 시작
+      await _notificationService.subscribeToNotifications();
 
       if (role == "TEACHER") {
         if (mounted) {
@@ -153,6 +157,7 @@ class _LoginScreenState extends State<LoginScreen> {
         String rawMemberInfo = data['memberInfo'].toString();
         String memberInfo = utf8.decode(rawMemberInfo.codeUnits);
 
+        // 토큰 및 사용자 정보 저장
         await storage.write(key: 'accessToken', value: data['accessToken']);
         await storage.write(key: 'refreshToken', value: data['refreshToken']);
         await storage.write(key: 'role', value: data['role']);
@@ -164,13 +169,14 @@ class _LoginScreenState extends State<LoginScreen> {
 
         _startTokenRefreshTimer();
 
+        // 로그인 성공 후 알림 구독 시작
+        await _notificationService.subscribeToNotifications();
+
         if (data['role'] == "TEACHER") {
           Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (_) => const TeaMainScreen()));
         } else if (data['role'] == "STUDENT") {
-          // 학생으로 로그인한 경우에만 앱 잠금 서비스 초기화
           await AppLockService().initialize();
-
           Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (_) => const StuMainScreen()));
         }
