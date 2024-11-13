@@ -127,44 +127,49 @@ class _AttendanceStatusState extends State<AttendanceStatus> {
 
   // 원형 그래프 빌더
   Widget _buildAttendanceGraph(int total) {
-    double presentPercentage = total > 0 ? (presentCount / total) * 100 : 0;
-    double latePercentage = total > 0 ? (lateCount / total) * 100 : 0;
+    // 출석률 계산: (온라인 + 오프라인) / 전체 학생 수
+    double onlinePercentage = total > 0 ? (presentCount / total) * 100 : 0;
+    double offlinePercentage = total > 0 ? (lateCount / total) * 100 : 0;
 
     return Stack(
       alignment: Alignment.center,
       children: [
+        // 전체 원형 배경 (미출결 비율)
         SizedBox(
           width: 130,
           height: 130,
           child: CircularProgressIndicator(
-            value: 1.0, // 100%
+            value: 1.0, // 전체 비율 (100%)
             strokeWidth: 13,
-            color: AppColors.errorRed,
+            color: AppColors.errorRed, // 미출결 비율 색상
             backgroundColor: AppColors.grey.withOpacity(0.3),
           ),
         ),
+        // 오프라인 비율 (노란색)
         SizedBox(
           width: 130,
           height: 130,
           child: CircularProgressIndicator(
-            value: (presentPercentage + latePercentage) / 100,
+            value: (onlinePercentage + offlinePercentage) / 100,
             strokeWidth: 13,
-            color: AppColors.yellow,
+            color: AppColors.yellow, // 오프라인 색상
             backgroundColor: Colors.transparent,
           ),
         ),
+        // 온라인 비율 (초록색)
         SizedBox(
           width: 130,
           height: 130,
           child: CircularProgressIndicator(
-            value: presentPercentage / 100,
+            value: onlinePercentage / 100,
             strokeWidth: 13,
-            color: AppColors.successGreen,
+            color: AppColors.successGreen, // 온라인 색상
             backgroundColor: Colors.transparent,
           ),
         ),
+        // 가운데 출석률 텍스트
         Text(
-          '${presentPercentage.toStringAsFixed(0)}%',
+          '${((presentCount + lateCount) / total * 100).toStringAsFixed(0)}%',
           style: const TextStyle(
             fontSize: 25,
           ),
