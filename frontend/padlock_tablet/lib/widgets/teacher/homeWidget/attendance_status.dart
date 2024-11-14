@@ -17,7 +17,7 @@ class _AttendanceStatusState extends State<AttendanceStatus> {
     'online': [],
     'offline': [],
     'absent': [],
-    'late': [], // 지각자 리스트
+    'late': [],
   };
 
   @override
@@ -49,7 +49,12 @@ class _AttendanceStatusState extends State<AttendanceStatus> {
     return GestureDetector(
       onTap: () => _showAttendanceDetailsDialog(),
       child: Container(
-        padding: const EdgeInsets.all(40),
+        padding: const EdgeInsets.only(
+          top: 30,
+          left: 40,
+          right: 40,
+          bottom: 30,
+        ),
         decoration: BoxDecoration(
           color: AppColors.white,
           borderRadius: BorderRadius.circular(30),
@@ -127,49 +132,47 @@ class _AttendanceStatusState extends State<AttendanceStatus> {
 
   // 원형 그래프 빌더
   Widget _buildAttendanceGraph(int total) {
-    // 출석률 계산: (온라인 + 오프라인) / 전체 학생 수
+    // 로딩 중인 경우 기본 출석률을 0으로 설정
     double onlinePercentage = total > 0 ? (presentCount / total) * 100 : 0;
     double offlinePercentage = total > 0 ? (lateCount / total) * 100 : 0;
+    double attendancePercentage =
+        total > 0 ? ((presentCount + lateCount) / total * 100) : 0;
 
     return Stack(
       alignment: Alignment.center,
       children: [
-        // 전체 원형 배경 (미출결 비율)
         SizedBox(
           width: 130,
           height: 130,
           child: CircularProgressIndicator(
-            value: 1.0, // 전체 비율 (100%)
+            value: 1.0,
             strokeWidth: 13,
-            color: AppColors.errorRed, // 미출결 비율 색상
+            color: AppColors.errorRed,
             backgroundColor: AppColors.grey.withOpacity(0.3),
           ),
         ),
-        // 오프라인 비율 (노란색)
         SizedBox(
           width: 130,
           height: 130,
           child: CircularProgressIndicator(
             value: (onlinePercentage + offlinePercentage) / 100,
             strokeWidth: 13,
-            color: AppColors.yellow, // 오프라인 색상
+            color: AppColors.yellow,
             backgroundColor: Colors.transparent,
           ),
         ),
-        // 온라인 비율 (초록색)
         SizedBox(
           width: 130,
           height: 130,
           child: CircularProgressIndicator(
             value: onlinePercentage / 100,
             strokeWidth: 13,
-            color: AppColors.successGreen, // 온라인 색상
+            color: AppColors.successGreen,
             backgroundColor: Colors.transparent,
           ),
         ),
-        // 가운데 출석률 텍스트
         Text(
-          '${((presentCount + lateCount) / total * 100).toStringAsFixed(0)}%',
+          '${attendancePercentage.toStringAsFixed(0)}%',
           style: const TextStyle(
             fontSize: 25,
           ),

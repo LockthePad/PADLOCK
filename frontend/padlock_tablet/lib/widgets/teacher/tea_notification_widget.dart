@@ -158,10 +158,8 @@ class _TeaNotificationWidgetState extends State<TeaNotificationWidget> {
                                   padding:
                                       const EdgeInsets.symmetric(vertical: 7),
                                   child: InkWell(
-                                    splashColor:
-                                        Colors.transparent, // 터치 시 퍼지는 효과 제거
-                                    highlightColor:
-                                        Colors.transparent, // 터치 시 색상 변경 효과 제거
+                                    splashColor: Colors.transparent,
+                                    highlightColor: Colors.transparent,
                                     onTap: () {
                                       setState(() {
                                         selectedIndex = index;
@@ -171,7 +169,7 @@ class _TeaNotificationWidgetState extends State<TeaNotificationWidget> {
                                     },
                                     child: Container(
                                       width: double.infinity,
-                                      padding: const EdgeInsets.all(25),
+                                      padding: const EdgeInsets.all(23),
                                       decoration: BoxDecoration(
                                         borderRadius: BorderRadius.circular(30),
                                         color: selectedIndex == index

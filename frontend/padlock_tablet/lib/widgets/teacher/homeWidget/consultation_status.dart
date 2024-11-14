@@ -13,7 +13,6 @@ class ConsultationStatus extends StatefulWidget {
 class _ConsultationStatusState extends State<ConsultationStatus> {
   List<Consultation> consultations = [];
 
-  // API 호출 함수
   Future<void> fetchTodayConsultations() async {
     try {
       final data = await CounselingApi.fetchTodayCounseling();
@@ -33,14 +32,14 @@ class _ConsultationStatusState extends State<ConsultationStatus> {
   @override
   void initState() {
     super.initState();
-    fetchTodayConsultations(); // 화면 초기화 시 API 호출
+    fetchTodayConsultations();
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.only(
-        top: 40,
+        top: 30,
         left: 40,
         right: 40,
       ),
@@ -94,13 +93,12 @@ class _ConsultationStatusState extends State<ConsultationStatus> {
             ),
           ),
           const SizedBox(width: 30),
-          // 오른쪽: 캘린더 이미지
           Expanded(
             flex: 2,
             child: Align(
               alignment: Alignment.centerRight,
               child: Image.asset(
-                'assets/calendar.png', // 캘린더 이미지 경로
+                'assets/calendar.png',
                 width: 150,
                 height: 150,
               ),
