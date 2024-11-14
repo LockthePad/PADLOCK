@@ -23,25 +23,19 @@ public class LocationService {
     private final LocationRepository locationRepository;
     private final ScheduleCalculator scheduleCalculator;
 
+
     public void saveLocation(Long classroomId, Long memberId, double latitude, double longitude) {
         LocalDateTime now = LocalDateTime.now();
         LocalTime currentTime = now.toLocalTime(); // 현재 시간
 
-        Map<String, LocalTime> startEndTime = scheduleCalculator.calculateScheduleTime(classroomId);
+        // 임시로 startTime과 endTime을 24시간 전체를 포함하는 범위로 설정
+        LocalTime rangeStart = LocalTime.MIN; // 00:00:00
+        LocalTime rangeEnd = LocalTime.MAX;   // 23:59:59.999999999
 
-        // 등교 시간: 1교시 시작 1시간 전부터 1교시 시작 시간까지
-        LocalTime startTime = startEndTime.get("startTime");
-        LocalTime rangeStart = startTime.minusHours(5);
-
-        // 하교 시간: 마지막 교시 끝나는 시간부터 마지막 교시 끝난 후 1시간까지
-        LocalTime endTime = startEndTime.get("endTime");
-        LocalTime rangeEnd = endTime.plusHours(12);
-
-        if ((currentTime.isAfter(rangeStart) && currentTime.isBefore(startTime)) ||
-                (currentTime.isAfter(endTime) && currentTime.isBefore(rangeEnd))) {
-            Location location = new Location(memberId, latitude, longitude, now);
-            locationRepository.save(location);
-        }
+        // 조건문 제거 (혹은 rangeStart와 rangeEnd로 조건 설정)
+        Location location = new Location(memberId, latitude, longitude, now);
+        System.out.println("저장할 위치: " + location);
+        locationRepository.save(location);
     }
 
     @Scheduled(cron = "0 0 0,13 * * MON-FRI") //평일 12시, 00시에 데이터 삭제
