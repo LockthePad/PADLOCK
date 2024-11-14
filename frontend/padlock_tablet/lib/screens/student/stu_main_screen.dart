@@ -161,7 +161,7 @@ class _StuMainScreenState extends State<StuMainScreen> {
         throw Exception('No access token found');
       }
 
-      final notes = await PullNotesApi.fetchNotes(token: accessToken);
+      final notes = await NoteApi.fetchNotes(token: accessToken);
 
       setState(() {
         // Note 객체들을 Map으로 변환하여 저장
