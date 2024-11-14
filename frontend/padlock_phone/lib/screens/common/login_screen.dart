@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:padlock_phone/apis/common/notification_service_api.dart';
 import 'package:padlock_phone/apis/member/member_api.dart';
 import 'package:padlock_phone/screens/parent/par_main_screen.dart';
 import 'package:padlock_phone/screens/student/stu_main_screen.dart';
@@ -21,6 +22,7 @@ class _LoginScreenState extends State<LoginScreen> {
   String? errorMessage;
   bool isLoading = false;
   Timer? _tokenRefreshTimer;
+  final NotificationServiceApi _notificationService = NotificationServiceApi();
 
   @override
   void initState() {
@@ -35,6 +37,7 @@ class _LoginScreenState extends State<LoginScreen> {
     _tokenRefreshTimer?.cancel();
     _memberCodeController.dispose();
     _passwordController.dispose();
+    _notificationService.dispose();
     super.dispose();
   }
 
@@ -92,6 +95,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _handleTokenExpiration() async {
     _tokenRefreshTimer?.cancel();
+    _notificationService.dispose(); // 알림 서비스 정리
     await storage.deleteAll();
     if (mounted) {
       Navigator.of(context).pushReplacement(
@@ -108,6 +112,9 @@ class _LoginScreenState extends State<LoginScreen> {
       print('저장된 토큰이 없습니다. 로그인이 필요합니다.');
       return;
     }
+
+    // 토큰이 유효하면 알림 구독 시작
+    await _notificationService.subscribeToNotifications();
 
     try {
       await _refreshTokenIfNeeded();
@@ -153,6 +160,8 @@ class _LoginScreenState extends State<LoginScreen> {
             key: 'classroomId', value: data['classroomId'].toString());
 
         _startTokenRefreshTimer();
+
+        await _notificationService.subscribeToNotifications();
 
         if (data['role'] == "PARENTS") {
           Navigator.of(context).pushReplacement(
