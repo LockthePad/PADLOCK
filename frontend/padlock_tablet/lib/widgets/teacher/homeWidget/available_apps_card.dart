@@ -21,6 +21,7 @@ class _AvailableAppsCardState extends State<AvailableAppsCard> {
   List<custom_app_info.AppInfo> allowedApps = [];
   List<custom_app_info.AppInfo> allInstalledApps = [];
   Map<String, bool> appAllowedStatus = {};
+  bool isLoading = false;
 
   @override
   void initState() {
@@ -45,6 +46,127 @@ class _AvailableAppsCardState extends State<AvailableAppsCard> {
   }
 
   Future<void> _fetchInstalledAppsAndShowDialog() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setDialogState) {
+            if (isLoading) {
+              _fetchInstalledApps(setDialogState);
+            }
+            return AlertDialog(
+              backgroundColor: AppColors.white,
+              title: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('설치된 앱 목록', style: TextStyle(fontSize: 18)),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+              content: SizedBox(
+                width: 500,
+                height: 400,
+                child: Stack(
+                  children: [
+                    if (isLoading)
+                      const Center(child: CircularProgressIndicator()),
+                    if (!isLoading)
+                      ListView.separated(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        separatorBuilder: (context, index) =>
+                            const SizedBox(height: 8), // 리스트 간 간격 설정
+                        itemCount: allInstalledApps.length,
+                        itemBuilder: (context, index) {
+                          final app = allInstalledApps[index];
+                          final isAllowed =
+                              appAllowedStatus[app.packageName] ?? false;
+
+                          return ListTile(
+                            leading: ClipRRect(
+                              borderRadius:
+                                  BorderRadius.circular(20), // 이미지 radius 설정
+                              child: app.appImgUrl != null &&
+                                      app.appImgUrl!.isNotEmpty
+                                  ? Image.network(
+                                      app.appImgUrl!,
+                                      fit: BoxFit.cover,
+                                      width: 48,
+                                      height: 48,
+                                    )
+                                  : const Icon(Icons.apps, size: 48),
+                            ),
+                            title: Text(app.name),
+                            trailing: Switch(
+                              value: isAllowed,
+                              onChanged: (bool value) async {
+                                final appId = app.appId ?? 0;
+                                final previousState =
+                                    appAllowedStatus[app.packageName] ?? false;
+
+                                setDialogState(() {
+                                  appAllowedStatus[app.packageName] = value;
+                                  if (value) {
+                                    if (!allowedApps.any((a) =>
+                                        a.packageName == app.packageName)) {
+                                      setState(() {
+                                        allowedApps.add(app);
+                                      });
+                                    }
+                                  } else {
+                                    setState(() {
+                                      allowedApps.removeWhere((a) =>
+                                          a.packageName == app.packageName);
+                                    });
+                                  }
+                                });
+
+                                final success =
+                                    await AvailableAppsApi.toggleAppStatus(
+                                        appId, value);
+
+                                if (!success) {
+                                  setDialogState(() {
+                                    appAllowedStatus[app.packageName] =
+                                        previousState;
+                                    if (previousState) {
+                                      setState(() {
+                                        allowedApps.add(app);
+                                      });
+                                    } else {
+                                      setState(() {
+                                        allowedApps.removeWhere((a) =>
+                                            a.packageName == app.packageName);
+                                      });
+                                    }
+                                  });
+                                }
+                              },
+                              activeColor: AppColors.lilac,
+                              activeTrackColor: AppColors.navy,
+                              inactiveThumbColor: AppColors.darkGrey,
+                              inactiveTrackColor: AppColors.grey,
+                            ),
+                          );
+                        },
+                      ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _fetchInstalledApps(StateSetter setDialogState) async {
     try {
       List<installed_app_info.AppInfo> apps =
           await InstalledApps.getInstalledApps();
@@ -65,9 +187,14 @@ class _AvailableAppsCardState extends State<AvailableAppsCard> {
         allInstalledApps = updatedApps;
       });
 
-      _showInstalledAppsDialog();
+      setDialogState(() {
+        isLoading = false;
+      });
     } catch (e) {
       print('서버에 요청 중 오류 발생: $e');
+      setDialogState(() {
+        isLoading = false;
+      });
     }
   }
 
@@ -143,106 +270,6 @@ class _AvailableAppsCardState extends State<AvailableAppsCard> {
           size: 24,
         ),
       ),
-    );
-  }
-
-  void _showInstalledAppsDialog() {
-    if (allInstalledApps.isEmpty) {
-      return;
-    }
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          backgroundColor: AppColors.white,
-          titlePadding: const EdgeInsets.only(top: 16, left: 16, right: 16),
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text('    설치된 앱 목록', style: TextStyle(fontSize: 18)),
-              IconButton(
-                icon: const Icon(Icons.close),
-                onPressed: () => Navigator.pop(context),
-              ),
-            ],
-          ),
-          content: StatefulBuilder(
-            builder: (BuildContext context, StateSetter setDialogState) {
-              return SizedBox(
-                width: 500,
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: allInstalledApps.length,
-                  itemBuilder: (context, index) {
-                    final app = allInstalledApps[index];
-                    final isAllowed =
-                        appAllowedStatus[app.packageName] ?? false;
-
-                    return ListTile(
-                      leading:
-                          app.appImgUrl != null && app.appImgUrl!.isNotEmpty
-                              ? Image.network(app.appImgUrl!, fit: BoxFit.cover)
-                              : const Icon(Icons.apps),
-                      title: Text(app.name),
-                      // subtitle: Text(app.packageName),
-                      trailing: Switch(
-                        value: isAllowed,
-                        onChanged: (bool value) async {
-                          final appId = app.appId ?? 0;
-                          final previousState =
-                              appAllowedStatus[app.packageName] ?? false;
-
-                          setDialogState(() {
-                            appAllowedStatus[app.packageName] = value;
-                            if (value) {
-                              if (!allowedApps.any(
-                                  (a) => a.packageName == app.packageName)) {
-                                setState(() {
-                                  allowedApps.add(app);
-                                });
-                              }
-                            } else {
-                              setState(() {
-                                allowedApps.removeWhere(
-                                    (a) => a.packageName == app.packageName);
-                              });
-                            }
-                          });
-
-                          final success =
-                              await AvailableAppsApi.toggleAppStatus(
-                                  appId, value);
-
-                          if (!success) {
-                            setDialogState(() {
-                              appAllowedStatus[app.packageName] = previousState;
-                              if (previousState) {
-                                setState(() {
-                                  allowedApps.add(app);
-                                });
-                              } else {
-                                setState(() {
-                                  allowedApps.removeWhere(
-                                      (a) => a.packageName == app.packageName);
-                                });
-                              }
-                            });
-                          }
-                        },
-                        activeColor: AppColors.lilac,
-                        activeTrackColor: AppColors.navy,
-                        inactiveThumbColor: AppColors.darkGrey,
-                        inactiveTrackColor: AppColors.grey,
-                      ),
-                    );
-                  },
-                ),
-              );
-            },
-          ),
-        );
-      },
     );
   }
 }
