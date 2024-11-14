@@ -33,7 +33,7 @@ class _AvailableAppsCardState extends State<AvailableAppsCard> {
 
     setState(() {
       allowedApps = fetchedApps.map((app) {
-        appAllowedStatus[app.packageName] = true; // 초기 상태 설정
+        appAllowedStatus[app.packageName] = true;
         return custom_app_info.AppInfo(
           appId: app.appId,
           name: app.name,
@@ -51,7 +51,7 @@ class _AvailableAppsCardState extends State<AvailableAppsCard> {
 
       List<custom_app_info.AppInfo> tempApps = apps.map((app) {
         return custom_app_info.AppInfo(
-          appId: null, // 초기화
+          appId: null,
           name: app.name,
           packageName: app.packageName,
           appImgUrl: null,
@@ -67,7 +67,7 @@ class _AvailableAppsCardState extends State<AvailableAppsCard> {
 
       _showInstalledAppsDialog();
     } catch (e) {
-      print('설치된 앱을 불러오거나 서버에 요청하는 중 오류 발생: $e');
+      print('서버에 요청 중 오류 발생: $e');
     }
   }
 
@@ -110,12 +110,17 @@ class _AvailableAppsCardState extends State<AvailableAppsCard> {
         height: 48,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
+          color: AppColors.white,
         ),
+        clipBehavior: Clip.antiAlias,
         child: app.appImgUrl != null && app.appImgUrl!.isNotEmpty
-            ? Image.network(app.appImgUrl!, fit: BoxFit.cover)
+            ? Image.network(
+                app.appImgUrl!,
+                fit: BoxFit.cover,
+              )
             : const Icon(
                 Icons.apps,
-                color: AppColors.white,
+                color: AppColors.grey,
                 size: 24,
               ),
       ),
@@ -132,7 +137,7 @@ class _AvailableAppsCardState extends State<AvailableAppsCard> {
           color: AppColors.white,
           borderRadius: BorderRadius.circular(20),
         ),
-        child: Icon(
+        child: const Icon(
           Icons.add,
           color: AppColors.grey,
           size: 24,
@@ -151,7 +156,17 @@ class _AvailableAppsCardState extends State<AvailableAppsCard> {
       builder: (context) {
         return AlertDialog(
           backgroundColor: AppColors.white,
-          title: const Text('설치된 앱 목록'),
+          titlePadding: const EdgeInsets.only(top: 16, left: 16, right: 16),
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('    설치된 앱 목록', style: TextStyle(fontSize: 18)),
+              IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ],
+          ),
           content: StatefulBuilder(
             builder: (BuildContext context, StateSetter setDialogState) {
               return SizedBox(
@@ -178,14 +193,13 @@ class _AvailableAppsCardState extends State<AvailableAppsCard> {
                           final previousState =
                               appAllowedStatus[app.packageName] ?? false;
 
-                          // 다이얼로그와 전체 화면 상태 동시 업데이트
                           setDialogState(() {
                             appAllowedStatus[app.packageName] = value;
                             if (value) {
                               if (!allowedApps.any(
                                   (a) => a.packageName == app.packageName)) {
                                 setState(() {
-                                  allowedApps.add(app); // 전체 화면 상태 업데이트
+                                  allowedApps.add(app);
                                 });
                               }
                             } else {
@@ -196,13 +210,11 @@ class _AvailableAppsCardState extends State<AvailableAppsCard> {
                             }
                           });
 
-                          // API 요청 후 성공 시 상태 확정, 실패 시 롤백
                           final success =
                               await AvailableAppsApi.toggleAppStatus(
                                   appId, value);
 
                           if (!success) {
-                            // API 실패 시 이전 상태로 롤백
                             setDialogState(() {
                               appAllowedStatus[app.packageName] = previousState;
                               if (previousState) {
@@ -216,11 +228,12 @@ class _AvailableAppsCardState extends State<AvailableAppsCard> {
                                 });
                               }
                             });
-                            print('앱 상태 변경 실패');
-                          } else {
-                            print('앱 상태 변경 성공');
                           }
                         },
+                        activeColor: AppColors.lilac,
+                        activeTrackColor: AppColors.navy,
+                        inactiveThumbColor: AppColors.darkGrey,
+                        inactiveTrackColor: AppColors.grey,
                       ),
                     );
                   },
@@ -228,12 +241,6 @@ class _AvailableAppsCardState extends State<AvailableAppsCard> {
               );
             },
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('닫기'),
-            ),
-          ],
         );
       },
     );
