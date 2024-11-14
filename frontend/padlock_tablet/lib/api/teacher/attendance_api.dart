@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:padlock_tablet/models/teacher/student_info.dart';
 
 class AttendanceApi {
   static String apiServerUrl = dotenv.get("API_SERVER_URL");
@@ -130,6 +131,87 @@ class AttendanceApi {
         'absent': [],
         'late': [],
       };
+    }
+  }
+
+  // 학생 목록 가져오기
+  static Future<List<Student>> fetchStudentList() async {
+    try {
+      String? classroomId = await _storage.read(key: 'classroomId');
+      String? accessToken = await _storage.read(key: 'accessToken');
+
+      if (classroomId == null || accessToken == null) {
+        throw Exception("Classroom ID or Access Token is missing");
+      }
+
+      final url = Uri.parse('$apiServerUrl/classrooms/$classroomId/students');
+      final response = await http.get(
+        url,
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        // JSON 파싱
+        Map<String, dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
+
+        // 학생 목록 생성
+        List<Student> students = data.entries.map((entry) {
+          int id = int.parse(entry.key);
+          String name = entry.value;
+          return Student(id: id, name: name);
+        }).toList();
+
+        return students;
+      } else {
+        throw Exception("Failed to fetch student list: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("Error fetching student list: $e");
+      return [];
+    }
+  }
+
+  // 학생별 월별 출결 데이터 가져오기
+  static Future<Map<int, String>> fetchMonthlyAttendance(int studentId) async {
+    try {
+      String? token = await _storage.read(key: 'accessToken');
+
+      if (token == null) {
+        throw Exception("Access Token is missing");
+      }
+
+      final url =
+          Uri.parse('$apiServerUrl/attendances/monthly?studentId=$studentId');
+      final response = await http.get(
+        url,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        List<dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
+        Map<int, String> attendanceData = {};
+
+        for (var record in data) {
+          int day = record['day'];
+          String status = record['attendanceRecords'];
+          attendanceData[day] = status;
+        }
+
+        return attendanceData;
+      } else {
+        print(
+            'Failed to fetch attendance data. Status code: ${response.statusCode}');
+        return {};
+      }
+    } catch (e) {
+      print('Error fetching monthly attendance data: $e');
+      return {};
     }
   }
 }

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:padlock_tablet/api/teacher/attendance_api.dart';
+import 'package:padlock_tablet/models/teacher/student_info.dart';
 import 'package:padlock_tablet/theme/colors.dart';
 import 'package:padlock_tablet/widgets/teacher/mainScreen/title_widget.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -12,30 +14,34 @@ class TeaAttendanceCheckWidget extends StatefulWidget {
 }
 
 class _TeaAttendanceCheckWidgetState extends State<TeaAttendanceCheckWidget> {
-  final List<String> students = [
-    "정지원",
-    "정석영",
-    "홍수인",
-    "김성원",
-    "윤보은",
-    "이주희",
-    "이승민",
-    "강도원"
-  ];
+  List<Student> students = [];
+  Map<int, String> attendanceData = {};
   int selectedIndex = 0;
   DateTime _focusedDay = DateTime(2024, 11, 1);
 
-  Map<DateTime, String> attendanceData = {
-    DateTime(2024, 11, 1): "출석",
-    DateTime(2024, 11, 4): "출석",
-    DateTime(2024, 11, 5): "출석",
-    DateTime(2024, 11, 6): "출석",
-    DateTime(2024, 11, 7): "결석",
-    DateTime(2024, 11, 8): "출석",
-    DateTime(2024, 11, 11): "출석",
-    DateTime(2024, 11, 12): "출석",
-    DateTime(2024, 11, 13): "결석",
-  };
+  @override
+  void initState() {
+    super.initState();
+    _fetchStudentList();
+    _fetchAttendanceDataForStudent(selectedIndex);
+  }
+
+  Future<void> _fetchStudentList() async {
+    final fetchedStudents = await AttendanceApi.fetchStudentList();
+    setState(() {
+      students = fetchedStudents;
+    });
+  }
+
+  Future<void> _fetchAttendanceDataForStudent(int index) async {
+    if (students.isEmpty || index >= students.length) return;
+
+    final fetchedAttendanceData =
+        await AttendanceApi.fetchMonthlyAttendance(students[index].id);
+    setState(() {
+      attendanceData = fetchedAttendanceData;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -69,7 +75,7 @@ class _TeaAttendanceCheckWidgetState extends State<TeaAttendanceCheckWidget> {
                           itemBuilder: (context, index) {
                             return ListTile(
                               title: Text(
-                                students[index],
+                                students[index].name,
                                 style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: selectedIndex == index
@@ -83,6 +89,7 @@ class _TeaAttendanceCheckWidgetState extends State<TeaAttendanceCheckWidget> {
                                 setState(() {
                                   selectedIndex = index;
                                 });
+                                _fetchAttendanceDataForStudent(index);
                               },
                             );
                           },
@@ -117,9 +124,7 @@ class _TeaAttendanceCheckWidgetState extends State<TeaAttendanceCheckWidget> {
                               padding: const EdgeInsets.all(10),
                               child: _buildAttendanceCalendar(),
                             ),
-                            SizedBox(
-                              height: 30,
-                            )
+                            const SizedBox(height: 30),
                           ],
                         ),
                       ),
@@ -143,14 +148,13 @@ class _TeaAttendanceCheckWidgetState extends State<TeaAttendanceCheckWidget> {
     );
   }
 
-  // 출결 현황 요약
   Widget _buildAttendanceSummary() {
     int presentDays =
-        attendanceData.values.where((status) => status == "출석").length;
+        attendanceData.values.where((status) => status == "PRESENT").length;
     int lateDays =
-        attendanceData.values.where((status) => status == "지각").length;
+        attendanceData.values.where((status) => status == "LATE").length;
     int absentDays =
-        attendanceData.values.where((status) => status == "결석").length;
+        attendanceData.values.where((status) => status == "ABSENT").length;
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -159,12 +163,14 @@ class _TeaAttendanceCheckWidgetState extends State<TeaAttendanceCheckWidget> {
         Row(
           children: [
             Text(
-              "${students[selectedIndex]}학생",
+              students.isNotEmpty
+                  ? "${students[selectedIndex].name} 학생"
+                  : "학생 없음", // 리스트가 비어 있을 때 기본 텍스트
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            Text(
+            const Text(
               "의 출결현황",
-              style: const TextStyle(fontSize: 18),
+              style: TextStyle(fontSize: 18),
             ),
           ],
         ),
@@ -172,13 +178,9 @@ class _TeaAttendanceCheckWidgetState extends State<TeaAttendanceCheckWidget> {
         Column(
           children: [
             _buildAttendanceStatus("출석", presentDays, AppColors.successGreen),
-            SizedBox(
-              height: 10,
-            ),
+            const SizedBox(height: 10),
             _buildAttendanceStatus("지각/조퇴", lateDays, AppColors.yellow),
-            SizedBox(
-              height: 10,
-            ),
+            const SizedBox(height: 10),
             _buildAttendanceStatus("결석", absentDays, AppColors.errorRed),
           ],
         ),
@@ -199,7 +201,6 @@ class _TeaAttendanceCheckWidgetState extends State<TeaAttendanceCheckWidget> {
     );
   }
 
-  // TableCalendar 위젯을 사용하여 달력 표시
   Widget _buildAttendanceCalendar() {
     return TableCalendar(
       firstDay: DateTime(2024, 11, 1),
@@ -211,13 +212,12 @@ class _TeaAttendanceCheckWidgetState extends State<TeaAttendanceCheckWidget> {
       availableGestures: AvailableGestures.none,
       calendarStyle: const CalendarStyle(
         todayDecoration: BoxDecoration(
-          color: Colors.transparent, // 오늘 날짜 강조 제거
+          color: Colors.transparent,
         ),
         outsideDaysVisible: false,
       ),
       calendarBuilders: CalendarBuilders(
         defaultBuilder: (context, day, focusedDay) {
-          // 주말일 경우 회색으로 표시
           if (day.weekday == DateTime.saturday ||
               day.weekday == DateTime.sunday) {
             return Center(
@@ -227,11 +227,9 @@ class _TeaAttendanceCheckWidgetState extends State<TeaAttendanceCheckWidget> {
               ),
             );
           }
-          // 평일일 경우 출석 현황을 반영한 색상으로 표시
           return _buildCalendarDay(day);
         },
         todayBuilder: (context, day, focusedDay) {
-          // 오늘 날짜도 특별히 강조하지 않고, 출석 현황과 같은 방식으로 표시
           return _buildCalendarDay(day);
         },
       ),
@@ -239,27 +237,24 @@ class _TeaAttendanceCheckWidgetState extends State<TeaAttendanceCheckWidget> {
   }
 
   Widget _buildCalendarDay(DateTime day) {
-    final attendanceStatus = attendanceData.entries
-        .firstWhere(
-          (entry) => isSameDay(entry.key, day),
-          orElse: () => MapEntry(day, ""), // 기본 상태로 빈 값 제공
-        )
-        .value;
+    final attendanceStatus = attendanceData[day.day];
 
     Color backgroundColor;
-
     switch (attendanceStatus) {
-      case "출석":
+      case "PRESENT":
         backgroundColor = AppColors.successGreen;
         break;
-      case "지각":
+      case "LATE":
         backgroundColor = AppColors.yellow;
         break;
-      case "결석":
+      case "ABSENT":
         backgroundColor = AppColors.errorRed;
         break;
+      case "UNREPORTED":
+        backgroundColor = Colors.grey.shade700;
+        break;
       default:
-        backgroundColor = Colors.grey.shade200; // 기본 색상 (예: 회색)
+        backgroundColor = Colors.grey.shade200;
     }
 
     return Center(
@@ -272,7 +267,7 @@ class _TeaAttendanceCheckWidgetState extends State<TeaAttendanceCheckWidget> {
             '${day.day}',
             style: TextStyle(
               color:
-                  attendanceStatus.isEmpty ? AppColors.black : AppColors.white,
+                  attendanceStatus == null ? AppColors.black : AppColors.white,
             ),
           ),
         ),

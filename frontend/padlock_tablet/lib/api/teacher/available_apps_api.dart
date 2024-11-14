@@ -23,7 +23,8 @@ class AvailableAppsApi {
       );
 
       if (response.statusCode == 200) {
-        List<dynamic> data = jsonDecode(response.body);
+        // UTF-8로 디코딩하여 한글이 깨지지 않도록 처리
+        List<dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
         return data
             .map((app) => AppInfo(
                   appId: app['appId'],
@@ -33,9 +34,12 @@ class AvailableAppsApi {
                 ))
             .toList();
       } else {
+        print(
+            'Failed to fetch allowed apps. Status code: ${response.statusCode}');
         return [];
       }
     } catch (e) {
+      print('Error fetching allowed apps: $e');
       return [];
     }
   }
@@ -51,8 +55,8 @@ class AvailableAppsApi {
       final List<Map<String, dynamic>> appData = apps.map((app) {
         return {
           'classroomId': classroomId,
-          'appName': app.name.toString(),
-          'packageName': app.packageName.toString(),
+          'appName': app.name,
+          'packageName': app.packageName,
         };
       }).toList();
 
@@ -66,7 +70,8 @@ class AvailableAppsApi {
       );
 
       if (response.statusCode == 200) {
-        List<dynamic> data = jsonDecode(response.body);
+        // UTF-8로 디코딩하여 한글이 깨지지 않도록 처리
+        List<dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
         return data
             .map((app) => AppInfo(
                   appId: app['appId'],
@@ -76,9 +81,12 @@ class AvailableAppsApi {
                 ))
             .toList();
       } else {
+        print(
+            'Failed to post installed apps. Status code: ${response.statusCode}');
         return [];
       }
     } catch (e) {
+      print('Error posting installed apps: $e');
       return [];
     }
   }
@@ -86,8 +94,7 @@ class AvailableAppsApi {
   // 앱 상태 토글 요청
   static Future<bool> toggleAppStatus(int appId, bool newStatus) async {
     String? token = await _storage.read(key: 'accessToken');
-    String? classroomId =
-        await _storage.read(key: 'classroomId'); // classroomId 불러오기
+    String? classroomId = await _storage.read(key: 'classroomId');
 
     try {
       final url = Uri.parse('$apiServerUrl/app');
