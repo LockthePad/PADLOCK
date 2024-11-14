@@ -35,7 +35,7 @@ public class LocationService {
 
         // 하교 시간: 마지막 교시 끝나는 시간부터 마지막 교시 끝난 후 1시간까지
         LocalTime endTime = startEndTime.get("endTime");
-        LocalTime rangeEnd = endTime.plusHours(5);
+        LocalTime rangeEnd = endTime.plusHours(12);
 
         if ((currentTime.isAfter(rangeStart) && currentTime.isBefore(startTime)) ||
                 (currentTime.isAfter(endTime) && currentTime.isBefore(rangeEnd))) {
