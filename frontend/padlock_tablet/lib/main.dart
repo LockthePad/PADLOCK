@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:padlock_tablet/screens/common/loading_screen.dart';
+import 'package:padlock_tablet/screens/common/login_screen.dart';
 import 'package:padlock_tablet/theme/colors.dart';
 
 void main() async {
@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         scaffoldBackgroundColor: AppColors.white,
       ),
-      home: const LoadingScreen(),
+      home: const LoginScreen(),
     );
   }
 }

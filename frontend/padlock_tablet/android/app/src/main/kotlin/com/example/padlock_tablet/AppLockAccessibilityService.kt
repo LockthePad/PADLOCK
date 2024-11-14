@@ -18,6 +18,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONArray
@@ -32,6 +34,7 @@ class AppLockAccessibilityService : AccessibilityService() {
     private lateinit var windowManager: WindowManager
     private val coroutineScope = CoroutineScope(Dispatchers.Main + Job())
     private val mainHandler = Handler(Looper.getMainLooper())
+    private var updateJob: Job? = null
 
     // 기본 허용 패키지 목록
     private val DEFAULT_ALLOWED_PACKAGES = setOf(
@@ -60,6 +63,24 @@ class AppLockAccessibilityService : AccessibilityService() {
         addAll(DEFAULT_ALLOWED_PACKAGES)
     }
 
+    private fun startPeriodicUpdates() {
+        updateJob = coroutineScope.launch {
+            while (isActive) {
+                try {
+                    fetchAllowedApps()
+                    delay(5000)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error in periodic update: ${e.message}")
+                }
+            }
+        }
+    }
+
+    private fun stopPeriodicUpdates() {
+        updateJob?.cancel()
+        updateJob = null
+    }
+
     private fun fetchAllowedApps() {
         coroutineScope.launch {
             try {
@@ -71,6 +92,10 @@ class AppLockAccessibilityService : AccessibilityService() {
 
                 val jsonArray = JSONArray(response)
                 Log.d(TAG, "Number of apps in response: ${jsonArray.length()}")
+
+                // 임시 Set을 생성하여 새로운 허용 앱 목록 저장
+                val newAllowedPackages = CopyOnWriteArraySet<String>()
+                newAllowedPackages.addAll(DEFAULT_ALLOWED_PACKAGES)
 
                 for (i in 0 until jsonArray.length()) {
                     val app = jsonArray.getJSONObject(i)
@@ -84,7 +109,18 @@ class AppLockAccessibilityService : AccessibilityService() {
                     }
                     
                     Log.d(TAG, "Adding app to allowed list - Name: $appName, Original Package: $packageName, Actual Package: $actualPackageName")
-                    dynamicAllowedPackages.add(actualPackageName)
+                    newAllowedPackages.add(actualPackageName)
+                }
+
+                // 기존 목록과 새로운 목록 비교
+                val added = newAllowedPackages.minus(dynamicAllowedPackages)
+                val removed = dynamicAllowedPackages.minus(newAllowedPackages)
+
+                if (added.isNotEmpty() || removed.isNotEmpty()) {
+                    Log.d(TAG, "Changes in allowed apps - Added: $added, Removed: $removed")
+                    // 전체 목록 업데이트
+                    dynamicAllowedPackages.clear()
+                    dynamicAllowedPackages.addAll(newAllowedPackages)
                 }
 
                 Log.d(TAG, "Current dynamicAllowedPackages: $dynamicAllowedPackages")
@@ -117,6 +153,7 @@ class AppLockAccessibilityService : AccessibilityService() {
         serviceInfo = info
         windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
         fetchAllowedApps()
+        startPeriodicUpdates()
         Log.i(TAG, "Accessibility Service Connected")
     }
 
@@ -203,10 +240,12 @@ class AppLockAccessibilityService : AccessibilityService() {
     override fun onInterrupt() {
         Log.i(TAG, "Accessibility Service Interrupted")
         hideBlockingOverlay()
+        stopPeriodicUpdates()
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        stopPeriodicUpdates()
         hideBlockingOverlay()
         coroutineScope.launch {
             // cleanup
