@@ -48,8 +48,6 @@ dependencies:
   device_info_plus: ^11.1.1
   android_intent_plus: ^5.2.0
   table_calendar: ^3.0.6
-  flutter_foreground_task: ^8.13.0
-  flutter_reactive_ble: ^5.3.1
 
 dev_dependencies:
   flutter_test:
