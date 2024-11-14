@@ -58,7 +58,7 @@ class _TeaTimetableWidgetState extends State<TeaTimetableWidget> {
         return AlertDialog(
           backgroundColor: AppColors.white,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30), // 모서리 둥글게 설정
+            borderRadius: BorderRadius.circular(30),
           ),
           title: Text(
             " 삭제하시겠습니까?",
@@ -255,7 +255,7 @@ class _TeaTimetableWidgetState extends State<TeaTimetableWidget> {
           side: BorderSide(color: AppColors.navy),
         ),
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 20.0),
+          padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
           child: Center(
             child: Text(subject, style: const TextStyle(fontSize: 20)),
           ),

@@ -185,7 +185,7 @@ class _AvailableAppsCardState extends State<AvailableAppsCard> {
                               ? Image.network(app.appImgUrl!, fit: BoxFit.cover)
                               : const Icon(Icons.apps),
                       title: Text(app.name),
-                      subtitle: Text(app.packageName),
+                      // subtitle: Text(app.packageName),
                       trailing: Switch(
                         value: isAllowed,
                         onChanged: (bool value) async {

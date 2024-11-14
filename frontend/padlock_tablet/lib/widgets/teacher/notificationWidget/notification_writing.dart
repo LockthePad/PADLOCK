@@ -22,10 +22,8 @@ class _NotificationWritingState extends State<NotificationWriting> {
 
   Future<void> _submitNotification() async {
     try {
-      // 스토리지에서 classroomId 가져오기
       final classroomIdString = await _storage.read(key: 'classroomId');
       if (classroomIdString == null) {
-        print('classroomId not found in storage');
         return;
       }
 
@@ -52,12 +50,14 @@ class _NotificationWritingState extends State<NotificationWriting> {
         bottom: MediaQuery.of(context).viewInsets.bottom + 30,
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min, // 스크롤 가능하도록 수정
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           TextField(
             controller: _titleController,
             decoration: const InputDecoration(
               labelText: '  제목',
+              alignLabelWithHint: true, // 라벨 위치 상단 고정
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.all(Radius.circular(30.0)),
               ),
@@ -68,11 +68,12 @@ class _NotificationWritingState extends State<NotificationWriting> {
             controller: _contentController,
             decoration: const InputDecoration(
               labelText: '  내용',
+              alignLabelWithHint: true, // 라벨 위치 상단 고정
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.all(Radius.circular(30.0)),
               ),
             ),
-            maxLines: 12,
+            maxLines: 10,
           ),
           const SizedBox(height: 25),
           Row(

@@ -42,7 +42,7 @@ class _MealCalendarState extends State<MealCalendar> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Padding(
-              padding: const EdgeInsets.only(left: 25),
+              padding: const EdgeInsets.only(left: 25, top: 5),
               child: Text(
                 '${_focusedDay.year}년 ${_focusedDay.month}월',
                 style: const TextStyle(
@@ -51,11 +51,14 @@ class _MealCalendarState extends State<MealCalendar> {
                 ),
               ),
             ),
-            TextButton(
-              onPressed: () => _showFullMonthMeal(context),
-              child: const Text(
-                '전체보기',
-                style: TextStyle(color: AppColors.darkGrey),
+            Padding(
+              padding: const EdgeInsets.only(top: 5),
+              child: TextButton(
+                onPressed: () => _showFullMonthMeal(context),
+                child: const Text(
+                  '전체보기',
+                  style: TextStyle(color: AppColors.darkGrey),
+                ),
               ),
             ),
           ],

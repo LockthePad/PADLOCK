@@ -22,6 +22,16 @@ class _CounselingCalendarState extends State<CounselingCalendar> {
   DateTime? _selectedDay;
   List<Map<String, dynamic>> _availableTimes = [];
 
+  @override
+  void initState() {
+    super.initState();
+    _selectedDay = _focusedDay; // 오늘 날짜를 기본 선택으로 설정
+    String formattedDate =
+        "${_selectedDay!.year}-${_selectedDay!.month.toString().padLeft(2, '0')}-${_selectedDay!.day.toString().padLeft(2, '0')}";
+    _fetchAvailableTimes(formattedDate); // 기본 날짜로 상담 가능 시간 목록 로드
+    widget.onDateSelected(_selectedDay!);
+  }
+
   // 날짜 선택 시 API를 호출하여 상담 가능 시간 목록을 업데이트하는 함수
   Future<void> _fetchAvailableTimes(String selectedDate) async {
     try {
