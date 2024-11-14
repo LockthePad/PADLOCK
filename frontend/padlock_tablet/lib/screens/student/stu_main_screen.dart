@@ -44,6 +44,7 @@ class _StuMainScreenState extends State<StuMainScreen> {
     'status': '로딩중...',
     'away': false,
   };
+  Timer? _availableAppsTimer;
   Timer? _attendanceTimer;
   List<AppInfo> availableApps = [];
 
@@ -64,6 +65,13 @@ class _StuMainScreenState extends State<StuMainScreen> {
     _fetchAttendanceStatus(); // 초기 출석 상태 조회
     _startAttendanceTimer();
     _fetchAvailableApps(); // 출석 상태 주기적 업데이트 시작
+    _startAvailableAppsTimer();
+  }
+
+  void _startAvailableAppsTimer() {
+    _availableAppsTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+      _fetchAvailableApps();
+    });
   }
 
   Future<void> _fetchAvailableApps() async {
