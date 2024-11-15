@@ -26,9 +26,10 @@ class ChildrenApiService {
         // 반환된 데이터를 List<Map<String, dynamic>> 형태로 변환
         return List<Map<String, dynamic>>.from(data.map((child) {
           return {
-            'studentId': child['studentId'] as int, // int 타입 변환
+            'studentId': child['studentId'] as int,
             'studentName': child['studentName'] as String,
             'schoolInfo': child['schoolInfo'] as String,
+            'classroomId': child['classroomId'] as int, // classroomId 추가
           };
         }));
       } else {
