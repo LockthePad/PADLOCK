@@ -10,7 +10,7 @@ import 'package:padlock_phone/model/common/notification_item.dart';
 import 'package:padlock_phone/screens/common/declare_screen.dart';
 import 'package:padlock_phone/screens/common/notice_screen.dart';
 import 'package:padlock_phone/theme/colors.dart';
-import 'package:padlock_phone/widgets/common/mainScreen/userinfo_widget.dart';
+import 'package:padlock_phone/widgets/common/mainScreen/stu_userinfo_widget.dart';
 import 'package:padlock_phone/widgets/common/notification/notification_modal.dart';
 import 'package:padlock_phone/widgets/student/mainScreen/stu_attendance_state_widget.dart';
 import 'package:padlock_phone/widgets/common/mainScreen/cardcontainer_widget.dart';
@@ -22,7 +22,6 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:padlock_phone/apis/common/att_post_api.dart';
-import 'dart:convert';
 
 class StuMainScreen extends StatefulWidget {
   const StuMainScreen({super.key});
@@ -45,10 +44,6 @@ class _StuMainScreenState extends State<StuMainScreen> {
   StreamSubscription? _notificationSubscription;
   String memberInfo = '';
 
-  String? selectedChildId;
-  String? studentName;
-  String? schoolInfo;
-
   Timer? _scanTimer;
   Timer? _postTimer;
   bool _isScanning = false;
@@ -69,22 +64,6 @@ class _StuMainScreenState extends State<StuMainScreen> {
     _loadMemberInfo();
     startBeaconScanningService();
     startPostTimer();
-    _loadInitialStudentInfo();
-  }
-
-  Future<void> _loadInitialStudentInfo() async {
-    final childrenData = await storage.read(key: 'children');
-    if (childrenData != null) {
-      final children =
-          List<Map<String, dynamic>>.from(jsonDecode(childrenData));
-      if (children.isNotEmpty) {
-        setState(() {
-          studentName = children.first['studentName'];
-          schoolInfo = children.first['schoolInfo'];
-          selectedChildId = children.first['studentId'].toString();
-        });
-      }
-    }
   }
 
   @override
@@ -500,24 +479,31 @@ class _StuMainScreenState extends State<StuMainScreen> {
   // }
 
   Future<void> _fetchAttendanceStatus() async {
-    if (selectedChildId == null) return;
-
     try {
-      final accessToken = await storage.read(key: 'accessToken');
-      if (accessToken != null) {
+      String? accessToken = await storage.read(key: 'accessToken');
+      String? studentId = await storage.read(key: 'memberId');
+
+      debugPrint('Fetching attendance status...');
+      debugPrint('AccessToken: $accessToken');
+      debugPrint('StudentId: $studentId');
+
+      if (accessToken != null && studentId != null) {
         final status = await AttendanceApi.getAttendanceStatus(
-          studentId: selectedChildId!,
+          studentId: studentId,
           token: accessToken,
         );
+
+        debugPrint('Received status: $status');
 
         setState(() {
           attendanceStatus = status;
         });
       } else {
-        print('토큰이 없습니다.');
+        debugPrint(
+            'Missing credentials - Token: ${accessToken != null}, StudentId: ${studentId != null}');
       }
     } catch (e) {
-      print('출석 상태 조회 중 오류 발생: $e');
+      debugPrint('Error fetching attendance status: $e');
       setState(() {
         attendanceStatus = {
           'status': 'unreported',
@@ -658,21 +644,13 @@ class _StuMainScreenState extends State<StuMainScreen> {
                 ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.only(left: 40), // 여기 const는 유지 가능
+            const Padding(
+              padding: EdgeInsets.only(left: 50),
               child: Align(
                 alignment: Alignment.centerLeft,
-                child: UserinfoWidget(
-                  userName: studentName ?? '학생',
-                  userClass: schoolInfo ?? '학교 정보 없음',
-                  onChildSelected: (childInfo) {
-                    setState(() {
-                      studentName = childInfo['studentName'];
-                      schoolInfo = childInfo['schoolInfo'];
-                      selectedChildId = childInfo['studentId'].toString();
-                      _fetchAttendanceStatus();
-                    });
-                  },
+                child: StuUserinfoWidget(
+                  userName: "정석영",
+                  userClass: "대전초 2학년 2반",
                 ),
               ),
             ),
@@ -709,8 +687,6 @@ class _StuMainScreenState extends State<StuMainScreen> {
                 myicon: "notification",
               ),
             ),
-
-            // 디버깅용
             const SizedBox(height: 20),
             Padding(
               padding: const EdgeInsets.all(16.0),
