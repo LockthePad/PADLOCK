@@ -7,6 +7,44 @@ class CounselApi {
   static String apiServerUrl = dotenv.get("API_SERVER_URL");
   static const _storage = FlutterSecureStorage();
 
+  // teacherId 가져오기
+  static Future<void> getTeacherId() async {
+    try {
+      String? token = await _storage.read(key: 'accessToken');
+      String? classroomId = await _storage.read(key: 'selectedClassroomId');
+
+      if (token == null) {
+        throw Exception('액세스 토큰 없음');
+      }
+
+      if (classroomId == null) {
+        throw Exception('교실 ID 없음');
+      }
+
+      final url = '$apiServerUrl/get-teacherId?classroomId=$classroomId';
+
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final teacherId = int.parse(response.body); // 응답이 정수형이므로 파싱
+        await _storage.write(
+            key: 'selectedTeacherId', value: teacherId.toString());
+        print('저장된 교사 ID: $teacherId');
+      } else {
+        throw Exception('교사 ID 조회 실패: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('교사 ID 조회 중 오류 발생: $e');
+      rethrow;
+    }
+  }
+
   // 상담 가능 시간
   static Future<List<Map<String, dynamic>>> fetchCounselingData(
       String date) async {

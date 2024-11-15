@@ -5,6 +5,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:padlock_phone/apis/common/attendance_api.dart';
 import 'package:padlock_phone/apis/common/notification_service_api.dart';
 import 'package:padlock_phone/apis/parent/children_api.dart';
+import 'package:padlock_phone/apis/parent/counsel_api.dart';
 import 'package:padlock_phone/model/common/notification_item.dart';
 import 'package:padlock_phone/screens/common/notice_screen.dart';
 import 'package:padlock_phone/screens/parent/par_counsel_screen.dart';
@@ -225,10 +226,10 @@ class _ParMainScreenState extends State<ParMainScreen> {
                 child: SizedBox(
                   width: 150, // 원하는 폭 설정
                   child: DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
+                    child: // DropdownButton 부분 수정
+                        DropdownButton<String>(
                       value: null,
-                      icon: const Icon(Icons.arrow_drop_down), // 아이콘만 표시
-
+                      icon: const Icon(Icons.arrow_drop_down),
                       hint: const Text("",
                           style: TextStyle(color: Colors.black54)),
                       items: children.map((child) {
@@ -237,16 +238,31 @@ class _ParMainScreenState extends State<ParMainScreen> {
                           child: Text('${child['studentName']} 학생'),
                         );
                       }).toList(),
-                      onChanged: (value) {
-                        setState(() {
+                      onChanged: (value) async {
+                        try {
                           final selectedChild = children.firstWhere(
-                              (child) => child['studentName'] == value);
-                          studentName = selectedChild['studentName'];
-                          schoolInfo = selectedChild['schoolInfo'];
-                          selectedChildId =
-                              selectedChild['studentId'].toString();
-                          _fetchAttendanceStatus();
-                        });
+                            (child) => child['studentName'] == value,
+                          );
+
+                          // classroomId 저장
+                          await storage.write(
+                            key: 'selectedClassroomId',
+                            value: selectedChild['classroomId'].toString(),
+                          );
+
+                          // teacherId 가져와서 저장
+                          await CounselApi.getTeacherId();
+
+                          setState(() {
+                            studentName = selectedChild['studentName'];
+                            schoolInfo = selectedChild['schoolInfo'];
+                            selectedChildId =
+                                selectedChild['studentId'].toString();
+                            _fetchAttendanceStatus();
+                          });
+                        } catch (e) {
+                          print('선생님 정보 가져오기 실패: $e');
+                        }
                       },
                     ),
                   ),
