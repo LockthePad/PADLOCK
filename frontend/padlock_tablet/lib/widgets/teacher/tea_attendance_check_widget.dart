@@ -23,7 +23,6 @@ class _TeaAttendanceCheckWidgetState extends State<TeaAttendanceCheckWidget> {
   void initState() {
     super.initState();
     _fetchStudentList();
-    _fetchAttendanceDataForStudent(selectedIndex);
   }
 
   Future<void> _fetchStudentList() async {
@@ -31,6 +30,11 @@ class _TeaAttendanceCheckWidgetState extends State<TeaAttendanceCheckWidget> {
     setState(() {
       students = fetchedStudents;
     });
+
+    // 첫 번째 학생의 출결 데이터를 자동으로 가져오기
+    if (students.isNotEmpty) {
+      _fetchAttendanceDataForStudent(0);
+    }
   }
 
   Future<void> _fetchAttendanceDataForStudent(int index) async {
@@ -40,6 +44,7 @@ class _TeaAttendanceCheckWidgetState extends State<TeaAttendanceCheckWidget> {
         await AttendanceApi.fetchMonthlyAttendance(students[index].id);
     setState(() {
       attendanceData = fetchedAttendanceData;
+      selectedIndex = index;
     });
   }
 
@@ -259,7 +264,7 @@ class _TeaAttendanceCheckWidgetState extends State<TeaAttendanceCheckWidget> {
 
     return Center(
       child: Container(
-        margin: const EdgeInsets.all(4.0),
+        margin: const EdgeInsets.all(1.0),
         child: CircleAvatar(
           radius: 15,
           backgroundColor: backgroundColor,
