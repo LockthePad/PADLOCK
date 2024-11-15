@@ -50,14 +50,14 @@ class _ParAttendanceStateWidgetState extends State<ParAttendanceStateWidget> {
         children: [
           Image.asset(
             _getImageAsset(),
-            width: 80, // 이미지의 너비 고정
-            height: 80, // 이미지의 높이 고정
+            width: 73, // 이미지의 너비 고정
+            height: 73, // 이미지의 높이 고정
             fit: BoxFit.contain, // 이미지가 영역에 맞게 조정되도록 설정
           ),
           const SizedBox(height: 5),
           Text(
             _getStatusText(),
-            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w500),
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
           ),
         ],
       ),

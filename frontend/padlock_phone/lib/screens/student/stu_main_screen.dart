@@ -22,6 +22,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:padlock_phone/apis/common/att_post_api.dart';
+import 'dart:convert';
 
 class StuMainScreen extends StatefulWidget {
   const StuMainScreen({super.key});
@@ -44,6 +45,10 @@ class _StuMainScreenState extends State<StuMainScreen> {
   StreamSubscription? _notificationSubscription;
   String memberInfo = '';
 
+  String? selectedChildId;
+  String? studentName;
+  String? schoolInfo;
+
   Timer? _scanTimer;
   Timer? _postTimer;
   bool _isScanning = false;
@@ -64,6 +69,22 @@ class _StuMainScreenState extends State<StuMainScreen> {
     _loadMemberInfo();
     startBeaconScanningService();
     startPostTimer();
+    _loadInitialStudentInfo();
+  }
+
+  Future<void> _loadInitialStudentInfo() async {
+    final childrenData = await storage.read(key: 'children');
+    if (childrenData != null) {
+      final children =
+          List<Map<String, dynamic>>.from(jsonDecode(childrenData));
+      if (children.isNotEmpty) {
+        setState(() {
+          studentName = children.first['studentName'];
+          schoolInfo = children.first['schoolInfo'];
+          selectedChildId = children.first['studentId'].toString();
+        });
+      }
+    }
   }
 
   @override
@@ -479,31 +500,24 @@ class _StuMainScreenState extends State<StuMainScreen> {
   // }
 
   Future<void> _fetchAttendanceStatus() async {
+    if (selectedChildId == null) return;
+
     try {
-      String? accessToken = await storage.read(key: 'accessToken');
-      String? studentId = await storage.read(key: 'memberId');
-
-      debugPrint('Fetching attendance status...');
-      debugPrint('AccessToken: $accessToken');
-      debugPrint('StudentId: $studentId');
-
-      if (accessToken != null && studentId != null) {
+      final accessToken = await storage.read(key: 'accessToken');
+      if (accessToken != null) {
         final status = await AttendanceApi.getAttendanceStatus(
-          studentId: studentId,
+          studentId: selectedChildId!,
           token: accessToken,
         );
-
-        debugPrint('Received status: $status');
 
         setState(() {
           attendanceStatus = status;
         });
       } else {
-        debugPrint(
-            'Missing credentials - Token: ${accessToken != null}, StudentId: ${studentId != null}');
+        print('토큰이 없습니다.');
       }
     } catch (e) {
-      debugPrint('Error fetching attendance status: $e');
+      print('출석 상태 조회 중 오류 발생: $e');
       setState(() {
         attendanceStatus = {
           'status': 'unreported',
@@ -644,24 +658,21 @@ class _StuMainScreenState extends State<StuMainScreen> {
                 ),
               ),
             ),
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const MyApp(),
-                  ),
-                );
-              },
-              child: const Text("bletest"),
-            ),
-            const Padding(
-              padding: EdgeInsets.only(left: 50),
+            Padding(
+              padding: const EdgeInsets.only(left: 40), // 여기 const는 유지 가능
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: UserinfoWidget(
-                  userName: "정석영",
-                  userClass: "대전초 2학년 2반",
+                  userName: studentName ?? '학생',
+                  userClass: schoolInfo ?? '학교 정보 없음',
+                  onChildSelected: (childInfo) {
+                    setState(() {
+                      studentName = childInfo['studentName'];
+                      schoolInfo = childInfo['schoolInfo'];
+                      selectedChildId = childInfo['studentId'].toString();
+                      _fetchAttendanceStatus();
+                    });
+                  },
                 ),
               ),
             ),
@@ -698,6 +709,8 @@ class _StuMainScreenState extends State<StuMainScreen> {
                 myicon: "notification",
               ),
             ),
+
+            // 디버깅용
             const SizedBox(height: 20),
             Padding(
               padding: const EdgeInsets.all(16.0),
