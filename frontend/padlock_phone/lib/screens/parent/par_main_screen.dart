@@ -1,3 +1,4 @@
+// par_main_screen.dart
 
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -145,7 +146,7 @@ class _ParMainScreenState extends State<ParMainScreen> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            const SizedBox(height: 70),
+            const SizedBox(height: 63),
             GestureDetector(
               child: Align(
                 alignment: Alignment.centerRight,
@@ -197,35 +198,61 @@ class _ParMainScreenState extends State<ParMainScreen> {
             Padding(
               padding: const EdgeInsets.only(left: 40, right: 20),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      UserinfoWidget(
-                        userName: studentName ?? '학생',
-                        userClass: schoolInfo ?? '학교 정보 없음',
-                        onChildSelected: (childInfo) {
-                          setState(() {
-                            studentName = childInfo['studentName'];
-                            schoolInfo = childInfo['schoolInfo'];
-                            selectedChildId = childInfo['studentId'].toString();
-                            _fetchAttendanceStatus();
-                          });
-                        },
-                      ),
-                      
-                    ],
+                  UserinfoWidget(
+                    userName: studentName ?? '학생',
+                    userClass: schoolInfo ?? '학교 정보 없음',
+                    onChildSelected: (childInfo) {
+                      setState(() {
+                        studentName = childInfo['studentName'];
+                        schoolInfo = childInfo['schoolInfo'];
+                        selectedChildId = childInfo['studentId'].toString();
+                        _fetchAttendanceStatus();
+                      });
+                    },
                   ),
                   ParAttendanceStateWidget(
                     attendanceStatus: attendanceStatus,
                   ),
-                  const SizedBox(height: 90),
                 ],
               ),
             ),
-            const SizedBox(height: 70),
+            const SizedBox(height: 20),
+            if (children.length > 1)
+              Padding(
+                padding: const EdgeInsets.only(top: 10),
+                child: SizedBox(
+                  width: 150, // 원하는 폭 설정
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: null,
+                      icon: const Icon(Icons.arrow_drop_down), // 아이콘만 표시
+
+                      hint: const Text("",
+                          style: TextStyle(color: Colors.black54)),
+                      items: children.map((child) {
+                        return DropdownMenuItem<String>(
+                          value: child['studentName'],
+                          child: Text('${child['studentName']} 학생'),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          final selectedChild = children.firstWhere(
+                              (child) => child['studentName'] == value);
+                          studentName = selectedChild['studentName'];
+                          schoolInfo = selectedChild['schoolInfo'];
+                          selectedChildId =
+                              selectedChild['studentId'].toString();
+                          _fetchAttendanceStatus();
+                        });
+                      },
+                    ),
+                  ),
+                ),
+              ),
+            const SizedBox(height: 30),
             GestureDetector(
               onTap: () {
                 Navigator.push(
