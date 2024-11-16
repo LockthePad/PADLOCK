@@ -16,6 +16,7 @@ public enum ErrorCode {
     MISSING_TOKEN("4006", "토큰 없음", HttpStatus.UNAUTHORIZED),
     INVALID_REQUEST_PARAMS("4007", "잘못된 요청 파라미터", HttpStatus.BAD_REQUEST),
     SCHEDULE_NOT_REGISTERED("4008", "등록되지 않은 시간표", HttpStatus.NOT_FOUND),
+    SCHEDULE_LIMIT_EXCEEDED("4009", "마지막 교시를 넘는 시간표", HttpStatus.BAD_REQUEST),
     INTERNAL_SERVER_ERROR("5000", "서버 에러", HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final String code;
