@@ -42,7 +42,7 @@ class BoardToTextCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Image.asset('assets/camera.png', width: 125, height: 125),
+          Image.asset('assets/camera.png', width: 130, height: 130),
           const Text(
             '필기 변환하기',
             style: TextStyle(
