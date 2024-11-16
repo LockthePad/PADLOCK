@@ -155,4 +155,50 @@ class CounselApi {
       rethrow;
     }
   }
+
+  // 상담 취소 함수
+  static Future<bool> cancelCounseling(int counselAvailableTimeId) async {
+    try {
+      // 스토리지에서 필요한 값 불러오기
+      String? token = await _storage.read(key: 'accessToken');
+      String? teacherId = await _storage.read(key: 'teacherId');
+
+      if (token == null || teacherId == null) {
+        throw Exception('필수 값이 누락되었습니다. (토큰 또는 선생님 ID)');
+      }
+
+      // API URL
+      final url = '$apiServerUrl/cancel-counsel/parent';
+
+      // 요청 바디
+      final body = jsonEncode({
+        "teacherId": int.parse(teacherId),
+        "counselAvailableTimeId": counselAvailableTimeId,
+      });
+
+      // DELETE 요청
+      final response = await http
+          .delete(
+            Uri.parse(url),
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Content-Type': 'application/json',
+            },
+            body: body,
+          )
+          .timeout(const Duration(seconds: 10));
+
+      // 응답 상태 확인
+      if (response.statusCode == 200) {
+        print('상담 취소 성공');
+        return true;
+      } else {
+        print('상담 취소 실패: ${response.statusCode}');
+        return false;
+      }
+    } catch (e) {
+      print('상담 취소 중 오류 발생: $e');
+      return false;
+    }
+  }
 }

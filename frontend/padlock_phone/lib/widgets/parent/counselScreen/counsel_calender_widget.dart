@@ -5,11 +5,13 @@ import 'package:table_calendar/table_calendar.dart';
 
 class CounselCalenderWidget extends StatefulWidget {
   final Function(DateTime) onDateSelected;
+  final Function() onReservationComplete; // 예약 완료 시 호출할 콜백
   final double buttonRadius;
 
   const CounselCalenderWidget({
     super.key,
     required this.onDateSelected,
+    required this.onReservationComplete, // 콜백 추가
     this.buttonRadius = 10.0,
   });
 
@@ -28,40 +30,36 @@ class _CounselCalenderWidgetState extends State<CounselCalenderWidget> {
     _selectedDay = DateTime.now();
     String formattedDate =
         "${_selectedDay!.year}-${_selectedDay!.month.toString().padLeft(2, '0')}-${_selectedDay!.day.toString().padLeft(2, '0')}";
-    print("Initializing with today's date: $formattedDate");
     _fetchAvailableTimes(formattedDate);
   }
 
   Future<void> _fetchAvailableTimes(String selectedDate) async {
     try {
-      print("Fetching available times for $selectedDate"); // 로그 추가
       final data = await CounselApi.fetchCounselingData(selectedDate);
-      print("Fetched data: $data"); // 데이터 출력
       setState(() {
-        _availableTimes = data ?? []; // 데이터가 null인 경우 빈 리스트로 처리
+        _availableTimes = data;
       });
     } catch (e) {
-      print('상담가능 시간 불러오기 실패: $e'); // 오류 출력
+      print('상담 가능 시간 불러오기 실패: $e');
       setState(() {
-        _availableTimes = []; // 오류 발생 시 빈 리스트로 처리
+        _availableTimes = [];
       });
     }
   }
 
-  // 상담 예약 요청 함수
   Future<void> _requestCounseling(int counselAvailableTimeId) async {
     try {
       bool success = await CounselApi.requestCounseling(counselAvailableTimeId);
       if (success) {
-        print('상담 예약 성공');
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('상담 예약이 성공적으로 완료되었습니다!')),
         );
+        widget.onReservationComplete(); // 부모 위젯에 상태 갱신 요청
 
         if (_selectedDay != null) {
           String formattedDate =
               "${_selectedDay!.year}-${_selectedDay!.month.toString().padLeft(2, '0')}-${_selectedDay!.day.toString().padLeft(2, '0')}";
-          await _fetchAvailableTimes(formattedDate); // 새로고침
+          await _fetchAvailableTimes(formattedDate);
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -80,14 +78,11 @@ class _CounselCalenderWidgetState extends State<CounselCalenderWidget> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('  2024년 11월',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            )),
-        SizedBox(
-          height: 10,
+        const Text(
+          ' 2024년 11월',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
+        const SizedBox(height: 10),
         TableCalendar(
           firstDay: DateTime(_focusedDay.year, _focusedDay.month, 1),
           lastDay: DateTime(_focusedDay.year, _focusedDay.month + 1, 0),
@@ -135,30 +130,18 @@ class _CounselCalenderWidgetState extends State<CounselCalenderWidget> {
           const Row(
             children: [
               Text(
-                '  상담 가능한 시간',
+                ' 상담 가능한 시간',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ],
           ),
           const SizedBox(height: 10),
           _buildTimeSlotButtons(),
-          const SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              const SizedBox(width: 10),
-              _buildLegendItem('예약가능', AppColors.yellow),
-              const SizedBox(width: 10),
-              _buildLegendItem('예약불가', AppColors.grey),
-            ],
-          ),
         ],
       ],
     );
   }
 
-  // 시간 슬롯 버튼 빌드 함수
-  // 시간 슬롯 버튼 빌드 함수
   Widget _buildTimeSlotButtons() {
     return Wrap(
       alignment: WrapAlignment.start,
@@ -195,8 +178,8 @@ class _CounselCalenderWidgetState extends State<CounselCalenderWidget> {
         return GestureDetector(
           onTap: isClickable
               ? () => _showConfirmationDialog(
-                    timeSlot['id'], // 상담 가능한 시간 ID
-                    time, // 시간 텍스트
+                    timeSlot['id'],
+                    time,
                   )
               : null,
           child: Container(
@@ -277,11 +260,11 @@ class _CounselCalenderWidgetState extends State<CounselCalenderWidget> {
                     ),
                     ElevatedButton(
                       onPressed: () async {
-                        Navigator.of(context).pop(); // 모달 닫기
+                        Navigator.of(context).pop();
                         await _requestCounseling(counselAvailableTimeId);
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.yellow, // 버튼 색상
+                        backgroundColor: AppColors.yellow,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20.0),
                         ),
@@ -302,23 +285,6 @@ class _CounselCalenderWidgetState extends State<CounselCalenderWidget> {
           ),
         );
       },
-    );
-  }
-
-  // 범례 생성 함수
-  Widget _buildLegendItem(
-    String label,
-    Color color,
-  ) {
-    return Row(
-      children: [
-        CircleAvatar(
-          radius: 5,
-          backgroundColor: color,
-        ),
-        const SizedBox(width: 5),
-        Text(label),
-      ],
     );
   }
 }
