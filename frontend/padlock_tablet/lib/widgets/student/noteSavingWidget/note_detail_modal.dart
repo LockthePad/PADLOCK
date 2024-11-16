@@ -42,6 +42,14 @@ class NoteDetailModal extends StatelessWidget {
     }
   }
 
+  String _removeQuotes(String text) {
+    // 앞뒤 따옴표 제거
+    if (text.startsWith('"') && text.endsWith('"')) {
+      return text.substring(1, text.length - 1);
+    }
+    return text;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Dialog(
@@ -165,7 +173,7 @@ class NoteDetailModal extends StatelessWidget {
                         ),
                         child: SingleChildScrollView(
                           child: Text(
-                            content,
+                            _removeQuotes(content),
                             style: const TextStyle(
                               fontSize: 20,
                               height: 1.5,

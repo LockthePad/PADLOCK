@@ -96,7 +96,7 @@ class _StuMainScreenState extends State<StuMainScreen> {
 
   void _startAttendanceTimer() {
     // 1분마다 출석 상태 업데이트
-    _attendanceTimer = Timer.periodic(const Duration(minutes: 1), (timer) {
+    _attendanceTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
       _fetchAttendanceStatus();
     });
   }
@@ -200,7 +200,7 @@ class _StuMainScreenState extends State<StuMainScreen> {
   // 주기적 업데이트를 위한 타이머 시작
   void _startPeriodicFetch() {
     // 1분마다 현재 수업 정보 업데이트
-    _periodicTimer = Timer.periodic(const Duration(minutes: 1), (timer) {
+    _periodicTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
       if (_selectedItem == MenuItemStu.home) {
         _fetchCurrentPeriod();
       }

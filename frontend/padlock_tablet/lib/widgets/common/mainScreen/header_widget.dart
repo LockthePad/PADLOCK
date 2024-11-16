@@ -170,7 +170,7 @@ class _HeaderWidgetState extends State<HeaderWidget> {
       case 'UNREPORTED':
         return AppColors.grey;
       case 'LATE':
-        return AppColors.paleYellow;
+        return AppColors.yellow;
       case 'ABSENT':
         return AppColors.errorRed;
       default:
