@@ -48,7 +48,7 @@ class AvailableAppsCard extends StatelessWidget {
         height: 48,
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(20),
         ),
         clipBehavior: Clip.antiAlias, // 이미지가 모서리를 벗어나지 않도록
         child: Image.network(

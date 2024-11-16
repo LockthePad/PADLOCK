@@ -19,30 +19,32 @@ class MealCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const Text(
-            '오늘의 급식',
-            style: TextStyle(
-              fontSize: 20,
-              // fontWeight: FontWeight.bold,
+          const Padding(
+            padding: EdgeInsets.only(top: 8), // 상단 여백 줄임
+            child: Text(
+              '오늘의 급식',
+              style: TextStyle(
+                fontSize: 20,
+              ),
             ),
           ),
-          const SizedBox(height: 16),
-          Expanded(
-            child: ListView.builder(
-              itemCount: meal.dishes.length,
-              itemBuilder: (context, index) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Center(
-                    // Text를 Center 위젯으로 감싸기
-                    child: Text(
-                      meal.dishes[index],
-                      style: const TextStyle(fontSize: 14),
-                      textAlign: TextAlign.center, // 텍스트 자체도 가운데 정렬
-                    ),
-                  ),
-                );
-              },
+          const SizedBox(height: 8),
+          Container(
+            height: 230,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: meal.dishes
+                  .map((dish) => Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        child: Center(
+                          child: Text(
+                            dish,
+                            style: const TextStyle(fontSize: 14),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ))
+                  .toList(),
             ),
           ),
           if (onViewDetail != null)

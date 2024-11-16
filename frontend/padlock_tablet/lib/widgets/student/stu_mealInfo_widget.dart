@@ -122,8 +122,9 @@ class _StuMealinfoWidgetState extends State<StuMealinfoWidget> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(5),
+      padding: const EdgeInsets.only(right: 30, bottom: 30),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const StuTitleWidget(title: '이번달 급식'),
           const SizedBox(height: 15),

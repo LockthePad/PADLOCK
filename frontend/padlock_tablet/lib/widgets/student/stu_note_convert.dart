@@ -208,7 +208,7 @@ class _StuNoteConvertWidgetState extends State<StuNoteConvertWidget> {
                 const EdgeInsets.only(top: 5, left: 20, right: 20, bottom: 20),
             child: Container(
               width: double.infinity,
-              height: 420,
+              height: 370,
               decoration: BoxDecoration(
                   border: Border.all(
                     color: AppColors.yellow,
@@ -279,8 +279,9 @@ class _StuNoteConvertWidgetState extends State<StuNoteConvertWidget> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(5),
+      padding: const EdgeInsets.only(right: 30, bottom: 30),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const StuTitleWidget(title: '필기 변환하기'),
           const SizedBox(height: 15),

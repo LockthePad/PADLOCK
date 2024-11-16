@@ -34,8 +34,9 @@ class StuHomeWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(left: 5, right: 24, bottom: 24),
+      padding: const EdgeInsets.only(right: 30, bottom: 30),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
             height: 230,

@@ -20,6 +20,14 @@ class NoteSavingCard extends StatefulWidget {
 }
 
 class _NoteSavingCardState extends State<NoteSavingCard> {
+  String _removeQuotes(String text) {
+    // 앞뒤 따옴표 제거
+    if (text.startsWith('"') && text.endsWith('"')) {
+      return text.substring(1, text.length - 1);
+    }
+    return text;
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -43,7 +51,7 @@ class _NoteSavingCardState extends State<NoteSavingCard> {
             Expanded(
               // content를 Expanded로 감싸서 남은 공간을 모두 사용하도록 함
               child: Text(
-                widget.content,
+                _removeQuotes(widget.content),
                 style: const TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.w500,

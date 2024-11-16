@@ -61,8 +61,9 @@ class _StuNotificationWidgetState extends State<StuNotificationWidget> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(5),
+      padding: const EdgeInsets.only(right: 30, bottom: 30),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const StuTitleWidget(title: '공지사항'),
           const SizedBox(height: 15),
@@ -97,7 +98,7 @@ class _StuNotificationWidgetState extends State<StuNotificationWidget> {
                                       notices.length,
                                       (index) => Padding(
                                         padding: const EdgeInsets.symmetric(
-                                            vertical: 5),
+                                            vertical: 7),
                                         child: InkWell(
                                           splashColor: Colors
                                               .transparent, // 터치 시 퍼지는 효과 제거
@@ -110,7 +111,7 @@ class _StuNotificationWidgetState extends State<StuNotificationWidget> {
                                           },
                                           child: Container(
                                             width: double.infinity,
-                                            padding: const EdgeInsets.all(16),
+                                            padding: const EdgeInsets.all(23),
                                             decoration: BoxDecoration(
                                               borderRadius:
                                                   BorderRadius.circular(30),
@@ -129,20 +130,20 @@ class _StuNotificationWidgetState extends State<StuNotificationWidget> {
                                                 Text(
                                                   notices[index].title,
                                                   style: const TextStyle(
-                                                    fontSize: 16,
+                                                    fontSize: 18,
                                                     fontWeight: FontWeight.bold,
                                                   ),
                                                   overflow:
                                                       TextOverflow.ellipsis,
                                                 ),
-                                                const SizedBox(height: 4),
+                                                const SizedBox(height: 10),
                                                 Text(
                                                   notices[index]
                                                       .createdAt
                                                       .substring(0, 10),
                                                   style: TextStyle(
-                                                    fontSize: 12,
-                                                    color: Colors.grey.shade600,
+                                                    fontSize: 15,
+                                                    color: AppColors.darkGrey,
                                                   ),
                                                 ),
                                               ],

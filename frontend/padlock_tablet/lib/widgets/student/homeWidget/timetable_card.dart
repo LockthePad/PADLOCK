@@ -41,7 +41,6 @@ class _TimetableCardState extends State<TimetableCard> {
           classroomId: classroomId!,
         );
 
-        // API 응답을 TimeTableData 형식으로 변환
         final convertedSchedules = schedules
             .map((schedule) => TimeTableData(
                   day: _convertDayToKorean(schedule['day']),
@@ -82,19 +81,23 @@ class _TimetableCardState extends State<TimetableCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const Text(
-            '오늘의 시간표',
-            style: TextStyle(
-              fontSize: 20,
+          const Padding(
+            padding: EdgeInsets.only(top: 8), // 상단 여백 줄임
+            child: Text(
+              '오늘의 시간표',
+              style: TextStyle(
+                fontSize: 20,
+              ),
             ),
           ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: widget.timeTable.length,
-              itemBuilder: (context, index) {
-                final item = widget.timeTable[index];
-                return _buildTimeTableItem(item);
-              },
+          const SizedBox(height: 15),
+          Container(
+            height: 222,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: widget.timeTable
+                  .map((item) => _buildTimeTableItem(item))
+                  .toList(),
             ),
           ),
           if (widget.onViewAll != null)
@@ -108,7 +111,7 @@ class _TimetableCardState extends State<TimetableCard> {
                     context: context,
                     barrierColor: Colors.black.withOpacity(0.7),
                     builder: (context) => TimetableModalWidget(
-                      timeTableData: fullTimeTable, // API에서 가져온 전체 시간표 사용
+                      timeTableData: fullTimeTable,
                     ),
                   );
                 },
