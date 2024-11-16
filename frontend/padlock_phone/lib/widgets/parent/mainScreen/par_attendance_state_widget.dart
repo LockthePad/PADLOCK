@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:padlock_phone/theme/colors.dart';
 
 class ParAttendanceStateWidget extends StatefulWidget {
   const ParAttendanceStateWidget({super.key, required this.attendanceStatus});
