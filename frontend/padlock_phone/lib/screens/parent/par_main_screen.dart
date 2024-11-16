@@ -47,7 +47,7 @@ class _ParMainScreenState extends State<ParMainScreen> {
   void initState() {
     super.initState();
     _initializeNotifications();
-    _loadChildrenData(); // 자식 정보 로드
+    _loadChildrenData(); // 자식 정보 로드 및 첫 번째 자식 정보 저장
   }
 
   Future<void> _loadChildrenData() async {
@@ -66,10 +66,30 @@ class _ParMainScreenState extends State<ParMainScreen> {
           children = List<Map<String, dynamic>>.from(fetchedChildren);
           studentName = children.first['studentName'];
           schoolInfo = children.first['schoolInfo'];
-          selectedChildId = children.first['studentId'].toString();
+          selectedChildId =
+              children.first['studentId'].toString(); // String으로 변환
         });
 
+        // 첫 번째 자식 정보 저장
         await storage.write(key: 'children', value: jsonEncode(children));
+        await storage.write(
+          key: 'selectedClassroomId',
+          value: children.first['classroomId'].toString(), // String으로 변환
+        );
+
+        await CounselApi.getTeacherId(); // teacherId 저장 호출
+
+        await storage.write(
+          key: 'schoolInfo',
+          value: children.first['schoolInfo'],
+        );
+
+        await storage.write(
+          key: 'studentId',
+          value: children.first['studentId'].toString(), // String으로 변환
+        );
+
+        print("첫 번째 자식 정보가 저장되었습니다.");
       } else {
         print("자식 정보가 없습니다.");
       }
@@ -224,10 +244,9 @@ class _ParMainScreenState extends State<ParMainScreen> {
               Padding(
                 padding: const EdgeInsets.only(top: 10),
                 child: SizedBox(
-                  width: 150, // 원하는 폭 설정
+                  width: 150,
                   child: DropdownButtonHideUnderline(
-                    child: // DropdownButton 부분 수정
-                        DropdownButton<String>(
+                    child: DropdownButton<String>(
                       value: null,
                       icon: const Icon(Icons.arrow_drop_down),
                       hint: const Text("",
@@ -244,14 +263,25 @@ class _ParMainScreenState extends State<ParMainScreen> {
                             (child) => child['studentName'] == value,
                           );
 
-                          // classroomId 저장
                           await storage.write(
                             key: 'selectedClassroomId',
                             value: selectedChild['classroomId'].toString(),
                           );
 
-                          // teacherId 가져와서 저장
                           await CounselApi.getTeacherId();
+
+                          await storage.write(
+                            key: 'schoolInfo',
+                            value: selectedChild['schoolInfo'],
+                          );
+
+                          await storage.write(
+                            key: 'studentId',
+                            value: selectedChild['studentId'],
+                          );
+
+                          final studentId = selectedChild['studentId'];
+                          print('--------------$studentId');
 
                           setState(() {
                             studentName = selectedChild['studentName'];
