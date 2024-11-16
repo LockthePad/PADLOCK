@@ -72,7 +72,7 @@ class _UserinfoWidgetState extends State<UserinfoWidget> {
       }
     }
   }
-
+ 
   @override
   Widget build(BuildContext context) {
     return Column(
