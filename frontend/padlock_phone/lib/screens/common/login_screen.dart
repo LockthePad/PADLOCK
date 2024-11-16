@@ -154,6 +154,7 @@ class _LoginScreenState extends State<LoginScreen> {
         await storage.write(key: 'accessToken', value: data['accessToken']);
         await storage.write(key: 'refreshToken', value: data['refreshToken']);
         await storage.write(key: 'role', value: data['role']);
+        await storage.write(key: 'memberInfo', value: data['memberInfo']);
         await storage.write(
             key: 'memberId', value: data['memberId'].toString());
         await storage.write(

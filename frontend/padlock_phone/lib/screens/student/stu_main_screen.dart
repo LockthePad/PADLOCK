@@ -2,26 +2,121 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:padlock_phone/apis/common/notification_service_api.dart';
 import 'dart:async';
+import 'dart:convert'; // UTF-8 인코딩/디코딩을 위해 필요
 import 'package:padlock_phone/apis/gps/location_api.dart';
 import 'package:padlock_phone/apis/common/attendance_api.dart';
-import 'package:padlock_phone/model/common/notification_item.dart';
 import 'package:padlock_phone/screens/common/declare_screen.dart';
 import 'package:padlock_phone/screens/common/notice_screen.dart';
-import 'package:padlock_phone/theme/colors.dart';
 import 'package:padlock_phone/widgets/common/mainScreen/stu_userinfo_widget.dart';
-import 'package:padlock_phone/widgets/common/notification/notification_modal.dart';
 import 'package:padlock_phone/widgets/student/mainScreen/stu_attendance_state_widget.dart';
 import 'package:padlock_phone/widgets/common/mainScreen/cardcontainer_widget.dart';
+import 'package:padlock_phone/screens/common/bell_screen.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:padlock_phone/screens/student/ble_test.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:padlock_phone/apis/common/notification_service_api.dart';
+import 'package:padlock_phone/model/common/notification_item.dart';
+import 'package:padlock_phone/theme/colors.dart';
+import 'package:padlock_phone/widgets/common/notification/notification_modal.dart';
 import 'package:padlock_phone/apis/common/att_post_api.dart';
+
+// 최상위 레벨에 알림 채널 설정 함수 추가
+Future<void> initializeNotifications() async {
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+
+  const AndroidNotificationChannel channel = AndroidNotificationChannel(
+    'location_service_channel', // id
+    'Location Service', // name
+    description: 'Background location service notification', // description
+    importance: Importance.high,
+  );
+
+  await flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>()
+      ?.createNotificationChannel(channel);
+}
+
+// **최상위 레벨에 onStartBackground 함수 정의**
+@pragma('vm:entry-point')
+void onStartBackground(ServiceInstance service) async {
+  try {
+    await initializeNotifications();
+
+    debugPrint('onStartBackground 함수 실행됨');
+
+    // SharedPreferences를 사용하여 데이터 가져오기
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    final token = preferences.getString('token');
+    final memberId = preferences.getString('memberId');
+    final classroomId = preferences.getString('classroomId');
+    final apiServerUrl = preferences.getString('apiServerUrl');
+
+    if (token == null ||
+        memberId == null ||
+        classroomId == null ||
+        apiServerUrl == null) {
+      debugPrint('백그라운드 서비스에 필요한 데이터가 없습니다.');
+      return;
+    }
+
+    debugPrint(
+        "onStartBackground에서 데이터 수신 - token: $token, memberId: $memberId, classroomId: $classroomId, apiServerUrl: $apiServerUrl");
+
+    // 위치 권한 확인 및 요청
+    LocationPermission permission = await Geolocator.checkPermission();
+    debugPrint('현재 위치 권한 상태: $permission');
+
+    if (permission == LocationPermission.denied ||
+        permission == LocationPermission.deniedForever) {
+      permission = await Geolocator.requestPermission();
+      debugPrint('위치 권한 요청 결과: $permission');
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        debugPrint("위치 권한이 거부되었습니다.");
+        return;
+      }
+    }
+
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      debugPrint("위치 서비스가 비활성화되어 있습니다.");
+      return;
+    }
+
+    // 위치 정보 주기적으로 서버에 전송
+    Timer.periodic(const Duration(seconds: 10), (timer) async {
+      try {
+        debugPrint('백그라운드에서 위치 정보 가져오기 시도...');
+        Position position = await Geolocator.getCurrentPosition(
+            desiredAccuracy: LocationAccuracy.high);
+        debugPrint(
+            '백그라운드에서 위치 확인됨: ${position.latitude}, ${position.longitude}');
+
+        // 위치 정보를 서버로 전송
+        await LocationApi.sendLocation(
+          apiServerUrl: apiServerUrl, // 전달받은 apiServerUrl 사용
+          token: token,
+          memberId: memberId,
+          classroomId: classroomId,
+          latitude: position.latitude,
+          longitude: position.longitude,
+        );
+        debugPrint("백그라운드에서 위치 정보 전송 성공");
+      } catch (e) {
+        debugPrint("백그라운드에서 위치 정보 전송 중 오류: $e");
+      }
+    });
+  } catch (e, stackTrace) {
+    debugPrint('백그라운드 서비스 오류 발생: $e');
+    debugPrint('스택 트레이스: $stackTrace');
+  }
+}
 
 class StuMainScreen extends StatefulWidget {
   const StuMainScreen({super.key});
@@ -43,6 +138,8 @@ class _StuMainScreenState extends State<StuMainScreen> {
   bool _hasUnreadNotifications = false;
   StreamSubscription? _notificationSubscription;
   String memberInfo = '';
+  String userName = '로딩중...';
+  String userClass = '로딩중...';
 
   Timer? _scanTimer;
   Timer? _postTimer;
@@ -79,7 +176,7 @@ class _StuMainScreenState extends State<StuMainScreen> {
 
   void startBeaconScanningService() {
     // 페이지 진입 시 즉시 스캔 시작
-    scanForBeacon();
+    // scanForBeacon();
 
     // 30초마다 BLE 스캔 수행
     _scanTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
@@ -166,132 +263,6 @@ class _StuMainScreenState extends State<StuMainScreen> {
     }
   }
 
-  Future<void> _loadMemberInfo() async {
-    try {
-      String? storedMemberInfo = await storage.read(key: 'memberInfo');
-      print('Loaded raw memberInfo: $storedMemberInfo'); // 디버그 로그 추가
-
-      if (storedMemberInfo != null) {
-        setState(() {
-          memberInfo = storedMemberInfo;
-        });
-      } else {
-        setState(() {
-          memberInfo = '알 수 없음';
-        });
-      }
-    } catch (e) {
-      print('Error loading member info: $e');
-      setState(() {
-        memberInfo = '알 수 없음';
-      });
-    }
-  }
-
-  Future<void> _initializeNotifications() async {
-    print('Initializing notifications in HeaderWidget');
-
-    // 초기 알림 상태 설정
-    try {
-      final initialNotifications =
-          await _notificationService.getNotifications();
-      if (mounted) {
-        setState(() {
-          _notifications = initialNotifications;
-          _updateUnreadStatus();
-        });
-      }
-    } catch (e) {
-      print('Error loading initial notifications: $e');
-    }
-
-    // 스트림 구독
-    _notificationSubscription = _notificationService.notificationStream.listen(
-      (notifications) {
-        print(
-            'Received notification update in HeaderWidget: ${notifications.length} notifications');
-        if (mounted) {
-          setState(() {
-            _notifications = notifications;
-            _updateUnreadStatus();
-          });
-        }
-      },
-      onError: (error) {
-        print('Error in notification stream: $error');
-      },
-      onDone: () {
-        print('Notification stream closed');
-      },
-    );
-
-    // SSE 구독 시작
-    await _notificationService.subscribeToNotifications();
-  }
-
-  void _updateUnreadStatus() {
-    final hasUnread = _notifications.any((notification) => !notification.read);
-    print('Updating unread status: $hasUnread');
-    if (_hasUnreadNotifications != hasUnread) {
-      setState(() {
-        _hasUnreadNotifications = hasUnread;
-        print('Notification icon status updated: $_hasUnreadNotifications');
-      });
-    }
-  }
-
-  Future<void> _handleNotificationsRead() async {
-    setState(() {
-      _notifications = _notificationService.currentNotifications;
-      _updateUnreadStatus();
-    });
-  }
-
-  Map<String, String> _parseMemberInfo() {
-    print('Parsing memberInfo: $memberInfo');
-
-    if (memberInfo.isEmpty) {
-      return {
-        'userClass': '로딩중...',
-        'userName': '로딩중...',
-      };
-    }
-
-    try {
-      final parts = memberInfo.split(' ');
-      print('Split parts: $parts');
-
-      if (parts.length >= 4) {
-        final String name = parts.last;
-        final String userClass = parts.take(parts.length - 1).join(' ');
-
-        return {
-          'userClass': userClass,
-          'userName': name,
-        };
-      }
-    } catch (e) {
-      print('Error parsing memberInfo: $e');
-    }
-
-    return {
-      'userClass': '정보 없음',
-      'userName': '정보 없음',
-    };
-  }
-
-  void _showNotificationModal() {
-    showDialog(
-      context: context,
-      barrierDismissible: true,
-      builder: (context) => NotificationModal(
-        notifications: _notifications,
-        notificationService: _notificationService,
-        onNotificationsRead: _handleNotificationsRead,
-      ),
-    );
-  }
-
   Future<void> _initializeStudentFeatures() async {
     await requestLocationPermissions();
     debugPrint('학생 계정 확인, 위치 정보 전송 시작');
@@ -309,7 +280,7 @@ class _StuMainScreenState extends State<StuMainScreen> {
       debugPrint('백그라운드 서비스 초기화 진행 중');
 
       // BLE 비콘 스캔 서비스 시작 (학생인 경우만 수행)
-      startBeaconScanningService();
+      // startBeaconScanningService();
     } else {
       debugPrint('토큰 또는 사용자 정보가 없습니다.');
     }
@@ -355,29 +326,6 @@ class _StuMainScreenState extends State<StuMainScreen> {
       // 예외가 발생해도 앱 흐름이 진행되도록 함
     }
   }
-
-  // void startBeaconScanningService() async {
-  //   final service = FlutterBackgroundService();
-
-  //   // 백그라운드 서비스 초기화
-  //   await service.configure(
-  //     androidConfiguration: AndroidConfiguration(
-  //       onStart: onStartBeaconScanning,
-  //       autoStart: true,
-  //       isForegroundMode: true,
-  //       notificationChannelId: 'ble_scan_service_channel',
-  //       initialNotificationTitle: "BLE Beacon Scanning",
-  //       initialNotificationContent: "Background scanning is running",
-  //     ),
-  //     iosConfiguration: IosConfiguration(
-  //       autoStart: true,
-  //       onForeground: onStartBeaconScanning,
-  //     ),
-  //   );
-
-  //   // 서비스 시작
-  //   service.startService();
-  // }
 
   @pragma('vm:entry-point')
   void onStartBackground(ServiceInstance service) async {
@@ -454,29 +402,6 @@ class _StuMainScreenState extends State<StuMainScreen> {
       debugPrint('스택 트레이스: $stackTrace');
     }
   }
-
-  // @pragma('vm:entry-point')
-  // void onStartBeaconScanning(ServiceInstance service) {
-  //   if (service is AndroidServiceInstance) {
-  //     service.on('setAsForeground').listen((event) {
-  //       service.setAsForegroundService();
-  //     });
-  //   }
-
-  //   // BLE 스캔 시작
-  //   FlutterBluePlus.startScan(timeout: const Duration(seconds: 30));
-
-  //   FlutterBluePlus.scanResults.listen((results) {
-  //     for (ScanResult r in results) {
-  //       print('${r.device.name} found! rssi: ${r.rssi}');
-  //       // 여기에 비콘 신호를 감지하고 출석 처리를 하는 로직을 추가
-  //     }
-  //   });
-
-  //   service.on('stopService').listen((event) {
-  //     service.stopSelf();
-  //   });
-  // }
 
   Future<void> _fetchAttendanceStatus() async {
     try {
@@ -602,6 +527,132 @@ class _StuMainScreenState extends State<StuMainScreen> {
     });
   }
 
+  Future<void> _loadMemberInfo() async {
+    try {
+      String storedMemberInfo = (await storage.read(key: 'memberInfo')) ?? '';
+      storedMemberInfo = utf8.decode(storedMemberInfo.codeUnits); // UTF-8 디코딩
+
+      setState(() {
+        memberInfo = storedMemberInfo;
+
+        // memberInfo를 파싱하여 userName과 userClass를 업데이트
+        final parsedInfo = _parseMemberInfo();
+        userName = parsedInfo['userName']!;
+        userClass = parsedInfo['userClass']!;
+      });
+    } catch (e) {
+      print('Error loading member info: $e');
+      setState(() {
+        userName = '정보 없음';
+        userClass = '정보 없음';
+      });
+    }
+  }
+
+  Future<void> _initializeNotifications() async {
+    print('Initializing notifications in HeaderWidget');
+
+    // 초기 알림 상태 설정
+    try {
+      final initialNotifications =
+          await _notificationService.getNotifications();
+      if (mounted) {
+        setState(() {
+          _notifications = initialNotifications;
+          _updateUnreadStatus();
+        });
+      }
+    } catch (e) {
+      print('Error loading initial notifications: $e');
+    }
+
+    // 스트림 구독
+    _notificationSubscription = _notificationService.notificationStream.listen(
+      (notifications) {
+        print(
+            'Received notification update in HeaderWidget: ${notifications.length} notifications');
+        if (mounted) {
+          setState(() {
+            _notifications = notifications;
+            _updateUnreadStatus();
+          });
+        }
+      },
+      onError: (error) {
+        print('Error in notification stream: $error');
+      },
+      onDone: () {
+        print('Notification stream closed');
+      },
+    );
+
+    // SSE 구독 시작
+    await _notificationService.subscribeToNotifications();
+  }
+
+  void _updateUnreadStatus() {
+    final hasUnread = _notifications.any((notification) => !notification.read);
+    print('Updating unread status: $hasUnread');
+    if (_hasUnreadNotifications != hasUnread) {
+      setState(() {
+        _hasUnreadNotifications = hasUnread;
+        print('Notification icon status updated: $_hasUnreadNotifications');
+      });
+    }
+  }
+
+  Future<void> _handleNotificationsRead() async {
+    setState(() {
+      _notifications = _notificationService.currentNotifications;
+      _updateUnreadStatus();
+    });
+  }
+
+  Map<String, String> _parseMemberInfo() {
+    print('Parsing memberInfo: $memberInfo');
+
+    if (memberInfo.isEmpty) {
+      return {
+        'userClass': '로딩중...',
+        'userName': '로딩중...',
+      };
+    }
+
+    try {
+      final parts = memberInfo.split(' ');
+      print('Split parts: $parts');
+
+      if (parts.length >= 4) {
+        final String name = parts.last;
+        final String userClass = parts.take(parts.length - 1).join(' ');
+
+        return {
+          'userClass': userClass,
+          'userName': name,
+        };
+      }
+    } catch (e) {
+      print('Error parsing memberInfo: $e');
+    }
+
+    return {
+      'userClass': '정보 없음',
+      'userName': '정보 없음',
+    };
+  }
+
+  void _showNotificationModal() {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) => NotificationModal(
+        notifications: _notifications,
+        notificationService: _notificationService,
+        onNotificationsRead: _handleNotificationsRead,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -644,13 +695,24 @@ class _StuMainScreenState extends State<StuMainScreen> {
                 ),
               ),
             ),
-            const Padding(
-              padding: EdgeInsets.only(left: 50),
+            // GestureDetector(
+            //   onTap: () {
+            //     Navigator.push(
+            //       context,
+            //       MaterialPageRoute(
+            //         builder: (context) => const MyApp(),
+            //       ),
+            //     );
+            //   },
+            //   child: const Text("bletest"),
+            // ),
+            Padding(
+              padding: const EdgeInsets.only(left: 50),
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: StuUserinfoWidget(
-                  userName: "정석영",
-                  userClass: "대전초 2학년 2반",
+                  userName: userName,
+                  userClass: userClass,
                 ),
               ),
             ),
