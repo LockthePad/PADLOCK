@@ -17,17 +17,21 @@ from selenium.webdriver.common.keys import Keys
 from bs4 import BeautifulSoup
 from pydantic import BaseModel
 from typing import Optional
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
 app = FastAPI()
+
+API_KEY = os.environ.get('API_KEY')
+SECRET_KEY = os.environ.get('SECRET_KEY')
+SERVER = os.environ.get('CRAWLING_URL')
 
 # 모델 로드
 person_model = YOLO("/path/person_model")
 custom_model = YOLO("/path/custom_model")
 simple_lama = SimpleLama()
-
-api_url = API_URL
-secret_key = SECRET_KEY
-
+ 
 options = webdriver.ChromeOptions()
 options.add_argument('--headless')
 options.add_argument('--no-sandbox')
@@ -99,11 +103,11 @@ async def process_image(image: UploadFile = File(...)):
             ('file', ('temp_blackboard.jpg', img_bytes, 'image/jpeg'))
         ]
         headers = {
-          'X-OCR-SECRET': secret_key
+          'X-OCR-SECRET': SECRET_KEY
         }
 
         # OCR
-        response = requests.post(api_url, headers=headers, data=payload, files=files)
+        response = requests.post(API_URL, headers=headers, data=payload, files=files)
 
         try:
             response_json = response.json()
@@ -129,7 +133,7 @@ async def get_app_image(request: AppRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 def get_image_url(app_name: str) -> Optional[str]:
-    driver.get("https://m.onestore.co.kr/mobilepoc/search/searchMain.omp")
+    driver.get(CRAWLING_URL)
     search_box = driver.find_element(By.CSS_SELECTOR, "#integrateQuery")
     search_box.send_keys(app_name)
     search_box.send_keys(Keys.RETURN)
