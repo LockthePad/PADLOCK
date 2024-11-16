@@ -43,8 +43,12 @@ public class AttendanceService {
 
     @Transactional
     public AttendanceResponse updateAttendanceStatus(Long memberId, Long classroomId, boolean communicationSuccess) {
-        Attendance attendance = getOrCreateAttendance(memberId);
+        DayOfWeek currentDay = LocalDate.now().getDayOfWeek();
+        if (currentDay == DayOfWeek.SATURDAY || currentDay == DayOfWeek.SUNDAY) {
+            throw new IllegalArgumentException("주말에는 출석 상태를 업데이트할 수 없습니다.");
+        }
 
+        Attendance attendance = getOrCreateAttendance(memberId);
         if (!communicationSuccess) {
             return AttendanceResponse.from(attendance);
         }
