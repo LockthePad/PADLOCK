@@ -10,6 +10,7 @@ import com.ssafy.padlock.schedule.controller.response.CurrentPeriodResponse;
 import com.ssafy.padlock.schedule.domain.ClassSchedule;
 import com.ssafy.padlock.schedule.domain.GradeSchedule;
 import com.ssafy.padlock.schedule.domain.ScheduleTime;
+import com.ssafy.padlock.schedule.exception.InvalidPeriodException;
 import com.ssafy.padlock.schedule.exception.ScheduleNotRegisteredException;
 import com.ssafy.padlock.schedule.repository.ClassScheduleRepository;
 import com.ssafy.padlock.schedule.repository.GradeScheduleRepository;
@@ -42,12 +43,19 @@ public class ScheduleService {
     }
 
     @Transactional
-    public void updateClassSchedule(Long teacherId, Long classroomId, UpdateScheduleRequest updateScheduleRequest) {
+    public void updateClassSchedule(Long teacherId, Long classroomId, UpdateScheduleRequest request) {
         validateTeacherOfClassroom(teacherId, classroomId);
 
-        String day = updateScheduleRequest.getDay();
-        int period = updateScheduleRequest.getPeriod();
-        String subject = updateScheduleRequest.getSubject();
+        Classroom classroom = getClassroom(classroomId);
+        GradeSchedule gradeSchedule = getGradeSchedule(classroom.getSchool().getId(), classroom.getGrade(), request.getDay());
+
+        if (request.getPeriod() > gradeSchedule.getEndPeriod()) {
+            throw new InvalidPeriodException("마지막 교시를 넘는 시간표는 추가할 수 없습니다.");
+        }
+
+        String day = request.getDay();
+        int period = request.getPeriod();
+        String subject = request.getSubject();
 
         classScheduleRepository.findByClassroomIdAndDayAndPeriod(classroomId, day, period)
                 .ifPresentOrElse(
@@ -62,18 +70,8 @@ public class ScheduleService {
         classScheduleRepository.deleteByClassroomIdAndDayAndPeriod(classroomId, day, period);
     }
 
-    public void validateTeacherOfClassroom(Long teacherId, Long classroomId) {
-        Member teacher = memberRepository.findById(teacherId)
-                .orElseThrow(() -> new IllegalArgumentException("teacherId (" + teacherId + ") 존재하지 않음"));
-
-        if (!teacher.getClassRoom().getId().equals(classroomId)) {
-            throw new IllegalArgumentException("해당 반의 담임 교사만 가능합니다.");
-        }
-    }
-
     public CurrentPeriodResponse getCurrentPeriodStatus(Long classroomId) {
-        Classroom classroom = classroomRepository.findById(classroomId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 교실을 찾을 수 없습니다."));
+        Classroom classroom = getClassroom(classroomId);
         Long schoolId = classroom.getSchool().getId();
 
         return scheduleTimeRepository.findPeriodBySchoolIdAndCurrentTime(schoolId, LocalTime.now())
@@ -86,9 +84,7 @@ public class ScheduleService {
                 .getDisplayName(TextStyle.SHORT, Locale.ENGLISH)
                 .toUpperCase();
 
-        GradeSchedule gradeSchedule = gradeScheduleRepository.findBySchoolIdAndGradeAndDay(schoolId, grade, day)
-                .orElseThrow(() -> new ScheduleNotRegisteredException("해당 학년의 시간표가 등록되지 않았습니다."));
-
+        GradeSchedule gradeSchedule = getGradeSchedule(schoolId, grade, day);
         if (period > gradeSchedule.getEndPeriod()) {
             return new CurrentPeriodResponse("OUT_OF_CLASS_TIME");
         }
@@ -109,5 +105,24 @@ public class ScheduleService {
         }
 
         return new CurrentPeriodResponse("OUT_OF_CLASS_TIME");
+    }
+
+    public void validateTeacherOfClassroom(Long teacherId, Long classroomId) {
+        Member teacher = memberRepository.findById(teacherId)
+                .orElseThrow(() -> new IllegalArgumentException("teacherId (" + teacherId + ") 존재하지 않음"));
+
+        if (!teacher.getClassRoom().getId().equals(classroomId)) {
+            throw new IllegalArgumentException("해당 반의 담임 교사만 가능합니다.");
+        }
+    }
+
+    private Classroom getClassroom(Long classroomId) {
+        return classroomRepository.findById(classroomId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 교실을 찾을 수 없습니다."));
+    }
+
+    private GradeSchedule getGradeSchedule(Long schoolId, int grade, String day) {
+        return gradeScheduleRepository.findBySchoolIdAndGradeAndDay(schoolId, grade, day)
+                .orElseThrow(() -> new ScheduleNotRegisteredException("해당 학년의 시간표가 등록되지 않았습니다."));
     }
 }
