@@ -3,6 +3,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:geolocator/geolocator.dart';
 import 'dart:async';
+import 'dart:convert'; // UTF-8 인코딩/디코딩을 위해 필요
 import 'package:padlock_phone/apis/gps/location_api.dart';
 import 'package:padlock_phone/apis/common/attendance_api.dart';
 import 'package:padlock_phone/screens/common/declare_screen.dart';
@@ -21,6 +22,101 @@ import 'package:padlock_phone/apis/common/notification_service_api.dart';
 import 'package:padlock_phone/model/common/notification_item.dart';
 import 'package:padlock_phone/theme/colors.dart';
 import 'package:padlock_phone/widgets/common/notification/notification_modal.dart';
+import 'package:padlock_phone/apis/common/att_post_api.dart';
+
+// 최상위 레벨에 알림 채널 설정 함수 추가
+Future<void> initializeNotifications() async {
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+
+  const AndroidNotificationChannel channel = AndroidNotificationChannel(
+    'location_service_channel', // id
+    'Location Service', // name
+    description: 'Background location service notification', // description
+    importance: Importance.high,
+  );
+
+  await flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>()
+      ?.createNotificationChannel(channel);
+}
+
+// **최상위 레벨에 onStartBackground 함수 정의**
+@pragma('vm:entry-point')
+void onStartBackground(ServiceInstance service) async {
+  try {
+    await initializeNotifications();
+
+    debugPrint('onStartBackground 함수 실행됨');
+
+    // SharedPreferences를 사용하여 데이터 가져오기
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    final token = preferences.getString('token');
+    final memberId = preferences.getString('memberId');
+    final classroomId = preferences.getString('classroomId');
+    final apiServerUrl = preferences.getString('apiServerUrl');
+
+    if (token == null ||
+        memberId == null ||
+        classroomId == null ||
+        apiServerUrl == null) {
+      debugPrint('백그라운드 서비스에 필요한 데이터가 없습니다.');
+      return;
+    }
+
+    debugPrint(
+        "onStartBackground에서 데이터 수신 - token: $token, memberId: $memberId, classroomId: $classroomId, apiServerUrl: $apiServerUrl");
+
+    // 위치 권한 확인 및 요청
+    LocationPermission permission = await Geolocator.checkPermission();
+    debugPrint('현재 위치 권한 상태: $permission');
+
+    if (permission == LocationPermission.denied ||
+        permission == LocationPermission.deniedForever) {
+      permission = await Geolocator.requestPermission();
+      debugPrint('위치 권한 요청 결과: $permission');
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        debugPrint("위치 권한이 거부되었습니다.");
+        return;
+      }
+    }
+
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      debugPrint("위치 서비스가 비활성화되어 있습니다.");
+      return;
+    }
+
+    // 위치 정보 주기적으로 서버에 전송
+    Timer.periodic(const Duration(seconds: 10), (timer) async {
+      try {
+        debugPrint('백그라운드에서 위치 정보 가져오기 시도...');
+        Position position = await Geolocator.getCurrentPosition(
+            desiredAccuracy: LocationAccuracy.high);
+        debugPrint(
+            '백그라운드에서 위치 확인됨: ${position.latitude}, ${position.longitude}');
+
+        // 위치 정보를 서버로 전송
+        await LocationApi.sendLocation(
+          apiServerUrl: apiServerUrl, // 전달받은 apiServerUrl 사용
+          token: token,
+          memberId: memberId,
+          classroomId: classroomId,
+          latitude: position.latitude,
+          longitude: position.longitude,
+        );
+        debugPrint("백그라운드에서 위치 정보 전송 성공");
+      } catch (e) {
+        debugPrint("백그라운드에서 위치 정보 전송 중 오류: $e");
+      }
+    });
+  } catch (e, stackTrace) {
+    debugPrint('백그라운드 서비스 오류 발생: $e');
+    debugPrint('스택 트레이스: $stackTrace');
+  }
+}
 
 class StuMainScreen extends StatefulWidget {
   const StuMainScreen({super.key});
@@ -42,6 +138,18 @@ class _StuMainScreenState extends State<StuMainScreen> {
   bool _hasUnreadNotifications = false;
   StreamSubscription? _notificationSubscription;
   String memberInfo = '';
+  String userName = '로딩중...';
+  String userClass = '로딩중...';
+
+  Timer? _scanTimer;
+  Timer? _postTimer;
+  bool _isScanning = false;
+  bool _isDetected = false;
+  bool _postSuccess = false;
+  String _errorMessage = '';
+  String _detectedDeviceName = '';
+  String debugInfo = ''; // 디버깅 정보를 저장할 변수
+  final String targetMacAddress = 'AC:23:3F:F6:BD:A2'; // 목표 기기 MAC 주소
 
   @override
   void initState() {
@@ -51,6 +159,8 @@ class _StuMainScreenState extends State<StuMainScreen> {
     _startAttendanceTimer(); // 출석 상태 주기적 업데이트 시작
     _initializeNotifications();
     _loadMemberInfo();
+    startBeaconScanningService();
+    startPostTimer();
   }
 
   @override
@@ -58,9 +168,99 @@ class _StuMainScreenState extends State<StuMainScreen> {
     // 타이머 해제
     _locationTimer?.cancel();
     _attendanceTimer?.cancel();
+    _scanTimer?.cancel();
     super.dispose();
     _notificationService.dispose();
     _notificationSubscription?.cancel();
+  }
+
+  void startBeaconScanningService() {
+    // 페이지 진입 시 즉시 스캔 시작
+    // scanForBeacon();
+
+    // 30초마다 BLE 스캔 수행
+    _scanTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
+      if (!_isScanning) {
+        scanForBeacon();
+      }
+    });
+  }
+
+  void startPostTimer() {
+    // 30초마다 POST 요청 보내기
+    _postTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
+      sendAttendanceStatus(_isDetected); // 마지막으로 감지된 상태를 전송
+    });
+  }
+
+  void scanForBeacon() async {
+    setState(() {
+      _isScanning = true;
+      debugInfo = 'BLE 검색 중...';
+    });
+
+    List<ScanResult> scanResults = [];
+    _isDetected = false;
+    _detectedDeviceName = '';
+
+    // 스캔 시작 (10초 동안 스캔)
+    await FlutterBluePlus.startScan(timeout: const Duration(seconds: 10));
+    FlutterBluePlus.scanResults.listen((results) {
+      scanResults = results
+          .where((r) => r.device.remoteId.toString() == targetMacAddress)
+          .toList();
+
+      if (scanResults.isNotEmpty) {
+        _isDetected = true;
+        _detectedDeviceName = scanResults.first.device.name.isNotEmpty
+            ? scanResults.first.device.name
+            : "Unknown Device";
+        debugInfo = '비콘 감지됨: $_detectedDeviceName';
+      } else {
+        _isDetected = false;
+        _detectedDeviceName = '';
+        debugInfo = '비콘 감지되지 않음';
+      }
+    }).onDone(() async {
+      FlutterBluePlus.stopScan();
+      setState(() {
+        _isScanning = false;
+      });
+    });
+  }
+
+  Future<void> sendAttendanceStatus(bool isDetected) async {
+    try {
+      final accessToken = await storage.read(key: 'accessToken');
+      final classroomId = await storage.read(key: 'classroomId');
+
+      if (accessToken != null && classroomId != null) {
+        final response = await AttPostApi.sendBeaconStatus(
+          accessToken: accessToken,
+          success: isDetected,
+          classroomId: int.parse(classroomId),
+        );
+
+        setState(() {
+          _postSuccess = response["success"];
+          _errorMessage = response["message"] ?? '';
+          debugInfo +=
+              '\nPOST 요청 상태: ${response["message"]} (응답 코드: ${response["statusCode"]})';
+        });
+      } else {
+        setState(() {
+          _postSuccess = false;
+          _errorMessage = 'POST 요청 실패: 토큰 또는 classroomId가 없습니다.';
+          debugInfo += '\n$_errorMessage';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _postSuccess = false;
+        _errorMessage = 'POST 요청 중 예외 발생: $e';
+        debugInfo += '\n$_errorMessage';
+      });
+    }
   }
 
   Future<void> _initializeStudentFeatures() async {
@@ -80,7 +280,7 @@ class _StuMainScreenState extends State<StuMainScreen> {
       debugPrint('백그라운드 서비스 초기화 진행 중');
 
       // BLE 비콘 스캔 서비스 시작 (학생인 경우만 수행)
-      startBeaconScanningService();
+      // startBeaconScanningService();
     } else {
       debugPrint('토큰 또는 사용자 정보가 없습니다.');
     }
@@ -125,29 +325,6 @@ class _StuMainScreenState extends State<StuMainScreen> {
       debugPrint('스택 트레이스: $stackTrace');
       // 예외가 발생해도 앱 흐름이 진행되도록 함
     }
-  }
-
-  void startBeaconScanningService() async {
-    final service = FlutterBackgroundService();
-
-    // 백그라운드 서비스 초기화
-    await service.configure(
-      androidConfiguration: AndroidConfiguration(
-        onStart: onStartBeaconScanning,
-        autoStart: true,
-        isForegroundMode: true,
-        notificationChannelId: 'ble_scan_service_channel',
-        initialNotificationTitle: "BLE Beacon Scanning",
-        initialNotificationContent: "Background scanning is running",
-      ),
-      iosConfiguration: IosConfiguration(
-        autoStart: true,
-        onForeground: onStartBeaconScanning,
-      ),
-    );
-
-    // 서비스 시작
-    service.startService();
   }
 
   @pragma('vm:entry-point')
@@ -224,29 +401,6 @@ class _StuMainScreenState extends State<StuMainScreen> {
       debugPrint('백그라운드 서비스 오류 발생: $e');
       debugPrint('스택 트레이스: $stackTrace');
     }
-  }
-
-  @pragma('vm:entry-point')
-  void onStartBeaconScanning(ServiceInstance service) {
-    if (service is AndroidServiceInstance) {
-      service.on('setAsForeground').listen((event) {
-        service.setAsForegroundService();
-      });
-    }
-
-    // BLE 스캔 시작
-    FlutterBluePlus.startScan(timeout: const Duration(seconds: 30));
-
-    FlutterBluePlus.scanResults.listen((results) {
-      for (ScanResult r in results) {
-        print('${r.device.name} found! rssi: ${r.rssi}');
-        // 여기에 비콘 신호를 감지하고 출석 처리를 하는 로직을 추가
-      }
-    });
-
-    service.on('stopService').listen((event) {
-      service.stopSelf();
-    });
   }
 
   Future<void> _fetchAttendanceStatus() async {
@@ -375,22 +529,22 @@ class _StuMainScreenState extends State<StuMainScreen> {
 
   Future<void> _loadMemberInfo() async {
     try {
-      String? storedMemberInfo = await storage.read(key: 'memberInfo');
-      print('Loaded raw memberInfo: $storedMemberInfo'); // 디버그 로그 추가
+      String storedMemberInfo = (await storage.read(key: 'memberInfo')) ?? '';
+      storedMemberInfo = utf8.decode(storedMemberInfo.codeUnits); // UTF-8 디코딩
 
-      if (storedMemberInfo != null) {
-        setState(() {
-          memberInfo = storedMemberInfo;
-        });
-      } else {
-        setState(() {
-          memberInfo = '알 수 없음';
-        });
-      }
+      setState(() {
+        memberInfo = storedMemberInfo;
+
+        // memberInfo를 파싱하여 userName과 userClass를 업데이트
+        final parsedInfo = _parseMemberInfo();
+        userName = parsedInfo['userName']!;
+        userClass = parsedInfo['userClass']!;
+      });
     } catch (e) {
       print('Error loading member info: $e');
       setState(() {
-        memberInfo = '알 수 없음';
+        userName = '정보 없음';
+        userClass = '정보 없음';
       });
     }
   }
@@ -502,99 +656,144 @@ class _StuMainScreenState extends State<StuMainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: [
-          const SizedBox(height: 63),
-          GestureDetector(
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: Padding(
-                padding: const EdgeInsets.only(right: 19),
-                child: Stack(
-                  children: [
-                    IconButton(
-                      icon: Icon(
-                        Icons.notifications,
-                        color: _hasUnreadNotifications
-                            ? AppColors.yellow
-                            : AppColors.grey,
-                        size: 28,
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            const SizedBox(height: 63),
+            GestureDetector(
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 19),
+                  child: Stack(
+                    children: [
+                      IconButton(
+                        icon: Icon(
+                          Icons.notifications,
+                          color: _hasUnreadNotifications
+                              ? AppColors.yellow
+                              : AppColors.grey,
+                          size: 28,
+                        ),
+                        onPressed: _showNotificationModal,
                       ),
-                      onPressed: _showNotificationModal,
-                    ),
-                    if (_hasUnreadNotifications)
-                      Positioned(
-                        right: 8,
-                        top: 8,
-                        child: Container(
-                          width: 8,
-                          height: 8,
-                          decoration: const BoxDecoration(
-                            color: Colors.red,
-                            shape: BoxShape.circle,
+                      if (_hasUnreadNotifications)
+                        Positioned(
+                          right: 8,
+                          top: 8,
+                          child: Container(
+                            width: 8,
+                            height: 8,
+                            decoration: const BoxDecoration(
+                              color: Colors.red,
+                              shape: BoxShape.circle,
+                            ),
                           ),
                         ),
-                      ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-          GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const MyApp(),
+            // GestureDetector(
+            //   onTap: () {
+            //     Navigator.push(
+            //       context,
+            //       MaterialPageRoute(
+            //         builder: (context) => const MyApp(),
+            //       ),
+            //     );
+            //   },
+            //   child: const Text("bletest"),
+            // ),
+            Padding(
+              padding: const EdgeInsets.only(left: 50),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: StuUserinfoWidget(
+                  userName: userName,
+                  userClass: userClass,
                 ),
-              );
-            },
-            child: const Text("bletest"),
-          ),
-          // const Padding(
-          //   padding: EdgeInsets.only(left: 50),
-          //   child: Align(
-          //     alignment: Alignment.centerLeft,
-          //     child: UserinfoWidget(
-          //       userName: "정석영",
-          //       userClass: "대전초 2학년 2반",
-          //     ),
-          //   ),
-          // ),
-          StuAttendanceStateWidget(
-            attendanceStatus: attendanceStatus,
-          ),
-          GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const NoticeScreen(),
-                ),
-              );
-            },
-            child: const CardContainer(
-              subtitle: "즐거운 학교생활",
-              title: "공지사항 바로가기",
-              myicon: "notification",
+              ),
             ),
-          ),
-          GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const DeclareScreen(),
-                ),
-              );
-            },
-            child: const CardContainer(
-              subtitle: "즐거운 학교생활",
-              title: "건의하기 바로가기",
-              myicon: "notification",
+            StuAttendanceStateWidget(
+              attendanceStatus: attendanceStatus,
             ),
-          ),
-        ],
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const NoticeScreen(),
+                  ),
+                );
+              },
+              child: const CardContainer(
+                subtitle: "즐거운 학교생활",
+                title: "공지사항 바로가기",
+                myicon: "notification",
+              ),
+            ),
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const DeclareScreen(),
+                  ),
+                );
+              },
+              child: const CardContainer(
+                subtitle: "즐거운 학교생활",
+                title: "건의하기 바로가기",
+                myicon: "notification",
+              ),
+            ),
+            const SizedBox(height: 20),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'BLE 스캔 상태: ${_isScanning ? "검색 중" : "대기 중"}',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: _isScanning ? Colors.blue : Colors.black,
+                    ),
+                  ),
+                  Text(
+                    '비콘 감지 상태: ${_isDetected ? "감지됨 ($_detectedDeviceName)" : "감지되지 않음"}',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: _isDetected ? Colors.green : Colors.red,
+                    ),
+                  ),
+                  Text(
+                    'POST 요청 상태: ${_postSuccess ? "성공" : "실패"}',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: _postSuccess ? Colors.green : Colors.red,
+                    ),
+                  ),
+                  if (_errorMessage.isNotEmpty)
+                    Text(
+                      '에러 메시지: $_errorMessage',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Colors.red,
+                      ),
+                    ),
+                  const SizedBox(height: 10),
+                  Text(
+                    '디버깅 정보:\n$debugInfo',
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
