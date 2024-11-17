@@ -30,7 +30,8 @@ class _NoticeScreenState extends State<NoticeScreen> {
 
     try {
       String? token = await storage.read(key: 'accessToken');
-      String? classroomId = await storage.read(key: 'classroomId');
+      String? classroomId = await storage.read(key: 'selectedClassroomId');
+      print('---------classroomID :$classroomId');
 
       if (token == null || classroomId == null) {
         throw Exception('인증 정보가 없습니다.');
