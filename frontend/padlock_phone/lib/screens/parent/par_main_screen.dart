@@ -34,7 +34,7 @@ class _ParMainScreenState extends State<ParMainScreen> {
     'away': false,
   };
   List<Map<String, dynamic>> children = [];
-  String? selectedChildId;
+  Map<String, dynamic>? selectedChild;
   String? studentName;
   String? schoolInfo;
 
@@ -42,6 +42,8 @@ class _ParMainScreenState extends State<ParMainScreen> {
   List<NotificationItem> _notifications = [];
   bool _hasUnreadNotifications = false;
   StreamSubscription? _notificationSubscription;
+  int childrenCount = 0;
+  bool isLoadingChildren = true; // 로딩 상태 플래그
 
   @override
   void initState() {
@@ -64,11 +66,10 @@ class _ParMainScreenState extends State<ParMainScreen> {
       if (fetchedChildren.isNotEmpty) {
         setState(() {
           children = List<Map<String, dynamic>>.from(fetchedChildren);
-          studentName = children.first['studentName'];
-          schoolInfo = children.first['schoolInfo'];
-          selectedChildId =
-              children.first['studentId'].toString(); // String으로 변환
-          print('$selectedChildId');
+          selectedChild = children.first;
+          studentName = selectedChild!['studentName'];
+          schoolInfo = selectedChild!['schoolInfo'];
+          print('선택된 자식 ID: ${selectedChild!['studentId']}');
         });
 
         // 첫 번째 자식 정보 저장
@@ -97,6 +98,10 @@ class _ParMainScreenState extends State<ParMainScreen> {
       }
     } catch (e) {
       print("자식 정보 조회 중 오류 발생: $e");
+    } finally {
+      setState(() {
+        isLoadingChildren = false; // 로딩 완료
+      });
     }
   }
 
@@ -129,13 +134,13 @@ class _ParMainScreenState extends State<ParMainScreen> {
   }
 
   Future<void> _fetchAttendanceStatus() async {
-    if (selectedChildId == null) return;
+    if (selectedChild == null) return;
 
     try {
       final accessToken = await storage.read(key: 'accessToken');
       if (accessToken != null) {
         final status = await AttendanceApi.getAttendanceStatus(
-          studentId: selectedChildId!,
+          studentId: selectedChild!['studentId'].toString(),
           token: accessToken,
         );
 
@@ -154,6 +159,16 @@ class _ParMainScreenState extends State<ParMainScreen> {
         };
       });
     }
+  }
+
+  Future<void> _onChildSelected(Map<String, dynamic> childInfo) async {
+    setState(() {
+      selectedChild = childInfo;
+      studentName = childInfo['studentName'];
+      schoolInfo = childInfo['schoolInfo'];
+      print('선택된 자식 ID 업데이트: ${childInfo['studentId']}');
+    });
+    await _fetchAttendanceStatus();
   }
 
   @override
@@ -223,17 +238,13 @@ class _ParMainScreenState extends State<ParMainScreen> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  UserinfoWidget(
-                    userName: studentName ?? '학생',
-                    userClass: schoolInfo ?? '학교 정보 없음',
-                    onChildSelected: (childInfo) {
-                      setState(() {
-                        studentName = childInfo['studentName'];
-                        schoolInfo = childInfo['schoolInfo'];
-                        selectedChildId = childInfo['studentId'].toString();
-                        _fetchAttendanceStatus();
-                      });
-                    },
+                  Expanded(
+                    child: UserinfoWidget(
+                      userName: studentName ?? '학생',
+                      userClass: schoolInfo ?? '학교 정보 없음',
+                      children: children,
+                      onChildSelected: _onChildSelected,
+                    ),
                   ),
                   ParAttendanceStateWidget(
                     attendanceStatus: attendanceStatus,
@@ -241,65 +252,6 @@ class _ParMainScreenState extends State<ParMainScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: 20),
-            if (children.length > 1)
-              Padding(
-                padding: const EdgeInsets.only(top: 10),
-                child: SizedBox(
-                  width: 150,
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
-                      value: null,
-                      icon: const Icon(Icons.arrow_drop_down),
-                      hint: const Text("",
-                          style: TextStyle(color: Colors.black54)),
-                      items: children.map((child) {
-                        return DropdownMenuItem<String>(
-                          value: child['studentName'],
-                          child: Text('${child['studentName']} 학생'),
-                        );
-                      }).toList(),
-                      onChanged: (value) async {
-                        try {
-                          final selectedChild = children.firstWhere(
-                            (child) => child['studentName'] == value,
-                          );
-
-                          await storage.write(
-                            key: 'selectedClassroomId',
-                            value: selectedChild['classroomId'].toString(),
-                          );
-
-                          await CounselApi.getTeacherId();
-
-                          await storage.write(
-                            key: 'schoolInfo',
-                            value: selectedChild['schoolInfo'],
-                          );
-
-                          await storage.write(
-                            key: 'studentId',
-                            value: selectedChild['studentId'],
-                          );
-
-                          final studentId = selectedChild['studentId'];
-                          print('--------------$studentId');
-
-                          setState(() {
-                            studentName = selectedChild['studentName'];
-                            schoolInfo = selectedChild['schoolInfo'];
-                            selectedChildId =
-                                selectedChild['studentId'].toString();
-                            _fetchAttendanceStatus();
-                          });
-                        } catch (e) {
-                          print('선생님 정보 가져오기 실패: $e');
-                        }
-                      },
-                    ),
-                  ),
-                ),
-              ),
             const SizedBox(height: 30),
             GestureDetector(
               onTap: () {
