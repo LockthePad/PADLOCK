@@ -15,7 +15,7 @@ class ApiService {
 
   // SecureStorage에서 studentId 가져오기
   Future<String?> _getStudentId() async {
-    return await _storage.read(key: 'memberId');
+    return await _storage.read(key: 'studentId');
   }
 
   Future<List<LatLng>> fetchInitialRoute() async {
