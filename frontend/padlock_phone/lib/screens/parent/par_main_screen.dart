@@ -68,6 +68,7 @@ class _ParMainScreenState extends State<ParMainScreen> {
           schoolInfo = children.first['schoolInfo'];
           selectedChildId =
               children.first['studentId'].toString(); // String으로 변환
+          print('$selectedChildId');
         });
 
         // 첫 번째 자식 정보 저장
@@ -90,6 +91,7 @@ class _ParMainScreenState extends State<ParMainScreen> {
         );
 
         print("첫 번째 자식 정보가 저장되었습니다.");
+        await _fetchAttendanceStatus();
       } else {
         print("자식 정보가 없습니다.");
       }
