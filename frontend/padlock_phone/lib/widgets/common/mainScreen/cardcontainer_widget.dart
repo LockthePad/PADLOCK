@@ -17,7 +17,7 @@ class CardContainer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 3),
-      margin: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+      margin: const EdgeInsets.symmetric(horizontal: 30, vertical: 5),
       decoration: BoxDecoration(
         border: Border.all(color: AppColors.yellow, width: 2),
         borderRadius: BorderRadius.circular(50),

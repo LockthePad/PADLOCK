@@ -51,8 +51,8 @@ class _StuAttendanceStateWidgetState extends State<StuAttendanceStateWidget> {
         children: [
           const SizedBox(height: 15),
           Image.asset(_getImageAsset(),
-              width: 280, // 이미지의 너비 고정
-              height: 280, // 이미지의 높이 고정
+              width: 270, // 이미지의 너비 고정
+              height: 270, // 이미지의 높이 고정
               fit: BoxFit.contain),
           const SizedBox(height: 15),
           Text(
