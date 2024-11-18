@@ -78,6 +78,10 @@ class _ParMainScreenState extends State<ParMainScreen> {
           key: 'selectedClassroomId',
           value: children.first['classroomId'].toString(), // String으로 변환
         );
+        await storage.write(
+          key: 'classroomId',
+          value: children.first['classroomId'].toString(), // String으로 변환
+        );
 
         await CounselApi.getTeacherId(); // teacherId 저장 호출
 
