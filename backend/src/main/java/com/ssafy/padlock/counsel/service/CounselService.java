@@ -175,25 +175,16 @@ public class CounselService {
                 .orElseThrow(() -> new IllegalArgumentException("사용자의 정보가 존재하지 않습니다."));
 
         List<Counsel> counsels;
-        LocalDate currentDate = LocalDate.now();
-        LocalTime currentTime = LocalTime.now();
 
         if (member.getRole().equals(Role.PARENTS)) {
-            counsels = counselRepository.findByParentId(id);
+            counsels = counselRepository.findByParentIdOrderByCounselAvailableTime_CounselAvailableDateAscCounselAvailableTime_CounselAvailableTimeAsc(id);
         } else if (member.getRole().equals(Role.TEACHER)) {
-            counsels = counselRepository.findByTeacherId(id);
+            counsels = counselRepository.findByTeacherIdOrderByCounselAvailableTime_CounselAvailableDateAscCounselAvailableTime_CounselAvailableTimeAsc(id);
         } else {
             throw new IllegalArgumentException("학부모와 선생만 조회 가능합니다.");
         }
 
         return counsels.stream()
-                .filter(counsel -> {
-                    CounselAvailableTime availableTime = counsel.getCounselAvailableTime();
-                    return availableTime != null &&
-                            (availableTime.getCounselAvailableDate().isAfter(currentDate) ||
-                                    (availableTime.getCounselAvailableDate().isEqual(currentDate) &&
-                                            availableTime.getCounselAvailableTime().isAfter(currentTime)));
-                })
                 .map(counsel -> {
                     String studentName = null;
                     if (counsel.getStudentId() != null) {
@@ -206,7 +197,7 @@ public class CounselService {
                             counsel.getId(),
                             counsel.getParentId(),
                             counsel.getTeacherId(),
-                            studentName,  // 조회한 이름 전달
+                            studentName,
                             counsel.getCounselAvailableTime().getId(),
                             counsel.getCounselAvailableTime().getCounselAvailableDate(),
                             counsel.getCounselAvailableTime().getCounselAvailableTime()
@@ -215,6 +206,51 @@ public class CounselService {
                 .collect(Collectors.toList());
     }
 
+//    public List<CounselAvailableTimeResponse> getUserCounsel(Long id) {
+//        Member member = memberRepository.findById(id)
+//                .orElseThrow(() -> new IllegalArgumentException("사용자의 정보가 존재하지 않습니다."));
+//
+//        List<Counsel> counsels;
+//        LocalDate currentDate = LocalDate.now();
+//        LocalTime currentTime = LocalTime.now();
+//
+//        if (member.getRole().equals(Role.PARENTS)) {
+//            counsels = counselRepository.findByParentId(id);
+//        } else if (member.getRole().equals(Role.TEACHER)) {
+//            counsels = counselRepository.findByTeacherId(id);
+//        } else {
+//            throw new IllegalArgumentException("학부모와 선생만 조회 가능합니다.");
+//        }
+//
+//        return counsels.stream()
+//                .filter(counsel -> {
+//                    CounselAvailableTime availableTime = counsel.getCounselAvailableTime();
+//                    return availableTime != null &&
+//                            (availableTime.getCounselAvailableDate().isAfter(currentDate) ||
+//                                    (availableTime.getCounselAvailableDate().isEqual(currentDate) &&
+//                                            availableTime.getCounselAvailableTime().isAfter(currentTime)));
+//                })
+//                .map(counsel -> {
+//                    String studentName = null;
+//                    if (counsel.getStudentId() != null) {
+//                        Member student = memberRepository.findById(counsel.getStudentId())
+//                                .orElseThrow(() -> new IllegalArgumentException("해당 학생이 존재하지 않습니다."));
+//                        studentName = student.getName();
+//                    }
+//
+//                    return new CounselAvailableTimeResponse(
+//                            counsel.getId(),
+//                            counsel.getParentId(),
+//                            counsel.getTeacherId(),
+//                            studentName,  // 조회한 이름 전달
+//                            counsel.getCounselAvailableTime().getId(),
+//                            counsel.getCounselAvailableTime().getCounselAvailableDate(),
+//                            counsel.getCounselAvailableTime().getCounselAvailableTime()
+//                    );
+//                })
+//                .collect(Collectors.toList());
+//    }
+//
     public List<CounselAvailableTimeResponse> getCounselForToday(Long id){
         List<CounselAvailableTimeResponse> userCounsel = getUserCounsel(id);
         LocalDate currentDate = LocalDate.now();
