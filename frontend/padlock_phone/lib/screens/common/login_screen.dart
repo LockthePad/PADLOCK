@@ -158,7 +158,7 @@ class _LoginScreenState extends State<LoginScreen> {
         await storage.write(
             key: 'memberId', value: data['memberId'].toString());
         await storage.write(
-            key: 'classroomId', value: data['classroomId'].toString());
+            key: 'selectedClassroomId', value: data['classroomId'].toString());
 
         _startTokenRefreshTimer();
 

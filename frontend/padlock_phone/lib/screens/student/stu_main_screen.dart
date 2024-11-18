@@ -179,7 +179,7 @@ class _StuMainScreenState extends State<StuMainScreen> {
     // scanForBeacon();
 
     // 30초마다 BLE 스캔 수행
-    _scanTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
+    _scanTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
       if (!_isScanning) {
         scanForBeacon();
       }
@@ -188,7 +188,7 @@ class _StuMainScreenState extends State<StuMainScreen> {
 
   void startPostTimer() {
     // 30초마다 POST 요청 보내기
-    _postTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
+    _postTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
       sendAttendanceStatus(_isDetected); // 마지막으로 감지된 상태를 전송
     });
   }
@@ -440,7 +440,7 @@ class _StuMainScreenState extends State<StuMainScreen> {
 
   void _startAttendanceTimer() {
     // 1분마다 출석 상태 업데이트
-    _attendanceTimer = Timer.periodic(const Duration(minutes: 1), (timer) {
+    _attendanceTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
       _fetchAttendanceStatus();
     });
   }
@@ -749,49 +749,49 @@ class _StuMainScreenState extends State<StuMainScreen> {
                 myicon: "notification",
               ),
             ),
-            const SizedBox(height: 20),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'BLE 스캔 상태: ${_isScanning ? "검색 중" : "대기 중"}',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: _isScanning ? Colors.blue : Colors.black,
-                    ),
-                  ),
-                  Text(
-                    '비콘 감지 상태: ${_isDetected ? "감지됨 ($_detectedDeviceName)" : "감지되지 않음"}',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: _isDetected ? Colors.green : Colors.red,
-                    ),
-                  ),
-                  Text(
-                    'POST 요청 상태: ${_postSuccess ? "성공" : "실패"}',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: _postSuccess ? Colors.green : Colors.red,
-                    ),
-                  ),
-                  if (_errorMessage.isNotEmpty)
-                    Text(
-                      '에러 메시지: $_errorMessage',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Colors.red,
-                      ),
-                    ),
-                  const SizedBox(height: 10),
-                  Text(
-                    '디버깅 정보:\n$debugInfo',
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
-                ],
-              ),
-            ),
+            // const SizedBox(height: 20),
+            // Padding(
+            //   padding: const EdgeInsets.all(16.0),
+            //   child: Column(
+            //     crossAxisAlignment: CrossAxisAlignment.start,
+            //     children: [
+            //       Text(
+            //         'BLE 스캔 상태: ${_isScanning ? "검색 중" : "대기 중"}',
+            //         style: TextStyle(
+            //           fontSize: 16,
+            //           color: _isScanning ? Colors.blue : Colors.black,
+            //         ),
+            //       ),
+            //       Text(
+            //         '비콘 감지 상태: ${_isDetected ? "감지됨 ($_detectedDeviceName)" : "감지되지 않음"}',
+            //         style: TextStyle(
+            //           fontSize: 16,
+            //           color: _isDetected ? Colors.green : Colors.red,
+            //         ),
+            //       ),
+            //       Text(
+            //         'POST 요청 상태: ${_postSuccess ? "성공" : "실패"}',
+            //         style: TextStyle(
+            //           fontSize: 16,
+            //           color: _postSuccess ? Colors.green : Colors.red,
+            //         ),
+            //       ),
+            //       if (_errorMessage.isNotEmpty)
+            //         Text(
+            //           '에러 메시지: $_errorMessage',
+            //           style: const TextStyle(
+            //             fontSize: 14,
+            //             color: Colors.red,
+            //           ),
+            //         ),
+            //       const SizedBox(height: 10),
+            //       Text(
+            //         '디버깅 정보:\n$debugInfo',
+            //         style: const TextStyle(fontSize: 12, color: Colors.grey),
+            //       ),
+            //     ],
+            //   ),
+            // ),
           ],
         ),
       ),
