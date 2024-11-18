@@ -46,7 +46,7 @@ class _ParGpsCheckScreenState extends State<ParGpsCheckScreen> {
 
   void _startLocationUpdates() {
     _locationUpdateTimer = Timer.periodic(
-      const Duration(seconds: 10),
+      const Duration(seconds: 4),
       (timer) async {
         try {
           final recentLocation = await _apiService.fetchRecentLocation();
