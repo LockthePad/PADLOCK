@@ -86,7 +86,7 @@ public class OcrService {
     }
 
     public List<OcrTotalResponse> getOcrList(Long memberId) {
-        List<Ocr> ocrList = ocrRepository.findByMemberId(memberId);
+        List<Ocr> ocrList = ocrRepository.findByMemberIdOrderByCreateDateDesc(memberId);
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy.MM.dd");
 

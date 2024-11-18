@@ -7,6 +7,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface OcrRepository extends JpaRepository<Ocr, Long> {
-    List<Ocr> findByMemberId(Long memberId);
+    List<Ocr> findByMemberIdOrderByCreateDateDesc(Long memberId);
     Optional<Ocr> findByMemberIdAndId(Long memberId, Long ocrId);
 }
