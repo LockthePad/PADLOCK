@@ -126,17 +126,13 @@ class CounselReservationListWidget extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 항상 표시되는 제목
         const Text(
           ' 나의 상담 예약',
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 10),
-
-        // 로딩 중 상태
         if (isLoading)
           const Center(child: CircularProgressIndicator())
-        // 예약 목록이 비어있을 경우
         else if (reservations.isEmpty)
           const Center(
             child: Text(
@@ -144,7 +140,6 @@ class CounselReservationListWidget extends StatelessWidget {
               style: TextStyle(fontSize: 16, color: Colors.black54),
             ),
           )
-        // 예약 목록이 있을 경우
         else
           ListView.builder(
             itemCount: reservations.length,
