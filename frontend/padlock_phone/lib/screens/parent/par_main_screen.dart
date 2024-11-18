@@ -252,7 +252,7 @@ class _ParMainScreenState extends State<ParMainScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: 30),
+            const SizedBox(height: 50),
             GestureDetector(
               onTap: () {
                 Navigator.push(
@@ -268,7 +268,7 @@ class _ParMainScreenState extends State<ParMainScreen> {
                 myicon: "backpack",
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 25),
             GestureDetector(
               onTap: () {
                 Navigator.push(
@@ -281,10 +281,10 @@ class _ParMainScreenState extends State<ParMainScreen> {
               child: const CardContainer(
                 subtitle: "담임선생님",
                 title: "상담예약 신청하기",
-                myicon: "notification",
+                myicon: "calender",
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 25),
             GestureDetector(
               onTap: () {
                 Navigator.push(
