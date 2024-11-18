@@ -48,6 +48,39 @@ class _TeaTimetableWidgetState extends State<TeaTimetableWidget> {
     }
   }
 
+  void showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: AppColors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30),
+          ),
+          title: const Text(
+            "시간표 업데이트 실패",
+            style: TextStyle(fontSize: 18),
+          ),
+          content: Text(
+            message,
+            style: const TextStyle(fontSize: 16),
+          ),
+          actions: [
+            TextButton(
+              child: const Text(
+                "확인",
+                style: TextStyle(color: AppColors.navy),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<void> _showDeleteConfirmationDialog(
       int periodIndex, int dayIndex) async {
     final day = ["MON", "TUE", "WED", "THU", "FRI"][dayIndex];
@@ -138,7 +171,7 @@ class _TeaTimetableWidgetState extends State<TeaTimetableWidget> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      SizedBox(height: 20),
+                      const SizedBox(height: 20),
                       Row(
                         children: [
                           const SizedBox(width: 60),
@@ -177,22 +210,34 @@ class _TeaTimetableWidgetState extends State<TeaTimetableWidget> {
                                         },
                                         child: DragTarget<String>(
                                           onAccept: (subject) async {
-                                            setState(() {
-                                              timetable[periodIndex][dayIndex] =
-                                                  subject;
-                                            });
-                                            await TimetableApi
-                                                .addSubjectToTimetable(
-                                              day: [
-                                                "MON",
-                                                "TUE",
-                                                "WED",
-                                                "THU",
-                                                "FRI"
-                                              ][dayIndex],
-                                              period: periodIndex + 1,
+                                            final day = [
+                                              "MON",
+                                              "TUE",
+                                              "WED",
+                                              "THU",
+                                              "FRI"
+                                            ][dayIndex];
+                                            final period = periodIndex + 1;
+
+                                            // API 호출 및 오류 메시지 확인
+                                            String? errorMessage =
+                                                await TimetableApi
+                                                    .addSubjectToTimetable(
+                                              day: day,
+                                              period: period,
                                               subject: subject,
                                             );
+
+                                            if (errorMessage == null) {
+                                              // 성공 시 시간표 업데이트
+                                              setState(() {
+                                                timetable[periodIndex]
+                                                    [dayIndex] = subject;
+                                              });
+                                            } else {
+                                              // 실패 시 오류 메시지 모달 표시
+                                              showErrorDialog(errorMessage);
+                                            }
                                           },
                                           builder: (context, candidateData,
                                               rejectedData) {

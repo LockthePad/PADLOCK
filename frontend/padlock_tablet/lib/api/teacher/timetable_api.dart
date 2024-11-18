@@ -30,14 +30,13 @@ class TimetableApi {
   }
 
   // 시간표에 과목 추가
-  static Future<bool> addSubjectToTimetable({
+  static Future<String?> addSubjectToTimetable({
     required String day,
     required int period,
     required String subject,
   }) async {
     final token = await _storage.read(key: 'accessToken');
     final classroomId = await _storage.read(key: 'classroomId');
-
     final url = '$apiServerUrl/classrooms/$classroomId/schedules';
 
     final response = await http.post(
@@ -53,12 +52,29 @@ class TimetableApi {
       }),
     );
 
+    // 성공 처리
     if (response.statusCode == 200 || response.statusCode == 201) {
-      return true;
-    } else {
-      print('과목 추가 실패: ${response.body}');
-      return false;
+      return null; // 성공 시 null 반환
     }
+
+    // 에러 처리
+    if (response.statusCode == 400) {
+      try {
+        final errorResponse = jsonDecode(response.body);
+        final errorCode = errorResponse['code'];
+        final errorMessage = errorResponse['message'];
+
+        if (errorCode == "4009") {
+          return "마지막 교시를 넘는 시간표는 추가할 수 없습니다."; // 4009 코드에 대한 메시지
+        }
+
+        return errorMessage ?? "알 수 없는 오류 발생"; // 일반적인 400 에러 메시지
+      } catch (e) {
+        return "오류 응답 파싱 실패"; // 응답 파싱 실패 시
+      }
+    }
+
+    return "서버 오류 발생: ${response.statusCode}"; // 기타 상태 코드 처리
   }
 
   // 시간표에서 과목 삭제
