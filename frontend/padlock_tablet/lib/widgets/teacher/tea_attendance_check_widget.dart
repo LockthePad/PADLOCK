@@ -22,15 +22,21 @@ class _TeaAttendanceCheckWidgetState extends State<TeaAttendanceCheckWidget> {
   @override
   void initState() {
     super.initState();
-    _fetchStudentList();
-    _fetchAttendanceDataForStudent(selectedIndex);
+    _initializeAttendanceData();
   }
 
-  Future<void> _fetchStudentList() async {
+  Future<void> _initializeAttendanceData() async {
+    // 학생 목록 불러오기
     final fetchedStudents = await AttendanceApi.fetchStudentList();
     setState(() {
       students = fetchedStudents;
     });
+
+    // 첫 번째 학생의 데이터 자동 선택
+    if (students.isNotEmpty) {
+      selectedIndex = 0; // 첫 번째 학생 선택
+      await _fetchAttendanceDataForStudent(selectedIndex); // 첫 번째 학생 데이터 불러오기
+    }
   }
 
   Future<void> _fetchAttendanceDataForStudent(int index) async {
