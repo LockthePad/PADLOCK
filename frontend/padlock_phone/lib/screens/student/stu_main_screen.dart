@@ -90,7 +90,7 @@ void onStartBackground(ServiceInstance service) async {
     }
 
     // 위치 정보 주기적으로 서버에 전송
-    Timer.periodic(const Duration(seconds: 10), (timer) async {
+    Timer.periodic(const Duration(seconds: 4), (timer) async {
       try {
         debugPrint('백그라운드에서 위치 정보 가져오기 시도...');
         Position position = await Geolocator.getCurrentPosition(
