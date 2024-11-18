@@ -217,11 +217,14 @@ class _StuNoteConvertWidgetState extends State<StuNoteConvertWidget> {
                   borderRadius: BorderRadius.circular(30)),
               child: Padding(
                 padding: const EdgeInsets.all(15),
-                child: Text(
-                  ocrResult ?? '변환 버튼을 눌러 텍스트를 추출해주세요.',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    height: 1.8,
+                child: SingleChildScrollView(
+                  // 여기에 SingleChildScrollView 추가
+                  child: Text(
+                    ocrResult ?? '변환 버튼을 눌러 텍스트를 추출해주세요.',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      height: 1.8,
+                    ),
                   ),
                 ),
               ),
