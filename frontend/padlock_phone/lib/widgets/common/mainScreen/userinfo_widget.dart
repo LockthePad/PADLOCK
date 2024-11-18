@@ -212,7 +212,7 @@ class _UserinfoWidgetState extends State<UserinfoWidget> {
                   ),
                 ),
               ),
-            const SizedBox(width: 10),
+            // const SizedBox(width: 10),
             GestureDetector(
               onTap: _logout,
               child: Padding(
