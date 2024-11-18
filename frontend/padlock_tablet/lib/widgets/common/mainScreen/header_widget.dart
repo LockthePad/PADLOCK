@@ -186,6 +186,7 @@ class _HeaderWidgetState extends State<HeaderWidget> {
         notifications: _notifications,
         notificationService: _notificationService,
         onNotificationsRead: _handleNotificationsRead,
+        isStudent: widget.isStudent,
       ),
     );
   }
@@ -196,6 +197,7 @@ class _HeaderWidgetState extends State<HeaderWidget> {
         widget.isStudent ? 'assets/yellowLogo.png' : 'assets/navyLogo.png';
 
     final userInfo = _parseMemberInfo();
+    final primaryColor = widget.isStudent ? AppColors.yellow : AppColors.navy;
 
     return Container(
       padding: const EdgeInsets.only(right: 50, top: 30, bottom: 10),
@@ -215,7 +217,7 @@ class _HeaderWidgetState extends State<HeaderWidget> {
                     icon: Icon(
                       Icons.notifications,
                       color: _hasUnreadNotifications
-                          ? AppColors.yellow
+                          ? primaryColor
                           : AppColors.grey,
                       size: 28,
                     ),

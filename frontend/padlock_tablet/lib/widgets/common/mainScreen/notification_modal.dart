@@ -8,12 +8,14 @@ class NotificationModal extends StatefulWidget {
   final List<NotificationItem> notifications;
   final NotificationServiceApi notificationService;
   final VoidCallback onNotificationsRead;
+  final bool isStudent;
 
   const NotificationModal({
     Key? key,
     required this.notifications,
     required this.notificationService,
     required this.onNotificationsRead,
+    required this.isStudent,
   }) : super(key: key);
 
   @override
@@ -53,17 +55,19 @@ class _NotificationModalState extends State<NotificationModal> {
   }
 
   Icon _getNotificationIcon(String type) {
+    final iconColor = widget.isStudent ? AppColors.yellow : AppColors.navy;
+
     switch (type) {
       case 'ATTENDANCE':
-        return const Icon(Icons.calendar_today, color: AppColors.yellow);
+        return Icon(Icons.calendar_today, color: iconColor);
       case 'NOTICE':
-        return const Icon(Icons.announcement, color: AppColors.yellow);
+        return Icon(Icons.announcement, color: iconColor);
       case 'SUGGESTION':
-        return const Icon(Icons.lightbulb, color: AppColors.yellow);
+        return Icon(Icons.lightbulb, color: iconColor);
       case 'COUNSELING':
-        return const Icon(Icons.chat, color: AppColors.yellow);
+        return Icon(Icons.chat, color: iconColor);
       default:
-        return const Icon(Icons.notifications, color: AppColors.yellow);
+        return Icon(Icons.notifications, color: iconColor);
     }
   }
 
@@ -139,6 +143,7 @@ class _NotificationModalState extends State<NotificationModal> {
 
   @override
   Widget build(BuildContext context) {
+    final primaryColor = widget.isStudent ? AppColors.yellow : AppColors.navy;
     return Dialog(
       backgroundColor: AppColors.white,
       shape: RoundedRectangleBorder(
@@ -204,7 +209,7 @@ class _NotificationModalState extends State<NotificationModal> {
                               ),
                             ),
                             trailing: const Icon(
-                              Icons.check_circle_outline,
+                              Icons.cancel_outlined, // 또는 Icons.highlight_off
                               color: AppColors.grey,
                               size: 20,
                             ),
@@ -221,10 +226,10 @@ class _NotificationModalState extends State<NotificationModal> {
                   child: ElevatedButton(
                     onPressed: _markAllAsRead,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.yellow,
+                      backgroundColor: primaryColor,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(20),
                       ),
                     ),
                     child: const Text(
