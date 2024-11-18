@@ -10,6 +10,6 @@ import java.util.Optional;
 public interface CounselRepository extends JpaRepository<Counsel, Integer> {
     Optional<Counsel> findByCounselAvailableTime(CounselAvailableTime counselAvailableTime);
     void deleteById(Long id);
-    List<Counsel> findByParentId(Long parentId);
-    List<Counsel> findByTeacherId(Long teacherId);
+    List<Counsel> findByParentIdOrderByCounselAvailableTime_CounselAvailableDateAscCounselAvailableTime_CounselAvailableTimeAsc(Long parentId);
+    List<Counsel> findByTeacherIdOrderByCounselAvailableTime_CounselAvailableDateAscCounselAvailableTime_CounselAvailableTimeAsc(Long teacherId);
 }
