@@ -34,23 +34,45 @@
 
 ## **서비스 소개 🛠️**
 ### **1. 자동 출석체크 기능 ✅**
+<img src="assets/.gif" height="500"/> </br>
 - **비콘(Bluetooth Signal)** 기술을 활용하여 교실에 출입하는 순간 출석 여부를 자동으로 기록.
 - 주기적으로 자리 비움 및 결석 상태를 갱신하도록 설계.
 
 ### **2. 등하굣길 자녀 위치 안내 서비스 🗺️**
+<img src="assets/gps_out.gif" height="500"/> </br>
 - GPS 트래킹을 통해 등하굣길 위치 정보를 실시간으로 학부모에게 제공.
 - **학교 도착 시 알림 전송**, **하교 시 위치 정보 제공** 기능 포함.
 - 개인정보 보호를 위해 등하굣길 전후로만 위치 데이터를 제공.
 
 ### **3. 교육용 앱 제어 서비스 📵**
-- 교사가 지정한 교육용 앱만 사용 가능하도록 제어.
+<img src="assets/permission_out.gif" height="500"/> </br>
+<img src="assets/meal_out.gif" height="500"/> </br>
+- 교사가 지정한 교육용 앱만 사용 가능하도록 **kotlin으로** 시스템 제어.
 - 학습 외 유혹을 최소화하며, 수업 시간 내 학습 집중도 향상을 목표로 설계.
 
 ### **4. 판서 자동 필기 기능 ✍️**
-- YOLOv8 모델로 칠판 객체 인식
-- 사진에 선생님(사람)이 있을 경우 LAMA 모델을 inpainting로 사람 제거
+<img src="assets/.gif" height="500"/> </br>
+- **YOLOv8** 모델로 칠판 객체 인식
+- 사진에 선생님(사람)이 있을 경우 **LAMA** 모델 inpainting로 사람 제거
 - **OCR 기술**을 활용하여 칠판의 판서 내용을 자동으로 디지털화.
 - 학생들의 판서 시간을 절약하고, 수업 내용에 대한 집중력을 높이는 기능 제공.
+
+### **5. 급식 서비스 제공**
+<img src="assets/app_out.gif" height="500"/> </br>
+- 나이스 교육정보 개방 포털 급식 식단 정보 API 이용해 실제 급식 데이터 제공.
+
+### **커스텀 시간표**
+<img src="assets/timetable_out.gif" height="500"/> </br>
+- 드래그 & 드롭 방식으로 시간표 수정
+
+### **상담 예약 서비스**
+<img src="assets/councel_parent_out.gif" height="500"/> </br>
+<img src="assets/councel_out.gif" height="500"/> </br>
+- 선생님은 부담없고 학부모는 편안하게 예약 할 수 있도록 설계
+
+### **알림 기능**
+<img src="assets/alert_out.gif" height="500"/> </br>
+- SSE 방식으로 알림 발송
 
 
 ## **기대 효과 🌟**
@@ -61,22 +83,23 @@
 
 ## 🏗️ 설계
 ###  와이어 프레임
-<img src="" width="" height=""/></br>
+<img src="assets/screen.png" width="800" height="350"/></br>
 
 ###  시스템 아키텍쳐
-<img src="" width="" height=""/></br>
+<img src="assets/architecture.PNG" width="800" height="350"/></br>
 
 ### ERD
-<img src="" width="" height=""/></br>
+<img src="assets/erd.PNG" width="800" height="350"/></br>
 
 ###  API 명세서
-<img src="" width="" height=""/></br>
+<img src="assets/api1.PNG" width="800" height="250"/></br>
+<img src="assets/api2.PNG" width="800" height="250"/></br>
 
 ## 🛠️ 기술 스택
 
 **FE Development**
 
-<img src="https://img.shields.io/badge/flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white"> <img src="https://img.shields.io/badge/dart-0175C2?style=for-the-badge&logo=dart&logoColor=white"> <img src="https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=CSS3&logoColor=white"> 
+<img src="https://img.shields.io/badge/flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white"> <img src="https://img.shields.io/badge/dart-0175C2?style=for-the-badge&logo=dart&logoColor=white"> <img src="https://img.shields.io/badge/kotlin-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white"> <img src="https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=CSS3&logoColor=white"> 
 
 **BE Development**
 
@@ -89,7 +112,7 @@
 
 **AI**
 
-<img src="https://img.shields.io/badge/python-3776AB?style=for-the-badge&logo=python&logoColor=white"> <img src="https://img.shields.io/badge/Selenium-43B02A?style=for-the-badge&logo=Selenium&logoColor=white">
+<img src="https://img.shields.io/badge/python-3776AB?style=for-the-badge&logo=python&logoColor=white"> <img src="https://img.shields.io/badge/Selenium-43B02A?style=for-the-badge&logo=Selenium&logoColor=white"> <img src="https://img.shields.io/badge/Pytorch-E95420?style=for-the-badge&logo=Pytorch&logoColor=white">
 
 
 **Infra**
