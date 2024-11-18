@@ -172,6 +172,7 @@ class _StuMainScreenState extends State<StuMainScreen> {
     super.dispose();
     _notificationService.dispose();
     _notificationSubscription?.cancel();
+    scanForBeacon();
   }
 
   void startBeaconScanningService() {
@@ -179,7 +180,7 @@ class _StuMainScreenState extends State<StuMainScreen> {
     // scanForBeacon();
 
     // 30초마다 BLE 스캔 수행
-    _scanTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+    _scanTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
       if (!_isScanning) {
         scanForBeacon();
       }
@@ -188,7 +189,7 @@ class _StuMainScreenState extends State<StuMainScreen> {
 
   void startPostTimer() {
     // 30초마다 POST 요청 보내기
-    _postTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
+    _postTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
       sendAttendanceStatus(_isDetected); // 마지막으로 감지된 상태를 전송
     });
   }
