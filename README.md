@@ -34,7 +34,7 @@
 
 ## **서비스 소개 🛠️**
 ### **1. 자동 출석체크 기능 ✅**
-<img src="assets/.gif" height="500"/> </br>
+<img src="assets/attendance.gif" height="500"/> </br>
 - **비콘(Bluetooth Signal)** 기술을 활용하여 교실에 출입하는 순간 출석 여부를 자동으로 기록.
 - 주기적으로 자리 비움 및 결석 상태를 갱신하도록 설계.
 
@@ -46,12 +46,12 @@
 
 ### **3. 교육용 앱 제어 서비스 📵**
 <img src="assets/permission_out.gif" height="500"/> </br>
-<img src="assets/meal_out.gif" height="500"/> </br>
+<img src="assets/permit.gif" height="500"/> </br>
 - 교사가 지정한 교육용 앱만 사용 가능하도록 **kotlin으로** 시스템 제어.
 - 학습 외 유혹을 최소화하며, 수업 시간 내 학습 집중도 향상을 목표로 설계.
 
 ### **4. 판서 자동 필기 기능 ✍️**
-<img src="assets/.gif" height="500"/> </br>
+<img src="assets/ocr.gif" height="500"/> </br>
 - **YOLOv8** 모델로 칠판 객체 인식
 - 사진에 선생님(사람)이 있을 경우 **LAMA** 모델 inpainting로 사람 제거
 - **OCR 기술**을 활용하여 칠판의 판서 내용을 자동으로 디지털화.
