@@ -750,49 +750,49 @@ class _StuMainScreenState extends State<StuMainScreen> {
                 myicon: "declare",
               ),
             ),
-            const SizedBox(height: 20),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'BLE 스캔 상태: ${_isScanning ? "검색 중" : "대기 중"}',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: _isScanning ? Colors.blue : Colors.black,
-                    ),
-                  ),
-                  Text(
-                    '비콘 감지 상태: ${_isDetected ? "감지됨 ($_detectedDeviceName)" : "감지되지 않음"}',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: _isDetected ? Colors.green : Colors.red,
-                    ),
-                  ),
-                  Text(
-                    'POST 요청 상태: ${_postSuccess ? "성공" : "실패"}',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: _postSuccess ? Colors.green : Colors.red,
-                    ),
-                  ),
-                  if (_errorMessage.isNotEmpty)
-                    Text(
-                      '에러 메시지: $_errorMessage',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Colors.red,
-                      ),
-                    ),
-                  const SizedBox(height: 10),
-                  Text(
-                    '디버깅 정보:\n$debugInfo',
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
-                ],
-              ),
-            ),
+            // const SizedBox(height: 20),
+            // Padding(
+            //   padding: const EdgeInsets.all(16.0),
+            //   child: Column(
+            //     crossAxisAlignment: CrossAxisAlignment.start,
+            //     children: [
+            //       Text(
+            //         'BLE 스캔 상태: ${_isScanning ? "검색 중" : "대기 중"}',
+            //         style: TextStyle(
+            //           fontSize: 16,
+            //           color: _isScanning ? Colors.blue : Colors.black,
+            //         ),
+            //       ),
+            //       Text(
+            //         '비콘 감지 상태: ${_isDetected ? "감지됨 ($_detectedDeviceName)" : "감지되지 않음"}',
+            //         style: TextStyle(
+            //           fontSize: 16,
+            //           color: _isDetected ? Colors.green : Colors.red,
+            //         ),
+            //       ),
+            //       Text(
+            //         'POST 요청 상태: ${_postSuccess ? "성공" : "실패"}',
+            //         style: TextStyle(
+            //           fontSize: 16,
+            //           color: _postSuccess ? Colors.green : Colors.red,
+            //         ),
+            //       ),
+            //       if (_errorMessage.isNotEmpty)
+            //         Text(
+            //           '에러 메시지: $_errorMessage',
+            //           style: const TextStyle(
+            //             fontSize: 14,
+            //             color: Colors.red,
+            //           ),
+            //         ),
+            //       const SizedBox(height: 10),
+            //       Text(
+            //         '디버깅 정보:\n$debugInfo',
+            //         style: const TextStyle(fontSize: 12, color: Colors.grey),
+            //       ),
+            //     ],
+            //   ),
+            // ),
           ],
         ),
       ),
