@@ -1,5 +1,3 @@
-// par_main_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:padlock_phone/apis/common/attendance_api.dart';
@@ -185,126 +183,133 @@ class _ParMainScreenState extends State<ParMainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            const SizedBox(height: 63),
-            GestureDetector(
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 19),
-                  child: Stack(
-                    children: [
-                      IconButton(
-                        icon: Icon(
-                          Icons.notifications,
-                          color: _hasUnreadNotifications
-                              ? AppColors.yellow
-                              : AppColors.grey,
-                          size: 28,
+      body: RefreshIndicator(
+        onRefresh: () async {
+          await _loadChildrenData(); // 새로고침 시 자식 정보 로드
+          await _fetchAttendanceStatus(); // 출석 상태 다시 로드
+        },
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Column(
+            children: [
+              const SizedBox(height: 63),
+              GestureDetector(
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 19),
+                    child: Stack(
+                      children: [
+                        IconButton(
+                          icon: Icon(
+                            Icons.notifications,
+                            color: _hasUnreadNotifications
+                                ? AppColors.yellow
+                                : AppColors.grey,
+                            size: 28,
+                          ),
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              barrierDismissible: true,
+                              builder: (context) => NotificationModal(
+                                notifications: _notifications,
+                                notificationService: _notificationService,
+                                onNotificationsRead: () => setState(() {
+                                  _updateUnreadStatus();
+                                }),
+                              ),
+                            );
+                          },
                         ),
-                        onPressed: () {
-                          showDialog(
-                            context: context,
-                            barrierDismissible: true,
-                            builder: (context) => NotificationModal(
-                              notifications: _notifications,
-                              notificationService: _notificationService,
-                              onNotificationsRead: () => setState(() {
-                                _updateUnreadStatus();
-                              }),
-                            ),
-                          );
-                        },
-                      ),
-                      if (_hasUnreadNotifications)
-                        Positioned(
-                          right: 8,
-                          top: 8,
-                          child: Container(
-                            width: 8,
-                            height: 8,
-                            decoration: const BoxDecoration(
-                              color: Colors.red,
-                              shape: BoxShape.circle,
+                        if (_hasUnreadNotifications)
+                          Positioned(
+                            right: 8,
+                            top: 8,
+                            child: Container(
+                              width: 8,
+                              height: 8,
+                              decoration: const BoxDecoration(
+                                color: Colors.red,
+                                shape: BoxShape.circle,
+                              ),
                             ),
                           ),
-                        ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: 20),
-            Padding(
-              padding: const EdgeInsets.only(left: 40, right: 20),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: UserinfoWidget(
-                      userName: studentName ?? '학생',
-                      userClass: schoolInfo ?? '학교 정보 없음',
-                      children: children,
-                      onChildSelected: _onChildSelected,
+              const SizedBox(height: 20),
+              Padding(
+                padding: const EdgeInsets.only(left: 40, right: 20),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: UserinfoWidget(
+                        userName: studentName ?? '학생',
+                        userClass: schoolInfo ?? '학교 정보 없음',
+                        children: children,
+                        onChildSelected: _onChildSelected,
+                      ),
                     ),
-                  ),
-                  ParAttendanceStateWidget(
-                    attendanceStatus: attendanceStatus,
-                  ),
-                ],
+                    ParAttendanceStateWidget(
+                      attendanceStatus: attendanceStatus,
+                    ),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 50),
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ParGpsCheckScreen(),
-                  ),
-                );
-              },
-              child: const CardContainer(
-                subtitle: "안전한 등하교",
-                title: "우리아이 위치보기",
-                myicon: "backpack",
+              const SizedBox(height: 50),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ParGpsCheckScreen(),
+                    ),
+                  );
+                },
+                child: const CardContainer(
+                  subtitle: "안전한 등하교",
+                  title: "우리아이 위치보기",
+                  myicon: "backpack",
+                ),
               ),
-            ),
-            const SizedBox(height: 25),
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ParCounselScreen(),
-                  ),
-                );
-              },
-              child: const CardContainer(
-                subtitle: "담임선생님",
-                title: "상담예약 신청하기",
-                myicon: "calender",
+              const SizedBox(height: 25),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ParCounselScreen(),
+                    ),
+                  );
+                },
+                child: const CardContainer(
+                  subtitle: "담임선생님",
+                  title: "상담예약 신청하기",
+                  myicon: "calender",
+                ),
               ),
-            ),
-            const SizedBox(height: 25),
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const NoticeScreen(),
-                  ),
-                );
-              },
-              child: const CardContainer(
-                subtitle: "즐거운 학교생활",
-                title: "공지사항 바로가기",
-                myicon: "notification",
+              const SizedBox(height: 25),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const NoticeScreen(),
+                    ),
+                  );
+                },
+                child: const CardContainer(
+                  subtitle: "즐거운 학교생활",
+                  title: "공지사항 바로가기",
+                  myicon: "notification",
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
