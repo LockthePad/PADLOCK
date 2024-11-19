@@ -56,7 +56,7 @@ public class LocationService {
 //        }
     }
 
-    @Scheduled(cron = "0 0 0,13 * * MON-FRI") //평일 12시, 00시에 데이터 삭제
+    @Scheduled(cron = "0 0 6,18 * * MON-FRI")  //평일 12시, 00시에 데이터 삭제
     public void deleteLocation() {
         DayOfWeek dayOfWeek = LocalDate.now().getDayOfWeek();
 
