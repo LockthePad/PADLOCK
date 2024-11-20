@@ -151,8 +151,8 @@
   <tr>
     <td align="center"><b>AI & BE</b></a></td>
     <td align="center"><b>FE</b></a></td>
+    <td align="center"><b>BE</b></a></td>
     <td align="center"><b>BE & INFRA</b></a></td>
-    <td align="center"><b>BE & FE</b></a></td>
     <td align="center"><b>FE</b></a></td>
     <td align="center"><b>FE</b></a></td>
   </tr>
